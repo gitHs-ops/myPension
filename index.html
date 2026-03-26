@@ -7,8 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --primary: #e8174a;
-  --primary-dark: #c4103a;
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
   --text: #222222;
   --sub: #555555;
   --muted: #888888;
@@ -29,39 +29,47 @@ body { font-family:var(--sans); color:var(--text); background:var(--surface); }
   padding:0 40px; height:64px;
   display:flex; align-items:center; justify-content:space-between;
 }
-.logo { font-size:1.6rem; font-weight:900; color:var(--primary); letter-spacing:-1px; }
-.header-nav { display:flex; align-items:center; gap:12px; }
-.btn-share, .btn-save {
-  display:flex; align-items:center; gap:6px;
-  padding:8px 14px; border-radius:8px; border:none;
-  background:transparent; cursor:pointer; font-family:var(--sans);
-  font-size:.88rem; font-weight:600; color:var(--text);
-  transition:background .15s;
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+  flex-shrink:0;
 }
-.btn-share:hover, .btn-save:hover { background:var(--bg); }
-.btn-save svg, .btn-share svg { width:18px; height:18px; }
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a {
+  text-decoration:none; font-size:.9rem; font-weight:600;
+  color:var(--text); transition:color .15s;
+}
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
 
 /* ── PHOTO GALLERY ── */
-.gallery { padding:24px 40px 0; }
-.gallery-title { font-size:1.6rem; font-weight:900; margin-bottom:16px; }
+.gallery { padding:0; }
 .photo-grid {
   display:grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 240px 240px;
-  gap:8px; border-radius:16px; overflow:hidden;
+  grid-template-columns: 1.55fr 1fr 1fr;
+  grid-template-rows: 270px 270px;
+  gap:6px;
 }
 .photo-main {
   grid-row: 1 / 3;
-  background:linear-gradient(135deg,#4a7c59,#2d5a3d);
+  background:linear-gradient(135deg,#7a9e50,#527830);
   position:relative; overflow:hidden; cursor:pointer;
 }
 .photo-sub {
-  background:linear-gradient(135deg,#6b5344,#3d2b1f);
+  background:linear-gradient(135deg,#c4895a,#9a6030);
   position:relative; overflow:hidden; cursor:pointer;
 }
-.photo-sub:nth-child(3) { background:linear-gradient(135deg,#5a6b44,#2f3d1f); }
-.photo-sub:nth-child(4) { background:linear-gradient(135deg,#44606b,#1f3840); }
-.photo-sub:nth-child(5) { background:linear-gradient(135deg,#6b4464,#3d1f38); }
+.photo-sub:nth-child(3) { background:linear-gradient(135deg,#d4b896,#b89060); }
+.photo-sub:nth-child(4) { background:linear-gradient(135deg,#4a8ec4,#2a6090); }
+.photo-sub:nth-child(5) { background:linear-gradient(135deg,#8ab8d8,#5890b8); }
 .photo-img {
   width:100%; height:100%; object-fit:cover;
   transition:transform .3s;
@@ -106,7 +114,7 @@ body { font-family:var(--sans); color:var(--text); background:var(--surface); }
 .host-row { display:flex; align-items:center; gap:14px; margin-bottom:4px; }
 .host-avatar {
   width:48px; height:48px; border-radius:50%;
-  background:linear-gradient(135deg,#e8174a,#ff6b6b);
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
   display:flex; align-items:center; justify-content:center;
   font-size:1.3rem; color:#fff; font-weight:700; flex-shrink:0;
 }
@@ -243,19 +251,67 @@ body { font-family:var(--sans); color:var(--text); background:var(--surface); }
   white-space:nowrap;
 }
 
+/* ── CTA SECTION ── */
+.cta-section {
+  background:linear-gradient(135deg, #3a5c28 0%, #5a7a30 40%, #7a6830 100%);
+  padding:100px 40px;
+  text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:20px;
+}
+.cta-sub {
+  font-size:.8rem; font-weight:600; letter-spacing:3px;
+  color:rgba(255,255,255,.55); text-transform:uppercase;
+}
+.cta-title {
+  font-size:2.6rem; font-weight:900; line-height:1.3;
+  color:#fff;
+}
+.cta-title span { color:#b8d878; }
+.cta-desc {
+  font-size:.95rem; color:rgba(255,255,255,.7);
+  line-height:1.9; margin-top:4px;
+}
+.cta-buttons { display:flex; gap:16px; margin-top:12px; }
+.btn-cta-primary {
+  padding:14px 36px; border-radius:999px;
+  background:#fff; color:#2a3a18;
+  border:none; font-family:var(--sans);
+  font-size:1rem; font-weight:700; cursor:pointer;
+  transition:background .15s;
+}
+.btn-cta-primary:hover { background:#f0f0e8; }
+.btn-cta-outline {
+  padding:14px 36px; border-radius:999px;
+  background:transparent; color:#fff;
+  border:2px solid rgba(255,255,255,.5);
+  font-family:var(--sans); font-size:1rem; font-weight:700;
+  cursor:pointer; transition:border-color .15s;
+  display:flex; align-items:center; gap:8px;
+}
+.btn-cta-outline:hover { border-color:#fff; }
+
 /* ── FOOTER ── */
 footer {
-  background:var(--bg); border-top:1px solid var(--border);
-  padding:24px 40px; text-align:center;
-  font-size:.82rem; color:var(--muted);
+  background:#1a1a18;
+  padding:28px 48px;
+  display:flex; align-items:center; justify-content:space-between;
 }
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; }
+.footer-logo-icon {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:.85rem;
+}
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px) {
   .header { padding:0 20px; }
-  .gallery { padding:16px 16px 0; }
-  .gallery-title { font-size:1.2rem; }
-  .photo-grid { grid-template-rows:180px 180px; }
+  .photo-grid { grid-template-columns:1fr 1fr; grid-template-rows:160px 160px; }
+  .photo-main { grid-row:1/3; grid-column:1/2; }
   .main-wrap {
     grid-template-columns:1fr; gap:32px;
     padding:24px 16px 40px;
@@ -263,6 +319,11 @@ footer {
   .booking-wrap { position:static; }
   .reviews-grid { grid-template-columns:1fr; }
   .amenities-grid { grid-template-columns:1fr; }
+  .cta-section { padding:60px 24px; }
+  .cta-title { font-size:1.8rem; }
+  .cta-buttons { flex-direction:column; align-items:center; }
+  footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:16px; }
 }
 </style>
 </head>
@@ -270,17 +331,18 @@ footer {
 
 <!-- HEADER -->
 <header class="header">
-  <div class="logo">산장</div>
+  <a class="logo" href="#">
+    <span class="logo-icon">🏠</span>
+    영덕감성산장
+  </a>
   <nav class="header-nav">
-    <button class="btn-share" onclick="sharePage()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-      공유하기
-    </button>
-    <button class="btn-save" id="btnSave" onclick="toggleSave()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="heartIcon"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-      저장
-    </button>
+    <a href="#about">공간소개</a>
+    <a href="#amenities">편의시설</a>
+    <a href="#surroundings">주변환경</a>
+    <a href="#reviews">후기</a>
+    <a href="#host">호스트</a>
   </nav>
+  <button class="btn-reserve-header" onclick="document.querySelector('.btn-reserve').click()">예약 문의</button>
 </header>
 
 <!-- GALLERY -->
@@ -290,16 +352,16 @@ footer {
       <div class="photo-placeholder">🌿</div>
     </div>
     <div class="photo-sub">
-      <div class="photo-placeholder">🏠</div>
+      <div class="photo-placeholder">🪟</div>
     </div>
     <div class="photo-sub">
-      <div class="photo-placeholder">🍳</div>
+      <div class="photo-placeholder">🔍</div>
     </div>
     <div class="photo-sub">
       <div class="photo-placeholder">🌊</div>
     </div>
     <div class="photo-sub" style="position:relative;">
-      <div class="photo-placeholder">🪟</div>
+      <div class="photo-placeholder">📷</div>
       <button class="btn-all-photos">⊞ 사진 모두 보기</button>
     </div>
   </div>
@@ -532,9 +594,30 @@ footer {
 
 </div>
 
+<!-- CTA -->
+<section class="cta-section">
+  <p class="cta-sub">// Book Your Stay</p>
+  <h2 class="cta-title">동해 일출과 함께<br><span>특별한 하룻밤</span>을 경험하세요</h2>
+  <p class="cta-desc">영덕감성산장에서 도심의 일상을 잠시 내려놓고<br>자연 속 진짜 휴식을 만나보세요.</p>
+  <div class="cta-buttons">
+    <button class="btn-cta-primary" onclick="document.querySelector('.btn-reserve').click()">지금 예약하기</button>
+    <button class="btn-cta-outline" onclick="location.href='tel:010-0000-0000'">📞 전화 문의</button>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
-  <p>© 2026 영덕감성산장 · 경상북도 영덕군 · 문의: 010-0000-0000</p>
+  <div class="footer-logo">
+    <span class="footer-logo-icon">🏠</span>
+    영덕감성산장
+  </div>
+  <nav class="footer-nav">
+    <a href="#about">공간소개</a>
+    <a href="#amenities">편의시설</a>
+    <a href="#reviews">후기</a>
+    <a href="#host">호스트</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
 </footer>
 
 <script>
