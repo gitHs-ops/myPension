@@ -95,8 +95,8 @@ body { font-family:var(--sans); color:var(--text); background:var(--surface); }
 .main-wrap {
   max-width:1120px; margin:0 auto;
   padding:32px 40px 60px;
-  display:grid; grid-template-columns:1fr 380px;
-  gap:72px; align-items:start;
+  display:grid; grid-template-columns:1fr 440px;
+  gap:48px; align-items:start;
 }
 
 /* ── LEFT CONTENT ── */
@@ -307,6 +307,56 @@ footer {
 .footer-nav a:hover { color:#fff; }
 .footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
 
+/* ── PRICE EDIT (HOST) ── */
+.price-edit-btn { display:none; background:none; border:none; cursor:pointer; font-size:.82rem; color:var(--muted); padding:2px 4px; vertical-align:middle; transition:color .12s; }
+.price-edit-btn:hover { color:var(--primary); }
+body.host-mode .price-edit-btn { display:inline; }
+.price-modal-bg { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); justify-content:center; align-items:center; }
+.price-modal-bg.open { display:flex; }
+.price-modal { background:#fff; border-radius:14px; padding:26px 28px; width:100%; max-width:340px; box-shadow:0 10px 40px rgba(0,0,0,.2); }
+.price-modal-title { font-size:1rem; font-weight:900; color:var(--primary); margin-bottom:18px; }
+.price-field { margin-bottom:14px; }
+.price-field label { display:block; font-size:.78rem; color:var(--muted); margin-bottom:5px; font-weight:600; }
+.price-field input { width:100%; padding:9px 13px; border:1px solid var(--border); border-radius:8px; font-family:var(--sans); font-size:.9rem; }
+.price-field input:focus { outline:none; border-color:var(--primary); }
+.price-field .hint { font-size:.72rem; color:#bbb; margin-top:3px; }
+.price-modal-btns { display:flex; gap:8px; margin-top:18px; }
+.price-modal-btns .btn-ok { flex:1; background:var(--primary); color:#fff; border:none; padding:11px; border-radius:8px; font-family:var(--sans); font-weight:700; font-size:.9rem; cursor:pointer; }
+.price-modal-btns .btn-ok:hover { background:var(--primary-dark); }
+.price-modal-btns .btn-cl { background:#f0ebe4; color:var(--text); border:none; padding:11px 18px; border-radius:8px; font-family:var(--sans); font-size:.88rem; cursor:pointer; }
+
+/* ── CALENDAR POPUP ── */
+.cal-popup { display:none; border:1.5px solid var(--border); border-radius:12px; padding:16px 14px 12px; margin-bottom:10px; background:#fff; }
+.cal-popup.open { display:block; }
+.cal-instruction { text-align:center; font-size:.78rem; color:var(--primary); font-weight:700; margin-bottom:12px; letter-spacing:.3px; }
+.cal-nav-row { position:relative; }
+.cal-nav-btn { position:absolute; top:0; z-index:2; background:#fff; border:1px solid var(--border); border-radius:50%; width:28px; height:28px; font-size:1rem; cursor:pointer; transition:background .12s; line-height:26px; text-align:center; padding:0; }
+.cal-nav-btn:hover { background:var(--bg); }
+.cal-nav-btn:first-child { left:0; }
+.cal-nav-btn:last-child { right:0; }
+.cal-months { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 32px; }
+.cal-month-hd { text-align:center; font-size:.85rem; font-weight:800; margin-bottom:10px; }
+.cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.cal-wd { text-align:center; font-size:.68rem; color:var(--muted); font-weight:600; padding:2px 0; }
+.cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.cal-day {
+  text-align:center; font-size:.8rem; padding:6px 2px;
+  border-radius:50%; cursor:pointer; transition:background .1s, color .1s;
+  line-height:1.4;
+}
+.cal-day:hover:not(.cal-dis):not(.cal-empty) { background:var(--bg); }
+.cal-day.cal-empty { cursor:default; }
+.cal-day.cal-dis { color:#ccc; cursor:not-allowed; }
+.cal-day.cal-today { font-weight:900; color:var(--primary); }
+.cal-day.cal-sel { background:var(--primary) !important; color:#fff !important; border-radius:50%; }
+.cal-day.cal-range { background:#f0e8e0; border-radius:0; }
+.cal-day.cal-range-s { background:var(--primary); color:#fff; border-radius:50% 0 0 50%; }
+.cal-day.cal-range-e { background:var(--primary); color:#fff; border-radius:0 50% 50% 0%; }
+.cal-day.cal-hover-range { background:#f5ede4; border-radius:0; }
+.cal-footer-row { display:flex; justify-content:flex-end; margin-top:10px; padding-top:10px; border-top:1px solid #f0ebe4; }
+.cal-clear-btn { background:none; border:none; font-size:.78rem; color:var(--muted); cursor:pointer; text-decoration:underline; }
+.date-cell.active { background:var(--bg); }
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px) {
   .header { padding:0 20px; }
@@ -324,6 +374,8 @@ footer {
   .cta-buttons { flex-direction:column; align-items:center; }
   footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
   .footer-nav { flex-wrap:wrap; justify-content:center; gap:16px; }
+  .cal-months { grid-template-columns:1fr; }
+  .cal-months > div:last-child { display:none; }
 }
 
 /* ── HOST MODE ── */
@@ -546,14 +598,25 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 
       <div class="date-picker">
         <div class="date-row">
-          <div class="date-cell">
+          <div class="date-cell" id="cellCheckin" onclick="openCal('checkin')">
             <div class="date-label">체크인</div>
             <div class="date-val" id="checkinVal">날짜 추가</div>
           </div>
-          <div class="date-cell">
+          <div class="date-cell" id="cellCheckout" onclick="openCal('checkout')">
             <div class="date-label">체크아웃</div>
             <div class="date-val" id="checkoutVal">날짜 추가</div>
           </div>
+        </div>
+      </div>
+      <div class="cal-popup" id="calPopup">
+        <div class="cal-instruction" id="calInstruction">체크인 날짜를 선택하세요</div>
+        <div class="cal-nav-row">
+          <button class="cal-nav-btn" onclick="navCal(-1)">‹</button>
+          <div class="cal-months" id="calMonths"></div>
+          <button class="cal-nav-btn" onclick="navCal(1)">›</button>
+        </div>
+        <div class="cal-footer-row">
+          <button class="cal-clear-btn" onclick="clearDates()">날짜 지우기</button>
         </div>
       </div>
 
@@ -585,20 +648,22 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 
       <div class="price-breakdown">
         <div class="price-row">
-          <span>₩120,000 × <span id="nightsLabel">1박</span></span>
+          <span><span id="priceNightLabel">₩120,000</span> × <span id="nightsLabel">1박</span>
+            <button class="price-edit-btn" onclick="openPriceModal()" title="요금 편집">✏️</button>
+          </span>
           <span id="subtotal">₩120,000</span>
         </div>
         <div class="price-row">
           <span>청소비</span>
-          <span>₩30,000</span>
+          <span id="priceCleanLabel">₩30,000</span>
         </div>
         <div class="price-row">
           <span>서비스 수수료</span>
-          <span id="serviceFee">₩18,000</span>
+          <span id="serviceFee">₩14,400</span>
         </div>
         <div class="price-row total">
           <span>합계</span>
-          <span id="totalPrice">₩168,000</span>
+          <span id="totalPrice">₩164,400</span>
         </div>
       </div>
 
@@ -617,6 +682,31 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <button class="btn-cta-outline" onclick="location.href='tel:010-0000-0000'">📞 전화 문의</button>
   </div>
 </section>
+
+<!-- 가격 편집 모달 (호스트 전용) -->
+<div class="price-modal-bg" id="priceModalBg">
+  <div class="price-modal">
+    <div class="price-modal-title">✏️ 요금 편집</div>
+    <div class="price-field">
+      <label>1박 요금 (원)</label>
+      <input type="number" id="inputNightRate" min="0" step="1000" placeholder="120000">
+      <div class="hint">예: 120000 → ₩120,000/박</div>
+    </div>
+    <div class="price-field">
+      <label>청소비 (원)</label>
+      <input type="number" id="inputCleanFee" min="0" step="1000" placeholder="30000">
+    </div>
+    <div class="price-field">
+      <label>서비스 수수료율 (%)</label>
+      <input type="number" id="inputSvcRate" min="0" max="30" step="0.1" placeholder="12">
+      <div class="hint">예: 12 → 숙박 요금의 12%</div>
+    </div>
+    <div class="price-modal-btns">
+      <button class="btn-cl" onclick="closePriceModal()">취소</button>
+      <button class="btn-ok" onclick="savePriceModal()">저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- 후기 상세 팝업 -->
 <div id="rvDetailBg" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);justify-content:center;align-items:center;" onclick="closeRvDetail(event)">
@@ -786,34 +876,196 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.getElementById('rvDetailBg').style.display = 'none';
 });
 
-// ── 날짜 선택 ────────────────────────
-const checkinEl = document.getElementById('checkinVal');
+// ── 달력 선택 ────────────────────────
+const checkinEl  = document.getElementById('checkinVal');
 const checkoutEl = document.getElementById('checkoutVal');
 let checkin = null, checkout = null;
 
-document.querySelector('.date-cell:first-child').addEventListener('click', ()=>{
-  const val = prompt('체크인 날짜를 입력하세요 (예: 2026-04-01)');
-  if(val) { checkin = new Date(val); checkinEl.textContent = formatDate(checkin); calcPrice(); }
-});
-document.querySelector('.date-cell:last-child').addEventListener('click', ()=>{
-  const val = prompt('체크아웃 날짜를 입력하세요 (예: 2026-04-03)');
-  if(val) { checkout = new Date(val); checkoutEl.textContent = formatDate(checkout); calcPrice(); }
+let calMode = 'checkin';
+let calBase = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+
+function formatDate(d) { return `${d.getMonth()+1}월 ${d.getDate()}일`; }
+function isSameDay(a, b) { return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function stripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+function openCal(mode) {
+  calMode = mode;
+  document.getElementById('calInstruction').textContent =
+    mode === 'checkin' ? '체크인 날짜를 선택하세요' : '체크아웃 날짜를 선택하세요';
+  document.getElementById('cellCheckin').classList.toggle('active', mode === 'checkin');
+  document.getElementById('cellCheckout').classList.toggle('active', mode === 'checkout');
+  document.getElementById('calPopup').classList.add('open');
+  renderCalMonths();
+}
+
+function closeCal() {
+  document.getElementById('calPopup').classList.remove('open');
+  document.getElementById('cellCheckin').classList.remove('active');
+  document.getElementById('cellCheckout').classList.remove('active');
+}
+
+function navCal(dir) {
+  calBase = new Date(calBase.getFullYear(), calBase.getMonth() + dir * 2, 1);
+  renderCalMonths();
+}
+
+function renderCalMonths() {
+  const m2 = new Date(calBase.getFullYear(), calBase.getMonth() + 1, 1);
+  document.getElementById('calMonths').innerHTML = renderMonth(calBase) + renderMonth(m2);
+}
+
+function renderMonth(first) {
+  const today = stripTime(new Date());
+  const y = first.getFullYear(), m = first.getMonth();
+  const startDow = first.getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  let html = `<div>
+    <div class="cal-month-hd">${y}년 ${m+1}월</div>
+    <div class="cal-weekdays">${['일','월','화','수','목','금','토'].map(w=>`<div class="cal-wd">${w}</div>`).join('')}</div>
+    <div class="cal-days">`;
+
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-day cal-empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(y, m, d);
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast = date < today;
+    let cls = 'cal-day';
+    if (isPast)                              cls += ' cal-dis';
+    else if (isSameDay(date, today))         cls += ' cal-today';
+    if (isSameDay(date, checkin) && isSameDay(date, checkout)) cls += ' cal-sel';
+    else if (isSameDay(date, checkin))       cls += checkin && checkout ? ' cal-range-s' : ' cal-sel';
+    else if (isSameDay(date, checkout))      cls += ' cal-range-e';
+    else if (checkin && checkout && date > checkin && date < checkout) cls += ' cal-range';
+
+    html += `<div class="${cls}" ${!isPast ? `data-date="${ds}"` : ''}>${d}</div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+// 이벤트 위임 — DOM 재생성 없이 클릭/hover 처리
+(function setupCalEvents() {
+  const container = document.getElementById('calMonths');
+
+  container.addEventListener('click', e => {
+    const day = e.target.closest('[data-date]');
+    if (!day) return;
+    pickDate(day.dataset.date);
+  });
+
+  container.addEventListener('mouseover', e => {
+    if (!checkin || checkout) return;
+    const day = e.target.closest('[data-date]');
+    container.querySelectorAll('[data-date]').forEach(el => {
+      if (!day) { el.classList.remove('cal-hover-range'); return; }
+      const d = new Date(el.dataset.date);
+      const hd = new Date(day.dataset.date);
+      el.classList.toggle('cal-hover-range', !el.classList.contains('cal-sel') && !el.classList.contains('cal-range-s') && d > checkin && d < hd);
+    });
+  });
+
+  container.addEventListener('mouseleave', () => {
+    container.querySelectorAll('.cal-hover-range').forEach(el => el.classList.remove('cal-hover-range'));
+  });
+})();
+
+function pickDate(ds) {
+  const date = new Date(ds);
+  if (calMode === 'checkin') {
+    checkin = date; checkout = null;
+    checkinEl.textContent = formatDate(date);
+    checkoutEl.textContent = '날짜 추가';
+    calMode = 'checkout';
+    document.getElementById('calInstruction').textContent = '체크아웃 날짜를 선택하세요';
+    document.getElementById('cellCheckin').classList.remove('active');
+    document.getElementById('cellCheckout').classList.add('active');
+    renderCalMonths();
+  } else {
+    if (checkin && date <= checkin) {
+      checkin = date; checkout = null;
+      checkinEl.textContent = formatDate(date);
+      checkoutEl.textContent = '날짜 추가';
+      document.getElementById('calInstruction').textContent = '체크아웃 날짜를 선택하세요';
+      renderCalMonths();
+    } else {
+      checkout = date;
+      checkoutEl.textContent = formatDate(date);
+      calcPrice();
+      renderCalMonths();
+      setTimeout(closeCal, 280);
+    }
+  }
+}
+
+function clearDates() {
+  checkin = checkout = null;
+  checkinEl.textContent = '날짜 추가';
+  checkoutEl.textContent = '날짜 추가';
+  calMode = 'checkin';
+  document.getElementById('calInstruction').textContent = '체크인 날짜를 선택하세요';
+  renderCalMonths();
+}
+
+// 달력 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  const popup = document.getElementById('calPopup');
+  if (!popup.classList.contains('open')) return;
+  if (!document.querySelector('.date-picker').contains(e.target)) closeCal();
 });
 
-function formatDate(d) {
-  return `${d.getMonth()+1}월 ${d.getDate()}일`;
+// ── 요금 설정 ────────────────────────
+let PRICE = (function() {
+  try { return JSON.parse(localStorage.getItem('pension_prices')) || {}; } catch(e) { return {}; }
+})();
+function getNightRate() { return PRICE.nightRate || 120000; }
+function getCleanFee()  { return PRICE.cleanFee  !== undefined ? PRICE.cleanFee : 30000; }
+function getSvcRate()   { return PRICE.svcRate    !== undefined ? PRICE.svcRate  : 0.12; }
+
+function applyPriceLabels() {
+  document.getElementById('priceNightLabel').textContent = `₩${getNightRate().toLocaleString()}`;
+  document.getElementById('priceCleanLabel').textContent = `₩${getCleanFee().toLocaleString()}`;
 }
+applyPriceLabels();
 
 function calcPrice() {
   if(!checkin || !checkout) return;
   const nights = Math.max(1, Math.round((checkout - checkin) / (1000*60*60*24)));
-  const sub = 120000 * nights;
-  const svc = Math.round(sub * 0.12);
+  const sub = getNightRate() * nights;
+  const svc = Math.round(sub * getSvcRate());
   document.getElementById('nightsLabel').textContent = `${nights}박`;
   document.getElementById('subtotal').textContent = `₩${sub.toLocaleString()}`;
   document.getElementById('serviceFee').textContent = `₩${svc.toLocaleString()}`;
-  document.getElementById('totalPrice').textContent = `₩${(sub + 30000 + svc).toLocaleString()}`;
+  document.getElementById('totalPrice').textContent = `₩${(sub + getCleanFee() + svc).toLocaleString()}`;
 }
+
+function openPriceModal() {
+  document.getElementById('inputNightRate').value = getNightRate();
+  document.getElementById('inputCleanFee').value  = getCleanFee();
+  document.getElementById('inputSvcRate').value   = Math.round(getSvcRate() * 1000) / 10;
+  document.getElementById('priceModalBg').classList.add('open');
+}
+function closePriceModal() {
+  document.getElementById('priceModalBg').classList.remove('open');
+}
+function savePriceModal() {
+  const nr = parseInt(document.getElementById('inputNightRate').value);
+  const cf = parseInt(document.getElementById('inputCleanFee').value);
+  const sr = parseFloat(document.getElementById('inputSvcRate').value);
+  if (isNaN(nr) || nr < 0) { alert('1박 요금을 올바르게 입력해주세요.'); return; }
+  if (isNaN(cf) || cf < 0) { alert('청소비를 올바르게 입력해주세요.'); return; }
+  if (isNaN(sr) || sr < 0 || sr > 30) { alert('수수료율을 0~30 사이로 입력해주세요.'); return; }
+  PRICE = { nightRate: nr, cleanFee: cf, svcRate: sr / 100 };
+  try { localStorage.setItem('pension_prices', JSON.stringify(PRICE)); } catch(e) {}
+  applyPriceLabels();
+  calcPrice();
+  closePriceModal();
+}
+document.getElementById('priceModalBg').addEventListener('click', e => {
+  if (e.target === document.getElementById('priceModalBg')) closePriceModal();
+});
 
 // ── 인원 선택 ────────────────────────
 let guestCount = 1;
