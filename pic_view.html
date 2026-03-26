@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사진 모아보기 - 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f4f2ee;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.10);
+  --shadow-hover: 0 8px 32px rgba(0,0,0,.16);
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+  flex-shrink:0;
+}
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── PAGE HEADER ── */
+.page-hero {
+  background:linear-gradient(135deg,#3a5c28 0%,#5a7a30 50%,#7a6830 100%);
+  padding:18px 48px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.page-hero-left { display:flex; align-items:center; gap:20px; }
+.page-hero-sub { font-size:.7rem; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,.5); text-transform:uppercase; white-space:nowrap; }
+.page-hero-title { font-size:1rem; font-weight:900; color:#fff; line-height:1.35; }
+.page-hero-desc { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.6; }
+.photo-count-badge {
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+  border-radius:999px; padding:8px 18px;
+  font-size:.85rem; font-weight:700; color:#fff;
+  white-space:nowrap;
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 48px; display:flex; align-items:center; gap:6px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-btn {
+  flex-shrink:0; padding:16px 18px;
+  border:none; border-bottom:2.5px solid transparent;
+  background:transparent; font-family:var(--sans);
+  font-size:.85rem; font-weight:600; color:var(--muted);
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.filter-btn:hover { color:var(--text); }
+.filter-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* ── GALLERY GRID ── */
+.gallery-wrap { padding:36px 48px 60px; max-width:1280px; margin:0 auto; }
+.gallery-grid {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:24px;
+}
+
+/* ── PHOTO CARD ── */
+.photo-card {
+  background:var(--surface);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  transition:transform .2s, box-shadow .2s;
+}
+.photo-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-hover); }
+.photo-card.featured { grid-column:span 2; }
+
+.card-photo {
+  width:100%; height:220px;
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.photo-card.featured .card-photo { height:280px; }
+.card-photo-icon { font-size:3rem; opacity:.45; }
+.card-photo img {
+  width:100%; height:100%; object-fit:cover;
+  transition:transform .35s;
+}
+.photo-card:hover .card-photo img { transform:scale(1.05); }
+
+.card-body { padding:18px 20px 20px; }
+.card-category {
+  display:inline-block;
+  font-size:.68rem; font-weight:700; letter-spacing:.5px;
+  text-transform:uppercase; color:var(--primary);
+  background:#f5ede6; border-radius:4px;
+  padding:3px 8px; margin-bottom:10px;
+}
+.card-title { font-size:1rem; font-weight:800; color:var(--text); margin-bottom:6px; line-height:1.4; }
+.card-desc { font-size:.83rem; color:var(--sub); line-height:1.7; }
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,.88); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.lightbox.open { display:flex; animation:fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.lightbox-inner {
+  position:relative; max-width:860px; width:100%;
+  background:var(--surface); border-radius:20px; overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+.lightbox-photo {
+  width:100%; height:480px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:5rem;
+}
+.lightbox-info { padding:22px 28px 26px; }
+.lightbox-category { font-size:.7rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+.lightbox-title { font-size:1.2rem; font-weight:900; margin-bottom:8px; }
+.lightbox-desc { font-size:.88rem; color:var(--sub); line-height:1.8; }
+.lightbox-close {
+  position:absolute; top:16px; right:16px;
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(0,0,0,.45); border:none;
+  color:#fff; font-size:1.1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.lightbox-close:hover { background:rgba(0,0,0,.7); }
+.lightbox-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(0,0,0,.4); border:none;
+  color:#fff; font-size:1.2rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.lightbox-nav:hover { background:rgba(0,0,0,.65); }
+.lightbox-prev { left:14px; }
+.lightbox-next { right:14px; }
+.lightbox-counter {
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  font-size:.75rem; font-weight:600; color:rgba(255,255,255,.7);
+  background:rgba(0,0,0,.35); border-radius:999px; padding:4px 12px;
+}
+
+/* ── FOOTER ── */
+footer {
+  background:#1a1a18;
+  padding:28px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; }
+.footer-logo-icon {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:.85rem;
+}
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .header { padding:0 20px; }
+  .page-hero { padding:14px 16px 12px; flex-wrap:wrap; gap:10px; }
+  .filter-bar { padding:0 16px; }
+  .gallery-wrap { padding:24px 16px 40px; }
+  .gallery-grid { grid-template-columns:1fr 1fr; gap:14px; }
+  .photo-card.featured { grid-column:span 1; }
+  footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:16px; }
+}
+@media(max-width:560px) {
+  .gallery-grid { grid-template-columns:1fr; }
+}
+
+/* ── HOST MODE ── */
+.auth-overlay { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; }
+.auth-overlay.open { display:flex; }
+.auth-box { background:#fff; border-radius:18px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.auth-box-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
+.auth-box-sub { font-size:.82rem; color:#888; margin-bottom:18px; line-height:1.6; }
+.auth-field { width:100%; padding:11px 14px; border:1.5px solid #ddd; border-radius:9px; font-family:var(--sans); font-size:.9rem; outline:none; margin-bottom:6px; }
+.auth-field:focus { border-color:var(--primary); }
+.auth-err { font-size:.75rem; color:#e05252; height:16px; margin-bottom:10px; }
+.auth-btns { display:flex; gap:8px; }
+.btn-auth-cancel { flex:1; padding:11px; border-radius:8px; background:#f0f0f0; color:#555; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.btn-auth-ok { flex:1; padding:11px; border-radius:8px; background:var(--primary); color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.host-badge { display:none; position:fixed; bottom:24px; left:24px; z-index:400; background:var(--primary); color:#fff; padding:9px 16px; border-radius:999px; font-size:.78rem; font-weight:700; box-shadow:0 3px 16px rgba(0,0,0,.2); align-items:center; gap:8px; }
+body.host-mode .host-badge { display:flex; }
+.btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.card-change-overlay { display:none; position:absolute; inset:0; z-index:5; background:rgba(0,0,0,.45); align-items:center; justify-content:center; }
+body.host-mode .card-photo:hover .card-change-overlay { display:flex; }
+.btn-change-card { padding:8px 18px; border-radius:8px; background:#fff; color:#3d2010; border:none; font-family:var(--sans); font-size:.82rem; font-weight:700; cursor:pointer; }
+.btn-del-card { display:none; position:absolute; top:10px; right:10px; z-index:10; background:rgba(220,40,40,.85); border:none; border-radius:50%; color:#fff; width:30px; height:30px; font-size:.9rem; cursor:pointer; align-items:center; justify-content:center; }
+body.host-mode .photo-card .btn-del-card { display:flex; }
+.btn-edit-card-info { display:none; position:absolute; bottom:10px; right:10px; z-index:10; background:var(--primary); border:none; border-radius:6px; color:#fff; padding:5px 10px; font-family:var(--sans); font-size:.72rem; font-weight:700; cursor:pointer; align-items:center; }
+body.host-mode .photo-card .btn-edit-card-info { display:flex; }
+.fab-add { display:none; position:fixed; bottom:24px; right:24px; z-index:400; background:var(--primary); color:#fff; border:none; border-radius:999px; padding:14px 22px; font-family:var(--sans); font-size:.9rem; font-weight:700; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,.2); align-items:center; gap:8px; }
+body.host-mode .fab-add { display:flex; }
+.card-modal-overlay { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:20px; }
+.card-modal-overlay.open { display:flex; }
+.card-modal { background:#fff; border-radius:18px; padding:28px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.card-modal-title { font-size:1.05rem; font-weight:900; margin-bottom:20px; }
+.cm-label { font-size:.78rem; font-weight:700; color:var(--sub); display:block; margin-bottom:6px; margin-top:14px; }
+.cm-input, .cm-select, .cm-textarea { width:100%; padding:10px 12px; border:1.5px solid #ddd; border-radius:8px; font-family:var(--sans); font-size:.88rem; outline:none; }
+.cm-input:focus, .cm-select:focus, .cm-textarea:focus { border-color:var(--primary); }
+.cm-textarea { resize:vertical; min-height:72px; }
+.cm-photo-preview { width:100%; height:140px; border-radius:8px; object-fit:cover; margin-top:6px; display:none; }
+.cm-photo-placeholder { height:100px; border:2px dashed #ddd; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.85rem; color:#aaa; cursor:pointer; margin-top:6px; transition:border-color .15s; }
+.cm-photo-placeholder:hover { border-color:var(--primary); color:var(--primary); }
+.cm-btns { display:flex; gap:8px; margin-top:20px; }
+.btn-cm-cancel { flex:1; padding:12px; border-radius:8px; background:#f0f0f0; color:#555; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.btn-cm-ok { flex:1; padding:12px; border-radius:8px; background:var(--primary); color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="index.html">
+    <span class="logo-icon">🏠</span>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about">공간소개</a>
+    <a href="index.html#amenities">편의시설</a>
+    <a href="index.html#surroundings">주변환경</a>
+    <a href="index.html#reviews">후기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트</a>
+  </nav>
+  <button class="btn-reserve-header" onclick="location.href='index.html#booking'">예약 문의</button>
+</header>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-left">
+    <p class="page-hero-sub">// Photo Gallery</p>
+    <h1 class="page-hero-title">사진 모두보기</h1>
+    <p class="page-hero-desc">동해바다 전망과 자연 속 감성 공간을<br>사진으로 먼저 만나보세요.</p>
+  </div>
+  <div class="photo-count-badge">총 12장</div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterCards('all', this)">전체</button>
+  <button class="filter-btn" onclick="filterCards('exterior', this)">외관 · 전경</button>
+  <button class="filter-btn" onclick="filterCards('interior', this)">실내 공간</button>
+  <button class="filter-btn" onclick="filterCards('view', this)">전망 · 자연</button>
+  <button class="filter-btn" onclick="filterCards('facility', this)">편의시설</button>
+</div>
+
+<!-- GALLERY GRID -->
+<div class="gallery-wrap">
+  <div class="gallery-grid" id="galleryGrid"><!-- JS 렌더링 --></div>
+</div>
+
+<!-- 사진 추가 FAB (호스트 모드) -->
+<button class="fab-add" onclick="openCardModal(null)">＋ 사진 추가</button>
+
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1)">‹</button>
+    <button class="lightbox-nav lightbox-next" onclick="navLightbox(1)">›</button>
+    <div class="lightbox-photo" id="lbPhoto"></div>
+    <div class="lightbox-info">
+      <div class="lightbox-category" id="lbCategory"></div>
+      <div class="lightbox-title" id="lbTitle"></div>
+      <div class="lightbox-desc" id="lbDesc"></div>
+    </div>
+    <div class="lightbox-counter" id="lbCounter"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <span class="footer-logo-icon">🏠</span>
+    영덕감성산장
+  </div>
+  <nav class="footer-nav">
+    <a href="index.html#about">공간소개</a>
+    <a href="index.html#amenities">편의시설</a>
+    <a href="index.html#reviews">후기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<script>
+// ════════════════════════════════════════
+// 카드 기본 데이터
+// ════════════════════════════════════════
+const DEFAULT_CARDS = [
+  { id:1,  cat:'exterior', featured:true,  bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🌿', imgData:null, category:'외관 · 전경', title:'산 중턱의 감성 별채 외관',     desc:'울창한 나무숲 사이에 자리한 영덕감성산장의 전경입니다. 사계절 다른 풍경을 선사합니다.' },
+  { id:2,  cat:'view',     featured:false, bg:'linear-gradient(135deg,#4a8ec4,#2a6090)', icon:'🌊', imgData:null, category:'전망 · 자연', title:'테라스에서 바라본 동해바다',   desc:'탁 트인 동해바다가 한눈에 내려다보이는 프라이빗 테라스 전망입니다.' },
+  { id:3,  cat:'view',     featured:false, bg:'linear-gradient(135deg,#e8a030,#c47020)', icon:'🌅', imgData:null, category:'전망 · 자연', title:'동해 일출',                     desc:'이른 아침 테라스에서 맞이하는 동해 일출. 이 순간 하나만으로 충분한 이유가 됩니다.' },
+  { id:4,  cat:'interior', featured:false, bg:'linear-gradient(135deg,#c4895a,#9a6030)', icon:'🛋️', imgData:null, category:'실내 공간', title:'화목난로가 있는 거실',          desc:'장작 타는 소리와 함께 따뜻한 저녁을 보낼 수 있는 아늑한 거실 공간입니다.' },
+  { id:5,  cat:'interior', featured:true,  bg:'linear-gradient(135deg,#d4b896,#b09060)', icon:'🛏️', imgData:null, category:'실내 공간', title:'킹사이즈 침대가 있는 침실',     desc:'편안한 킹사이즈 침대와 자연 채광이 어우러진 침실. 숲 내음을 맡으며 깊은 잠에 빠져보세요.' },
+  { id:6,  cat:'facility', featured:false, bg:'linear-gradient(135deg,#7a9e50,#507030)', icon:'🍳', imgData:null, category:'편의시설',   title:'풀옵션 주방',                   desc:'인덕션, 냉장고, 전자레인지 등 모든 조리도구가 구비된 풀옵션 주방입니다.' },
+  { id:7,  cat:'facility', featured:false, bg:'linear-gradient(135deg,#8ab8d8,#5890b8)', icon:'🛁', imgData:null, category:'편의시설',   title:'욕조가 있는 메인 욕실',         desc:'여유로운 욕조에 몸을 담그며 하루의 피로를 씻어낼 수 있는 메인 욕실입니다.' },
+  { id:8,  cat:'facility', featured:false, bg:'linear-gradient(135deg,#a8c8d8,#7098b0)', icon:'🚿', imgData:null, category:'편의시설',   title:'샤워 부스 욕실',                desc:'독립된 샤워 부스가 갖춰진 두 번째 욕실로 2인 동시 이용이 편리합니다.' },
+  { id:9,  cat:'exterior', featured:false, bg:'linear-gradient(135deg,#6a9040,#487020)', icon:'🏕️', imgData:null, category:'외관 · 전경', title:'프라이빗 야외 테라스',         desc:'바다가 내려다보이는 넓은 야외 테라스. 아침 커피 한 잔의 완벽한 장소입니다.' },
+  { id:10, cat:'view',     featured:false, bg:'linear-gradient(135deg,#1a2a4a,#0a1830)', icon:'🌃', imgData:null, category:'전망 · 자연', title:'별이 쏟아지는 밤하늘',          desc:'도심과 멀리 떨어진 덕분에 맑은 날 밤이면 쏟아지는 별빛을 감상할 수 있습니다.' },
+  { id:11, cat:'exterior', featured:false, bg:'linear-gradient(135deg,#88b848,#587828)', icon:'🌸', imgData:null, category:'외관 · 전경', title:'계절 꽃이 피는 소정원',         desc:'봄이면 벚꽃, 여름이면 수국이 피어나는 작은 정원에서 계절의 변화를 즐겨보세요.' },
+  { id:12, cat:'interior', featured:false, bg:'linear-gradient(135deg,#c85020,#902010)', icon:'🔥', imgData:null, category:'실내 공간', title:'화목난로 클로즈업',              desc:'장작 타는 소리와 은은한 온기, 겨울 시즌 영덕감성산장에서만 느낄 수 있는 특별함입니다.' },
+];
+
+const PV_KEY   = 'pv_cards';
+const HOST_KEY = 'pension_host';
+const HOST_PWD = '1dl34';
+const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
+
+let cards = [];
+let currentFilter = 'all';
+let currentLbIdx  = 0;
+let editingCardId = null;
+let editingPhotoId = null;
+let newPhotoData  = null;
+
+// ── 초기화 ────────────────────────────────────────────
+function init() {
+  const saved = localStorage.getItem(PV_KEY);
+  cards = saved ? JSON.parse(saved) : DEFAULT_CARDS.map(c => ({...c}));
+  renderGallery();
+  if (localStorage.getItem(HOST_KEY) === '1') activateHost();
+}
+function saveCards() {
+  try { localStorage.setItem(PV_KEY, JSON.stringify(cards)); }
+  catch(e) { console.warn('localStorage 용량 초과 - 메모리에만 유지됨'); }
+}
+
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── 갤러리 렌더 ──────────────────────────────────────
+function renderGallery() {
+  const filtered = currentFilter === 'all' ? cards : cards.filter(c => c.cat === currentFilter);
+  document.getElementById('galleryGrid').innerHTML = filtered.map((c, i) => {
+    const photoContent = c.imgData
+      ? `<img src="${c.imgData}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span class="card-photo-icon">${c.icon}</span>`;
+    return `
+    <div class="photo-card${c.featured ? ' featured' : ''}" style="position:relative;" onclick="openLightbox(${i})">
+      <div class="card-photo" style="${c.imgData ? '' : 'background:' + c.bg + ';'}position:relative;overflow:hidden;">
+        ${photoContent}
+        <div class="card-change-overlay">
+          <button class="btn-change-card" onclick="startChangePhoto(${c.id});event.stopPropagation()">📷 사진 변경</button>
+        </div>
+      </div>
+      <button class="btn-del-card" onclick="deleteCard(${c.id});event.stopPropagation()">✕</button>
+      <button class="btn-edit-card-info" onclick="openCardModal(${c.id});event.stopPropagation()">✏️ 수정</button>
+      <div class="card-body">
+        <span class="card-category">${c.category}</span>
+        <div class="card-title">${c.title}</div>
+        <div class="card-desc">${c.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelector('.photo-count-badge').textContent = `총 ${cards.length}장`;
+}
+
+// ── 필터 ──────────────────────────────────────────────
+function filterCards(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = cat;
+  renderGallery();
+}
+
+// ── 라이트박스 ────────────────────────────────────────
+function openLightbox(idx) {
+  currentLbIdx = idx;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function renderLightbox() {
+  const filtered = currentFilter === 'all' ? cards : cards.filter(c => c.cat === currentFilter);
+  const d = filtered[currentLbIdx]; if (!d) return;
+  const lbPhoto = document.getElementById('lbPhoto');
+  if (d.imgData) {
+    lbPhoto.style.background = '#000';
+    lbPhoto.innerHTML = `<img src="${d.imgData}" style="width:100%;height:100%;object-fit:contain;">`;
+  } else {
+    lbPhoto.style.background = d.bg;
+    lbPhoto.innerHTML = `<span style="font-size:5rem;opacity:.45;">${d.icon}</span>`;
+  }
+  document.getElementById('lbCategory').textContent = d.category;
+  document.getElementById('lbTitle').textContent     = d.title;
+  document.getElementById('lbDesc').textContent      = d.desc;
+  document.getElementById('lbCounter').textContent   = `${currentLbIdx + 1} / ${filtered.length}`;
+}
+function navLightbox(dir) {
+  const filtered = currentFilter === 'all' ? cards : cards.filter(c => c.cat === currentFilter);
+  currentLbIdx = (currentLbIdx + dir + filtered.length) % filtered.length;
+  renderLightbox();
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow = ''; }
+function closeLightboxOutside(e) { if (e.target === document.getElementById('lightbox')) closeLightbox(); }
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+
+// ════════════════════════════════════════
+// HOST MODE
+// ════════════════════════════════════════
+function checkHostAuth() {
+  if (localStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authField').value = '';
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+}
+function closeAuth() { document.getElementById('authOverlay').classList.remove('open'); }
+function closeAuthOutside(e) { if (e.target === document.getElementById('authOverlay')) closeAuth(); }
+function confirmAuth() {
+  if (document.getElementById('authField').value === HOST_PWD) {
+    localStorage.setItem(HOST_KEY, '1'); closeAuth(); activateHost();
+  } else {
+    document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
+    document.getElementById('authField').value = ''; document.getElementById('authField').focus();
+  }
+}
+function activateHost() { document.body.classList.add('host-mode'); }
+function exitHostMode() { localStorage.removeItem(HOST_KEY); document.body.classList.remove('host-mode'); }
+
+// ── 사진 변경 ──
+function startChangePhoto(id) { editingPhotoId = id; document.getElementById('fileChangePhoto').click(); }
+function onChangePhotoFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  compressImage(file, src => {
+    const c = cards.find(c => c.id === editingPhotoId);
+    if (c) { c.imgData = src; saveCards(); renderGallery(); }
+  });
+  e.target.value = '';
+}
+
+// ── 카드 삭제 ──
+function deleteCard(id) {
+  if (!confirm('이 사진 카드를 삭제할까요?')) return;
+  cards = cards.filter(c => c.id !== id);
+  saveCards(); renderGallery();
+}
+
+// ── 카드 추가/수정 모달 ──
+function openCardModal(id) {
+  editingCardId = id; newPhotoData = null;
+  const c = id ? cards.find(c => c.id === id) : null;
+  document.getElementById('cmTitle').textContent    = id ? '사진 카드 수정' : '사진 추가';
+  document.getElementById('cmCardTitle').value      = c ? c.title    : '';
+  document.getElementById('cmCardDesc').value       = c ? c.desc     : '';
+  document.getElementById('cmCardCat').value        = c ? c.cat      : 'exterior';
+  document.getElementById('cmFeatured').checked     = c ? c.featured : false;
+  const preview = document.getElementById('cmPhotoPreview');
+  const placeholder = document.getElementById('cmPhotoPlaceholder');
+  if (c && c.imgData) { preview.src = c.imgData; preview.style.display = 'block'; placeholder.style.display = 'none'; }
+  else { preview.style.display = 'none'; placeholder.style.display = 'flex'; }
+  document.getElementById('cardModalOverlay').classList.add('open');
+}
+function closeCardModal() { document.getElementById('cardModalOverlay').classList.remove('open'); newPhotoData = null; }
+function closeCardModalOutside(e) { if (e.target === document.getElementById('cardModalOverlay')) closeCardModal(); }
+function onCardPhotoFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  compressImage(file, src => {
+    newPhotoData = src;
+    const preview = document.getElementById('cmPhotoPreview');
+    preview.src = src; preview.style.display = 'block';
+    document.getElementById('cmPhotoPlaceholder').style.display = 'none';
+  });
+  e.target.value = '';
+}
+function saveCardModal() {
+  const title    = document.getElementById('cmCardTitle').value.trim();
+  const desc     = document.getElementById('cmCardDesc').value.trim();
+  const cat      = document.getElementById('cmCardCat').value;
+  const featured = document.getElementById('cmFeatured').checked;
+  if (!title) { alert('제목을 입력하세요.'); return; }
+  if (editingCardId) {
+    const c = cards.find(c => c.id === editingCardId);
+    if (c) { c.title = title; c.desc = desc; c.cat = cat; c.category = CAT_LABELS[cat]; c.featured = featured; if (newPhotoData) c.imgData = newPhotoData; }
+  } else {
+    const newId = cards.length ? Math.max(...cards.map(c => c.id)) + 1 : 1;
+    cards.push({ id:newId, cat, featured, bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🖼️', imgData:newPhotoData, category:CAT_LABELS[cat], title, desc });
+  }
+  saveCards(); renderGallery(); closeCardModal();
+}
+
+init();
+</script>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuthOutside(event)">
+  <div class="auth-box">
+    <div class="auth-box-title">🔐 호스트 인증</div>
+    <div class="auth-box-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력"
+      onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-btns">
+      <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
+      <button class="btn-auth-ok" onclick="confirmAuth()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 카드 추가/수정 모달 -->
+<div class="card-modal-overlay" id="cardModalOverlay" onclick="closeCardModalOutside(event)">
+  <div class="card-modal">
+    <div class="card-modal-title" id="cmTitle">사진 추가</div>
+    <label class="cm-label">사진</label>
+    <img class="cm-photo-preview" id="cmPhotoPreview" alt="">
+    <div class="cm-photo-placeholder" id="cmPhotoPlaceholder" onclick="document.getElementById('fileCardPhoto').click()">
+      📷 클릭하여 사진 선택
+    </div>
+    <label class="cm-label">카테고리</label>
+    <select class="cm-select" id="cmCardCat">
+      <option value="exterior">외관 · 전경</option>
+      <option value="interior">실내 공간</option>
+      <option value="view">전망 · 자연</option>
+      <option value="facility">편의시설</option>
+    </select>
+    <label class="cm-label">제목</label>
+    <input class="cm-input" id="cmCardTitle" type="text" placeholder="사진 제목">
+    <label class="cm-label">설명</label>
+    <textarea class="cm-textarea" id="cmCardDesc" placeholder="사진 설명을 입력하세요"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.88rem;">
+      <input type="checkbox" id="cmFeatured"> <label for="cmFeatured">넓게 표시 (Featured)</label>
+    </div>
+    <div class="cm-btns">
+      <button class="btn-cm-cancel" onclick="closeCardModal()">취소</button>
+      <button class="btn-cm-ok" onclick="saveCardModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOST BADGE -->
+<div class="host-badge" id="hostBadge">
+  ✏️ 호스트 모드
+  <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
+</div>
+
+<!-- HIDDEN FILE INPUTS -->
+<input type="file" id="fileChangePhoto" accept="image/*" style="display:none" onchange="onChangePhotoFile(event)">
+<input type="file" id="fileCardPhoto"   accept="image/*" style="display:none" onchange="onCardPhotoFile(event)">
+</body>
+</html>

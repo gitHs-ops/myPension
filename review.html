@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>게스트 후기 — 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.12);
+  --sans: 'Noto Sans KR', sans-serif;
+  --star: #f4a828;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
+}
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── HERO ── */
+.hero {
+  background:linear-gradient(135deg, #3d2210 0%, #6b3a1f 55%, #8b5c3a 100%);
+  padding:52px 48px 44px; color:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.hero h1 { font-size:2rem; font-weight:900; margin-bottom:6px; }
+.hero p { font-size:.95rem; opacity:.75; }
+.btn-write {
+  background:#fff; color:var(--primary);
+  border:none; padding:13px 30px; border-radius:999px;
+  font-family:var(--sans); font-size:.92rem; font-weight:700;
+  cursor:pointer; transition:transform .15s, box-shadow .15s; white-space:nowrap;
+}
+.btn-write:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.2); }
+
+/* ── OVERVIEW ── */
+.overview-wrap { max-width:860px; margin:32px auto 0; padding:0 24px; }
+.overview-card {
+  background:var(--surface); border-radius:var(--radius);
+  padding:28px 36px; box-shadow:var(--shadow);
+  display:flex; gap:40px; align-items:center;
+}
+.ov-big { text-align:center; flex-shrink:0; min-width:110px; }
+.ov-score { font-size:3.8rem; font-weight:900; color:var(--primary); line-height:1; }
+.ov-stars { font-size:1.25rem; color:var(--star); margin:5px 0 3px; letter-spacing:2px; }
+.ov-count { font-size:.78rem; color:var(--muted); }
+.ov-divider { width:1px; background:var(--border); align-self:stretch; }
+.ov-bars { flex:1; display:flex; flex-direction:column; gap:11px; }
+.ov-row { display:flex; align-items:center; gap:12px; }
+.ov-label { width:56px; font-size:.8rem; color:var(--muted); text-align:right; }
+.ov-track { flex:1; height:8px; background:#eee; border-radius:4px; overflow:hidden; }
+.ov-fill { height:100%; background:var(--primary); border-radius:4px; transition:width .7s ease; }
+.ov-num { width:30px; font-size:.82rem; font-weight:700; color:var(--text); }
+.ov-empty { text-align:center; color:var(--muted); padding:20px 0; font-size:.9rem; width:100%; }
+
+/* ── REVIEWS SECTION ── */
+.reviews-wrap { max-width:860px; margin:24px auto 100px; padding:0 24px; }
+.sec-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.sec-title { font-size:1rem; font-weight:700; }
+.sort-sel {
+  font-size:.82rem; border:1px solid var(--border); border-radius:8px;
+  padding:6px 10px; background:var(--surface); cursor:pointer; color:var(--text);
+}
+
+/* ── REVIEW CARD ── */
+.rv-card {
+  background:var(--surface); border-radius:var(--radius);
+  padding:24px 28px; margin-bottom:16px;
+  box-shadow:0 1px 8px rgba(0,0,0,.07); border:1px solid #ececec;
+}
+.rv-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.rv-guest { display:flex; align-items:center; gap:12px; }
+.rv-avatar {
+  width:42px; height:42px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, var(--primary), #c8956c);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.05rem; color:#fff; font-weight:700;
+}
+.rv-name { font-size:.95rem; font-weight:700; }
+.rv-meta { font-size:.76rem; color:var(--muted); margin-top:3px; }
+.rv-overall-stars { font-size:1.05rem; color:var(--star); letter-spacing:1px; }
+.rv-overall-num { font-size:.78rem; color:var(--muted); margin-top:3px; text-align:right; }
+.rv-cats { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+.rv-cat { font-size:.76rem; color:var(--muted); }
+.rv-cat b { color:var(--text); font-weight:600; }
+.rv-text { font-size:.9rem; line-height:1.7; color:#444; margin-bottom:14px; }
+.rv-photos { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.rv-photo { width:84px; height:84px; border-radius:9px; object-fit:cover; cursor:pointer; transition:opacity .15s; }
+.rv-photo:hover { opacity:.85; }
+.rv-reply {
+  background:#f8f4ef; border-left:3px solid var(--primary);
+  border-radius:0 9px 9px 0; padding:13px 16px; margin-top:12px;
+}
+.rv-reply-lbl { font-size:.76rem; color:var(--primary); font-weight:700; margin-bottom:5px; }
+.rv-reply-text { font-size:.87rem; color:#555; line-height:1.65; }
+.rv-reply-date { font-size:.72rem; color:var(--muted); margin-top:4px; }
+.rv-host-btns { display:none; gap:8px; margin-top:12px; }
+body.host-mode .rv-host-btns { display:flex; }
+.btn-sm {
+  font-size:.76rem; padding:5px 13px; border-radius:14px;
+  border:1px solid var(--border); background:var(--surface);
+  cursor:pointer; color:var(--text); transition:background .12s;
+}
+.btn-sm:hover { background:#f5f0ea; }
+.btn-sm.del { border-color:#e53935; color:#e53935; }
+.btn-sm.del:hover { background:#fff5f5; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align:center; padding:60px 20px; color:var(--muted); }
+.empty-icon { font-size:3rem; margin-bottom:12px; }
+.empty-text { font-size:.92rem; line-height:1.7; }
+
+/* ── FAB ── */
+.fab {
+  position:fixed; bottom:28px; right:28px; z-index:100;
+  background:var(--primary); color:#fff; border:none;
+  padding:14px 26px; border-radius:999px;
+  font-family:var(--sans); font-size:.92rem; font-weight:700;
+  cursor:pointer; box-shadow:0 4px 20px rgba(107,58,31,.4);
+  transition:transform .15s;
+}
+.fab:hover { transform:translateY(-3px); }
+
+/* ── MODALS ── */
+.modal-bg {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,.55); justify-content:center; align-items:center;
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:#fff; border-radius:16px; padding:28px 32px;
+  width:100%; max-width:560px; max-height:92vh; overflow-y:auto;
+  box-shadow:0 12px 48px rgba(0,0,0,.22);
+}
+.modal-title { font-size:1.1rem; font-weight:900; color:var(--primary); margin-bottom:22px; }
+.form-row { margin-bottom:16px; }
+.form-lbl { display:block; font-size:.8rem; color:var(--muted); margin-bottom:6px; font-weight:500; }
+.form-input {
+  width:100%; padding:10px 14px; border:1px solid var(--border);
+  border-radius:9px; font-family:var(--sans); font-size:.9rem; background:#faf8f5;
+  transition:border-color .15s;
+}
+.form-input:focus { outline:none; border-color:var(--primary); }
+textarea.form-input { resize:vertical; min-height:90px; }
+
+/* Star rating input */
+.star-row { display:flex; gap:5px; cursor:pointer; }
+.star-row span { font-size:1.6rem; color:#ddd; transition:color .1s; line-height:1; }
+.star-row span.on { color:var(--star); }
+.cats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 24px; }
+.cat-lbl { font-size:.8rem; color:var(--muted); margin-bottom:5px; font-weight:500; }
+
+/* Photo upload */
+.photo-area {
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  border:2px dashed var(--border); border-radius:10px; padding:12px 14px;
+  cursor:pointer; min-height:64px; transition:border-color .15s;
+}
+.photo-area:hover { border-color:var(--primary); }
+.pthumb-wrap { position:relative; flex-shrink:0; }
+.pthumb { width:66px; height:66px; border-radius:8px; object-fit:cover; display:block; }
+.pthumb-del {
+  position:absolute; top:-6px; right:-6px;
+  width:20px; height:20px; border-radius:50%;
+  background:#e53935; color:#fff; border:none;
+  font-size:11px; cursor:pointer; line-height:20px; text-align:center;
+}
+.photo-add-icon {
+  width:66px; height:66px; border-radius:8px;
+  border:1.5px dashed #ccc; background:#faf8f5;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; color:#bbb; cursor:pointer; flex-shrink:0;
+}
+.photo-add-icon:hover { border-color:var(--primary); color:var(--primary); }
+.photo-hint { font-size:.78rem; color:#bbb; }
+.upload-prog { font-size:.78rem; color:var(--primary); margin-top:6px; min-height:16px; }
+
+/* Verify step */
+.verify-center { text-align:center; padding:8px 0; }
+.verify-icon { font-size:2.8rem; margin-bottom:14px; }
+.verify-desc { font-size:.87rem; color:var(--muted); line-height:1.7; margin-bottom:18px; }
+.verify-hint { font-size:.75rem; color:#bbb; margin-top:4px; }
+.verify-input { font-size:1.1rem; text-align:center; letter-spacing:5px; font-weight:700; }
+.verify-err { color:#e53935; font-size:.8rem; margin-top:8px; display:none; }
+.verify-err.show { display:block; }
+
+/* Modal buttons */
+.modal-btns { display:flex; gap:10px; margin-top:22px; }
+.btn-pri {
+  flex:1; background:var(--primary); color:#fff; border:none;
+  padding:12px; border-radius:9px; font-family:var(--sans);
+  font-size:.92rem; font-weight:700; cursor:pointer; transition:background .15s;
+}
+.btn-pri:hover { background:var(--primary-dark); }
+.btn-sec {
+  background:#f0ebe4; color:var(--text); border:none;
+  padding:12px 20px; border-radius:9px; font-family:var(--sans);
+  font-size:.88rem; cursor:pointer; transition:background .15s; white-space:nowrap;
+}
+.btn-sec:hover { background:#e5ddd3; }
+.form-err { color:#e53935; font-size:.8rem; margin-top:8px; display:none; }
+.form-err.show { display:block; }
+
+/* Codes management */
+.code-list { max-height:220px; overflow-y:auto; margin-bottom:10px; }
+.code-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 0; border-bottom:1px solid var(--border); font-size:.87rem;
+}
+.code-row:last-child { border-bottom:none; }
+.code-mono { font-family:monospace; font-weight:700; letter-spacing:2px; }
+.code-tag {
+  display:inline-block; padding:2px 9px; border-radius:10px;
+  font-size:.72rem; font-weight:700;
+}
+.code-tag.ok { background:#e8f5e9; color:#2e7d32; }
+.code-tag.used { background:#fce4ec; color:#c62828; }
+.code-add-row { display:flex; gap:8px; }
+.code-add-row .form-input { flex:1; }
+.btn-gen { white-space:nowrap; }
+
+/* Reply modal */
+.reply-modal .modal { max-width:460px; }
+
+/* Lightbox */
+.lightbox {
+  display:none; position:fixed; inset:0; z-index:600;
+  background:rgba(0,0,0,.9); justify-content:center; align-items:center;
+}
+.lightbox.open { display:flex; }
+.lb-img { max-width:90vw; max-height:88vh; object-fit:contain; border-radius:8px; }
+.lb-close { position:absolute; top:18px; right:24px; font-size:2.2rem; color:#fff; cursor:pointer; line-height:1; opacity:.8; }
+.lb-close:hover { opacity:1; }
+.lb-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  font-size:2.5rem; color:#fff; cursor:pointer; padding:16px 20px;
+  background:rgba(255,255,255,.1); border-radius:50%; line-height:1;
+  transition:background .15s; user-select:none;
+}
+.lb-nav:hover { background:rgba(255,255,255,.2); }
+.lb-prev { left:20px; }
+.lb-next { right:20px; }
+.lb-counter { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.6); font-size:.82rem; }
+
+/* Auth modal */
+.auth-bg {
+  display:none; position:fixed; inset:0; z-index:700;
+  background:rgba(0,0,0,.6); justify-content:center; align-items:center;
+}
+.auth-bg.open { display:flex; }
+.auth-box { background:#fff; border-radius:16px; padding:30px 32px; width:320px; text-align:center; }
+.auth-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
+.auth-sub { font-size:.82rem; color:var(--muted); margin-bottom:18px; }
+.auth-input { width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:9px; text-align:center; font-size:1rem; letter-spacing:3px; font-family:var(--sans); margin-bottom:10px; }
+.auth-input:focus { outline:none; border-color:var(--primary); }
+.auth-err { color:#e53935; font-size:.8rem; margin-bottom:10px; display:none; }
+.auth-err.show { display:block; }
+.auth-ok { width:100%; background:var(--primary); color:#fff; border:none; padding:12px; border-radius:9px; font-family:var(--sans); font-size:.92rem; font-weight:700; cursor:pointer; }
+.auth-ok:hover { background:var(--primary-dark); }
+.auth-cancel { margin-top:8px; width:100%; background:transparent; border:none; color:var(--muted); font-size:.8rem; cursor:pointer; }
+
+/* Host badge */
+.host-badge {
+  display:none; position:fixed; bottom:28px; left:28px; z-index:300;
+  background:var(--primary); color:#fff; border:none;
+  padding:10px 18px; border-radius:999px; font-family:var(--sans);
+  font-size:.78rem; font-weight:700; cursor:pointer;
+  box-shadow:0 3px 16px rgba(0,0,0,.2); gap:10px; align-items:center;
+}
+body.host-mode .host-badge { display:flex; }
+.badge-sep { opacity:.4; }
+.badge-btn { opacity:.75; transition:opacity .12s; }
+.badge-btn:hover { opacity:1; }
+
+/* Footer */
+footer {
+  background:#1a1a18; padding:28px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; text-decoration:none; }
+.footer-logo-icon {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:.85rem;
+}
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* Responsive */
+@media (max-width:700px) {
+  .header { padding:0 16px; }
+  .hero { padding:36px 20px 30px; flex-direction:column; gap:18px; align-items:flex-start; }
+  .overview-card { flex-direction:column; gap:22px; }
+  .ov-divider { width:100%; height:1px; }
+  .overview-wrap, .reviews-wrap { padding:0 14px; }
+  .modal { padding:20px; margin:10px; }
+  .cats-grid { grid-template-columns:1fr; }
+  footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:12px; }
+  .fab { bottom:16px; right:16px; padding:12px 20px; }
+  .host-badge { bottom:16px; left:16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <a class="logo" href="index.html">
+    <div class="logo-icon">🏠</div>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about">공간소개</a>
+    <a href="index.html#amenities">편의시설</a>
+    <a href="pic_view.html">사진 모두보기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트</a>
+    <button class="btn-reserve-header" onclick="location.href='pension_reservation.html'">예약 문의</button>
+  </nav>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div>
+    <h1>게스트 후기</h1>
+    <p>실제 투숙객의 솔직한 경험을 확인하세요</p>
+  </div>
+  <button class="btn-write" onclick="openWriteModal()">✍️ 후기 작성하기</button>
+</section>
+
+<!-- ── RATING OVERVIEW ── -->
+<div class="overview-wrap">
+  <div class="overview-card" id="overviewCard"></div>
+</div>
+
+<!-- ── REVIEWS ── -->
+<div class="reviews-wrap">
+  <div class="sec-head">
+    <span class="sec-title" id="reviewCount">후기 0건</span>
+    <select class="sort-sel" onchange="changeSort(this.value)">
+      <option value="newest">최신순</option>
+      <option value="highest">평점 높은순</option>
+      <option value="lowest">평점 낮은순</option>
+    </select>
+  </div>
+  <div id="reviewList"></div>
+</div>
+
+<!-- ── FAB ── -->
+<button class="fab" onclick="openWriteModal()">✍️ 후기 작성하기</button>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a class="footer-logo" href="index.html">
+    <div class="footer-logo-icon">🏠</div>
+    영덕감성산장
+  </a>
+  <nav class="footer-nav">
+    <a href="index.html#about">공간소개</a>
+    <a href="index.html#amenities">편의시설</a>
+    <a href="pic_view.html">사진 모두보기</a>
+    <a href="review.html">후기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+
+<!-- Write Review -->
+<div class="modal-bg" id="writeModal">
+  <div class="modal">
+    <!-- Step 1: Verify -->
+    <div id="stepVerify">
+      <div class="modal-title">후기 작성</div>
+      <div class="verify-center">
+        <div class="verify-icon">🔑</div>
+        <p class="verify-desc">
+          후기는 <strong>실제 투숙객</strong>만 작성할 수 있어요.<br>
+          예약 확인 코드를 입력해 주세요.
+          <span class="verify-hint"><br>(예약 확인 문자 또는 체크아웃 안내문에서 확인하세요)</span>
+        </p>
+        <input class="form-input verify-input" id="verifyInput" type="text"
+               placeholder="예약 코드" maxlength="10" autocomplete="off"
+               oninput="this.value=this.value.toUpperCase()"
+               onkeydown="if(event.key==='Enter')submitVerify()">
+        <div class="verify-err" id="verifyErr">유효하지 않은 코드이거나 이미 사용된 코드입니다.</div>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-sec" onclick="closeWriteModal()">취소</button>
+        <button class="btn-pri" onclick="submitVerify()">확인</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Write -->
+    <div id="stepWrite" style="display:none">
+      <div class="modal-title">✍️ 후기 작성</div>
+      <div class="form-row">
+        <label class="form-lbl">이름 / 닉네임</label>
+        <input class="form-input" id="inName" type="text" placeholder="홍*동" maxlength="20">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">투숙 시기</label>
+        <input class="form-input" id="inStayDate" type="month">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">항목별 평점 <span style="color:#e53935">*</span></label>
+        <div class="cats-grid" id="catsGrid"></div>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">후기 내용 <span style="color:#e53935">*</span></label>
+        <textarea class="form-input" id="inText" placeholder="솔직한 후기를 남겨주세요 (최소 20자)" maxlength="1000"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">사진 첨부 (최대 3장 · 자동 압축)</label>
+        <div class="photo-area" id="photoArea" onclick="triggerPhotoInput()"></div>
+        <div class="upload-prog" id="uploadProg"></div>
+      </div>
+      <div class="form-err" id="writeErr"></div>
+      <div class="modal-btns">
+        <button class="btn-sec" onclick="closeWriteModal()">취소</button>
+        <button class="btn-pri" id="btnSubmit" onclick="submitReview()">후기 등록</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Host Reply -->
+<div class="modal-bg reply-modal" id="replyModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title">💬 운영자 답변</div>
+    <div class="form-row">
+      <textarea class="form-input" id="replyText" placeholder="게스트 후기에 답변을 작성하세요..." rows="5"></textarea>
+    </div>
+    <div class="form-err" id="replyErr"></div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeReplyModal()">취소</button>
+      <button class="btn-pri" onclick="submitReply()">답변 등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage Codes -->
+<div class="modal-bg" id="codesModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-title">🔑 예약 코드 관리</div>
+    <div class="form-row">
+      <label class="form-lbl">새 코드 추가 (예약 1건 = 코드 1개)</label>
+      <div class="code-add-row">
+        <input class="form-input" id="newCodeInput" type="text"
+               placeholder="영문+숫자 최대 10자" maxlength="10"
+               oninput="this.value=this.value.toUpperCase()"
+               onkeydown="if(event.key==='Enter')addCode()">
+        <button class="btn-sec btn-gen" onclick="generateCode()">랜덤</button>
+        <button class="btn-pri" style="flex:none;padding:10px 18px" onclick="addCode()">추가</button>
+      </div>
+    </div>
+    <div class="form-lbl" style="margin-bottom:8px">코드 목록</div>
+    <div class="code-list" id="codeList"></div>
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="btn-pri" onclick="closeCodesModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <span class="lb-close" onclick="closeLightbox()">✕</span>
+  <span class="lb-nav lb-prev" onclick="navLb(-1)">‹</span>
+  <img class="lb-img" id="lbImg" src="" alt="">
+  <span class="lb-nav lb-next" onclick="navLb(1)">›</span>
+  <span class="lb-counter" id="lbCounter"></span>
+</div>
+
+<!-- Auth Modal -->
+<div class="auth-bg" id="authBg">
+  <div class="auth-box">
+    <div class="auth-title">🔐 호스트 인증</div>
+    <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-input" id="authInput" type="password" placeholder="암호 입력"
+           onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr">암호가 올바르지 않습니다.</div>
+    <button class="auth-ok" onclick="confirmAuth()">확인</button>
+    <button class="auth-cancel" onclick="closeAuthModal()">취소</button>
+  </div>
+</div>
+
+<!-- Host Badge -->
+<div class="host-badge">
+  <span>✏️ 호스트 모드</span>
+  <span class="badge-sep">|</span>
+  <span class="badge-btn" onclick="openCodesModal()" style="cursor:pointer">코드 관리</span>
+  <span class="badge-sep">|</span>
+  <span class="badge-btn" onclick="exitHostMode()" style="cursor:pointer">종료</span>
+</div>
+
+<!-- Hidden inputs -->
+<input type="file" id="filePhoto" accept="image/*" multiple style="display:none" onchange="onPhotoFiles(this)">
+
+<script>
+// ── CONFIG ──
+const CATS = [
+  { key:'clean',    label:'청결도' },
+  { key:'kind',     label:'친절도' },
+  { key:'location', label:'위치'   },
+  { key:'value',    label:'가성비' },
+  { key:'facility', label:'시설'   },
+];
+const MAX_PHOTOS = 3;
+const COMPRESS_MAX = 800;
+const COMPRESS_QUALITY = 0.65;
+
+// ── STATE ──
+let REVIEWS = [];
+let CODES = { valid:[], used:[] };
+let HOST_MODE = false;
+let SORT = 'newest';
+let PENDING_CODE = '';
+let PENDING_PHOTOS = [];
+let REPLY_ID = null;
+let LB_PHOTOS = [];
+let LB_IDX = 0;
+
+// ── INIT ──
+function init() {
+  try { REVIEWS = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) { REVIEWS = []; }
+  try { CODES = JSON.parse(localStorage.getItem('rv_codes') || '{"valid":[],"used":[]}'); } catch(e) { CODES = {valid:[],used:[]}; }
+  HOST_MODE = localStorage.getItem('pension_host') === '1';
+  if (HOST_MODE) document.body.classList.add('host-mode');
+  buildCatsGrid();
+  renderOverview();
+  renderList();
+  // default stay month
+  const d = new Date();
+  document.getElementById('inStayDate').value =
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+// ── PERSIST ──
+function saveReviews() {
+  try {
+    localStorage.setItem('rv_reviews', JSON.stringify(REVIEWS));
+    return 'ok';
+  } catch(e) {
+    return e.name === 'QuotaExceededError' ? 'quota' : 'err';
+  }
+}
+function saveCodes() {
+  try { localStorage.setItem('rv_codes', JSON.stringify(CODES)); } catch(e) {}
+}
+
+// ── OVERVIEW ──
+function renderOverview() {
+  const el = document.getElementById('overviewCard');
+  if (!REVIEWS.length) {
+    el.innerHTML = '<div class="ov-empty">아직 등록된 후기가 없어요. 첫 번째 후기를 남겨보세요!</div>';
+    return;
+  }
+  const totals = {};
+  CATS.forEach(c => totals[c.key] = 0);
+  REVIEWS.forEach(r => CATS.forEach(c => totals[c.key] += (r.ratings[c.key]||0)));
+  const avgs = {};
+  CATS.forEach(c => avgs[c.key] = totals[c.key] / REVIEWS.length);
+  const overall = CATS.reduce((s,c) => s + avgs[c.key], 0) / CATS.length;
+
+  el.innerHTML = `
+    <div class="ov-big">
+      <div class="ov-score">${overall.toFixed(1)}</div>
+      <div class="ov-stars">${starsStr(overall)}</div>
+      <div class="ov-count">후기 ${REVIEWS.length}건</div>
+    </div>
+    <div class="ov-divider"></div>
+    <div class="ov-bars">
+      ${CATS.map(c => `
+        <div class="ov-row">
+          <span class="ov-label">${c.label}</span>
+          <div class="ov-track"><div class="ov-fill" style="width:${avgs[c.key]/5*100}%"></div></div>
+          <span class="ov-num">${avgs[c.key].toFixed(1)}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function starsStr(score) {
+  const full = Math.floor(score + 0.25);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+function starsNum(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+// ── REVIEW LIST ──
+function renderList() {
+  document.getElementById('reviewCount').textContent = `후기 ${REVIEWS.length}건`;
+  const el = document.getElementById('reviewList');
+  if (!REVIEWS.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">💬</div>
+      <div class="empty-text">아직 후기가 없어요.<br>첫 번째 후기를 남겨보세요!</div></div>`;
+    return;
+  }
+  let list = [...REVIEWS];
+  if (SORT === 'newest')  list.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  if (SORT === 'highest') list.sort((a,b) => b.avg - a.avg);
+  if (SORT === 'lowest')  list.sort((a,b) => a.avg - b.avg);
+  el.innerHTML = list.map(renderCard).join('');
+}
+
+function renderCard(r) {
+  const initial = (r.guestName||'?')[0];
+  const photos = r.photos || [];
+  return `
+  <div class="rv-card" id="rc_${r.id}">
+    <div class="rv-head">
+      <div class="rv-guest">
+        <div class="rv-avatar">${initial}</div>
+        <div>
+          <div class="rv-name">${esc(r.guestName)}</div>
+          <div class="rv-meta">${fmtDate(r.stayDate)} 투숙 · 작성 ${r.createdAt}</div>
+        </div>
+      </div>
+      <div>
+        <div class="rv-overall-stars">${starsNum(Math.round(r.avg||0))}</div>
+        <div class="rv-overall-num">${(r.avg||0).toFixed(1)} / 5.0</div>
+      </div>
+    </div>
+    <div class="rv-cats">
+      ${CATS.map(c => `<span class="rv-cat">${c.label} <b>${r.ratings[c.key]||0}</b></span>`).join('')}
+    </div>
+    <div class="rv-text">${esc(r.text)}</div>
+    ${photos.length ? `<div class="rv-photos">${photos.map((p,i) =>
+      `<img class="rv-photo" src="${p}" onclick="openLb(${JSON.stringify(photos).replace(/"/g,'&quot;')},${i})">`
+    ).join('')}</div>` : ''}
+    ${r.hostReply ? `
+      <div class="rv-reply">
+        <div class="rv-reply-lbl">🏠 운영자 답변</div>
+        <div class="rv-reply-text">${esc(r.hostReply)}</div>
+        ${r.hostReplyDate ? `<div class="rv-reply-date">${r.hostReplyDate}</div>` : ''}
+      </div>` : ''}
+    <div class="rv-host-btns">
+      <button class="btn-sm" onclick="openReplyModal('${r.id}')">${r.hostReply ? '✏️ 답변 수정' : '💬 답변 달기'}</button>
+      <button class="btn-sm del" onclick="deleteReview('${r.id}')">🗑 삭제</button>
+    </div>
+  </div>`;
+}
+
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
+function fmtDate(ym) {
+  if (!ym) return '';
+  const [y, m] = ym.split('-');
+  return `${y}년 ${m}월`;
+}
+
+function changeSort(val) {
+  SORT = val;
+  renderList();
+}
+
+// ── CATS GRID (star rating input) ──
+function buildCatsGrid() {
+  document.getElementById('catsGrid').innerHTML = CATS.map(c => `
+    <div>
+      <div class="cat-lbl">${c.label}</div>
+      <div class="star-row" id="sr_${c.key}" data-key="${c.key}" data-val="0">
+        ${[1,2,3,4,5].map(n =>
+          `<span data-n="${n}"
+            onmouseover="hoverStar('${c.key}',${n})"
+            onmouseout="unhoverStar('${c.key}')"
+            onclick="setStar('${c.key}',${n})">★</span>`
+        ).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function hoverStar(key, n) {
+  document.getElementById('sr_'+key).querySelectorAll('span')
+    .forEach(s => s.classList.toggle('on', +s.dataset.n <= n));
+}
+function unhoverStar(key) {
+  const el = document.getElementById('sr_'+key);
+  const v = +el.dataset.val;
+  el.querySelectorAll('span').forEach(s => s.classList.toggle('on', +s.dataset.n <= v));
+}
+function setStar(key, n) {
+  const el = document.getElementById('sr_'+key);
+  el.dataset.val = n;
+  unhoverStar(key);
+}
+function getRatings() {
+  const r = {};
+  CATS.forEach(c => r[c.key] = +(document.getElementById('sr_'+c.key)?.dataset.val||0));
+  return r;
+}
+function resetRatings() {
+  CATS.forEach(c => { const el = document.getElementById('sr_'+c.key); if(el){el.dataset.val=0;unhoverStar(c.key);} });
+}
+
+// ── WRITE MODAL ──
+function openWriteModal() {
+  document.getElementById('stepVerify').style.display = '';
+  document.getElementById('stepWrite').style.display = 'none';
+  document.getElementById('verifyInput').value = '';
+  document.getElementById('verifyErr').classList.remove('show');
+  PENDING_CODE = '';
+  PENDING_PHOTOS = [];
+  document.getElementById('writeModal').classList.add('open');
+}
+function closeWriteModal() {
+  document.getElementById('writeModal').classList.remove('open');
+}
+
+// ── VERIFY ──
+function submitVerify() {
+  const code = document.getElementById('verifyInput').value.trim().toUpperCase();
+  const err = document.getElementById('verifyErr');
+  const isHostBypass = document.getElementById('verifyInput').value.trim() === '1DL34';
+  if (!isHostBypass && (!code || !CODES.valid.includes(code) || CODES.used.includes(code))) {
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  PENDING_CODE = isHostBypass ? 'HOST' : code;
+  document.getElementById('stepVerify').style.display = 'none';
+  document.getElementById('stepWrite').style.display = '';
+  document.getElementById('inName').value = '';
+  document.getElementById('inText').value = '';
+  document.getElementById('writeErr').classList.remove('show');
+  resetRatings();
+  PENDING_PHOTOS = [];
+  renderPhotoArea();
+  // reset stay month to current
+  const d = new Date();
+  document.getElementById('inStayDate').value =
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+// ── PHOTO AREA ──
+function triggerPhotoInput() {
+  if (PENDING_PHOTOS.length >= MAX_PHOTOS) { alert(`사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있어요.`); return; }
+  document.getElementById('filePhoto').click();
+}
+function renderPhotoArea() {
+  const area = document.getElementById('photoArea');
+  let html = PENDING_PHOTOS.map((p,i) => `
+    <div class="pthumb-wrap">
+      <img class="pthumb" src="${p}">
+      <button class="pthumb-del" onclick="removePhoto(${i});event.stopPropagation()">✕</button>
+    </div>`).join('');
+  if (PENDING_PHOTOS.length < MAX_PHOTOS) {
+    html += `<div class="photo-add-icon">+</div>`;
+    if (!PENDING_PHOTOS.length) html += `<span class="photo-hint">클릭하여 사진 추가</span>`;
+  }
+  area.innerHTML = html;
+}
+function removePhoto(i) {
+  PENDING_PHOTOS.splice(i, 1);
+  renderPhotoArea();
+}
+function onPhotoFiles(input) {
+  const files = Array.from(input.files);
+  input.value = '';
+  const remaining = MAX_PHOTOS - PENDING_PHOTOS.length;
+  const todo = files.slice(0, remaining);
+  if (!todo.length) return;
+  const prog = document.getElementById('uploadProg');
+  prog.textContent = `압축 중... (0/${todo.length})`;
+  let done = 0;
+  todo.forEach(f => {
+    compressImage(f, dataUrl => {
+      if (dataUrl) PENDING_PHOTOS.push(dataUrl);
+      done++;
+      prog.textContent = done < todo.length ? `압축 중... (${done}/${todo.length})` : '';
+      if (done === todo.length) renderPhotoArea();
+    });
+  });
+}
+
+// ── SUBMIT REVIEW ──
+function submitReview() {
+  const errEl = document.getElementById('writeErr');
+  errEl.classList.remove('show');
+
+  const name = document.getElementById('inName').value.trim();
+  const stayDate = document.getElementById('inStayDate').value;
+  const text = document.getElementById('inText').value.trim();
+  const ratings = getRatings();
+
+  if (!name)           { showErr(errEl, '이름을 입력해주세요.'); return; }
+  if (!stayDate)       { showErr(errEl, '투숙 시기를 선택해주세요.'); return; }
+  if (text.length < 20){ showErr(errEl, '후기는 최소 20자 이상 입력해주세요.'); return; }
+  if (CATS.some(c => !ratings[c.key])) {
+    showErr(errEl, '모든 항목의 별점을 선택해주세요.'); return;
+  }
+
+  const avg = CATS.reduce((s,c) => s+ratings[c.key], 0) / CATS.length;
+  const review = {
+    id: 'rv_' + Date.now(),
+    guestName: name,
+    stayDate,
+    verifyCode: PENDING_CODE,
+    ratings,
+    avg: Math.round(avg * 10) / 10,
+    text,
+    photos: [...PENDING_PHOTOS],
+    hostReply: '',
+    hostReplyDate: '',
+    createdAt: new Date().toISOString().slice(0,10),
+  };
+
+  REVIEWS.unshift(review);
+  let result = saveReviews();
+
+  if (result === 'quota') {
+    // retry without photos
+    review.photos = [];
+    REVIEWS[0] = review;
+    result = saveReviews();
+    if (result === 'quota') {
+      REVIEWS.shift();
+      showErr(errEl, '저장 공간이 부족합니다. 기존 후기 데이터를 정리한 후 다시 시도해주세요.');
+      return;
+    }
+    alert('저장 공간이 부족해 사진 없이 후기가 등록되었어요.');
+  }
+
+  // mark code as used (skip for host bypass)
+  if (PENDING_CODE !== 'HOST') {
+    CODES.used.push(PENDING_CODE);
+    CODES.valid = CODES.valid.filter(c => c !== PENDING_CODE);
+    saveCodes();
+  }
+
+  closeWriteModal();
+  PENDING_PHOTOS = [];
+  PENDING_CODE = '';
+  renderOverview();
+  renderList();
+}
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// ── HOST REPLY ──
+function openReplyModal(id) {
+  if (!HOST_MODE) return;
+  REPLY_ID = id;
+  const r = REVIEWS.find(r => r.id === id);
+  document.getElementById('replyText').value = r?.hostReply || '';
+  const err = document.getElementById('replyErr');
+  err.classList.remove('show');
+  document.getElementById('replyModal').classList.add('open');
+}
+function closeReplyModal() {
+  document.getElementById('replyModal').classList.remove('open');
+  REPLY_ID = null;
+}
+function submitReply() {
+  const text = document.getElementById('replyText').value.trim();
+  const err = document.getElementById('replyErr');
+  if (!text) { showErr(err, '답변 내용을 입력해주세요.'); return; }
+  const r = REVIEWS.find(r => r.id === REPLY_ID);
+  if (!r) { closeReplyModal(); return; }
+  r.hostReply = text;
+  r.hostReplyDate = new Date().toISOString().slice(0,10);
+  saveReviews();
+  closeReplyModal();
+  renderList();
+}
+
+// ── DELETE REVIEW ──
+function deleteReview(id) {
+  if (!HOST_MODE) return;
+  if (!confirm('이 후기를 삭제하시겠어요?')) return;
+  REVIEWS = REVIEWS.filter(r => r.id !== id);
+  saveReviews();
+  renderOverview();
+  renderList();
+}
+
+// ── CODES ──
+function openCodesModal() {
+  document.getElementById('newCodeInput').value = '';
+  renderCodeList();
+  document.getElementById('codesModal').classList.add('open');
+}
+function closeCodesModal() {
+  document.getElementById('codesModal').classList.remove('open');
+}
+function renderCodeList() {
+  const el = document.getElementById('codeList');
+  const items = [
+    ...CODES.valid.map(c => ({code:c, status:'ok'})),
+    ...CODES.used.map(c => ({code:c, status:'used'})),
+  ];
+  if (!items.length) {
+    el.innerHTML = '<div style="color:#bbb;padding:14px 0;text-align:center;font-size:.85rem">등록된 코드 없음</div>';
+    return;
+  }
+  el.innerHTML = items.map(({code, status}) => `
+    <div class="code-row">
+      <span class="code-mono">${code}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="code-tag ${status}">${status==='ok'?'사용 가능':'사용됨'}</span>
+        ${status==='ok' ? `<button class="btn-sm del" onclick="removeCode('${code}')">삭제</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i=0; i<6; i++) code += chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('newCodeInput').value = code;
+}
+function addCode() {
+  const code = document.getElementById('newCodeInput').value.trim().toUpperCase();
+  if (!code) { alert('코드를 입력해주세요.'); return; }
+  if (!/^[A-Z0-9]+$/.test(code)) { alert('영문 대문자와 숫자만 사용 가능합니다.'); return; }
+  if (CODES.valid.includes(code)||CODES.used.includes(code)) { alert('이미 존재하는 코드입니다.'); return; }
+  CODES.valid.push(code);
+  saveCodes();
+  document.getElementById('newCodeInput').value = '';
+  renderCodeList();
+}
+function removeCode(code) {
+  CODES.valid = CODES.valid.filter(c => c !== code);
+  saveCodes();
+  renderCodeList();
+}
+
+// ── LIGHTBOX ──
+function openLb(photos, idx) {
+  LB_PHOTOS = photos;
+  LB_IDX = idx;
+  document.getElementById('lbImg').src = photos[idx];
+  document.getElementById('lbCounter').textContent = photos.length > 1 ? `${idx+1} / ${photos.length}` : '';
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+function navLb(dir) {
+  LB_IDX = (LB_IDX + dir + LB_PHOTOS.length) % LB_PHOTOS.length;
+  document.getElementById('lbImg').src = LB_PHOTOS[LB_IDX];
+  document.getElementById('lbCounter').textContent =
+    LB_PHOTOS.length > 1 ? `${LB_IDX+1} / ${LB_PHOTOS.length}` : '';
+}
+
+// ── HOST AUTH ──
+function checkHostAuth() {
+  if (HOST_MODE) { openCodesModal(); return; }
+  document.getElementById('authInput').value = '';
+  document.getElementById('authErr').classList.remove('show');
+  document.getElementById('authBg').classList.add('open');
+  setTimeout(() => document.getElementById('authInput').focus(), 80);
+}
+function closeAuthModal() {
+  document.getElementById('authBg').classList.remove('open');
+}
+function confirmAuth() {
+  if (document.getElementById('authInput').value === '1dl34') {
+    activateHost();
+  } else {
+    document.getElementById('authErr').classList.add('show');
+    document.getElementById('authInput').value = '';
+    document.getElementById('authInput').focus();
+  }
+}
+function activateHost() {
+  HOST_MODE = true;
+  localStorage.setItem('pension_host', '1');
+  document.body.classList.add('host-mode');
+  closeAuthModal();
+  renderList();
+}
+function exitHostMode() {
+  HOST_MODE = false;
+  localStorage.removeItem('pension_host');
+  document.body.classList.remove('host-mode');
+  renderList();
+}
+
+// ── IMAGE COMPRESSION ──
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > COMPRESS_MAX || h > COMPRESS_MAX) {
+        if (w >= h) { h = Math.round(h * COMPRESS_MAX / w); w = COMPRESS_MAX; }
+        else        { w = Math.round(w * COMPRESS_MAX / h); h = COMPRESS_MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      try { callback(c.toDataURL('image/jpeg', COMPRESS_QUALITY)); }
+      catch(err) { callback(null); }
+    };
+    img.onerror = () => callback(null);
+    img.src = e.target.result;
+  };
+  reader.onerror = () => callback(null);
+  reader.readAsDataURL(file);
+}
+
+// ── KEYBOARD & CLICK HANDLERS ──
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['writeModal','replyModal','codesModal','authBg']
+      .forEach(id => document.getElementById(id).classList.remove('open'));
+    closeLightbox();
+  }
+  if (document.getElementById('lightbox').classList.contains('open')) {
+    if (e.key === 'ArrowLeft')  navLb(-1);
+    if (e.key === 'ArrowRight') navLb(1);
+  }
+});
+
+init();
+</script>
+</body>
+</html>

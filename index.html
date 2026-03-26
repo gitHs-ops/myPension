@@ -82,7 +82,7 @@ body { font-family:var(--sans); color:var(--text); background:var(--surface); }
   font-size:3rem; opacity:.4;
 }
 .btn-all-photos {
-  position:absolute; bottom:14px; right:14px;
+  position:absolute; bottom:14px; right:14px; z-index:20;
   background:var(--surface); border:1.5px solid var(--text);
   border-radius:8px; padding:8px 14px;
   font-family:var(--sans); font-size:.82rem; font-weight:700;
@@ -325,6 +325,37 @@ footer {
   footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
   .footer-nav { flex-wrap:wrap; justify-content:center; gap:16px; }
 }
+
+/* ── HOST MODE ── */
+.auth-overlay { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; }
+.auth-overlay.open { display:flex; }
+.auth-box { background:#fff; border-radius:18px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.auth-box-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
+.auth-box-sub { font-size:.82rem; color:#888; margin-bottom:18px; line-height:1.6; }
+.auth-field { width:100%; padding:11px 14px; border:1.5px solid #ddd; border-radius:9px; font-family:var(--sans); font-size:.9rem; outline:none; margin-bottom:6px; }
+.auth-field:focus { border-color:var(--primary); }
+.auth-err { font-size:.75rem; color:#e05252; height:16px; margin-bottom:10px; }
+.auth-btns { display:flex; gap:8px; }
+.btn-auth-cancel { flex:1; padding:11px; border-radius:8px; background:#f0f0f0; color:#555; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.btn-auth-ok { flex:1; padding:11px; border-radius:8px; background:var(--primary); color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.host-badge { display:none; position:fixed; bottom:24px; left:24px; z-index:400; background:var(--primary); color:#fff; padding:9px 16px; border-radius:999px; font-size:.78rem; font-weight:700; box-shadow:0 3px 16px rgba(0,0,0,.2); align-items:center; gap:8px; }
+body.host-mode .host-badge { display:flex; }
+.btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.photo-edit-overlay { display:none; position:absolute; inset:0; z-index:5; background:rgba(0,0,0,.45); align-items:center; justify-content:center; }
+body.host-mode .photo-main:hover .photo-edit-overlay,
+body.host-mode .photo-sub:hover .photo-edit-overlay { display:flex; }
+.btn-change-photo { padding:8px 18px; border-radius:8px; background:#fff; color:#3d2010; border:none; font-family:var(--sans); font-size:.82rem; font-weight:700; cursor:pointer; }
+.gallery-add-wrap { display:none; }
+body.host-mode .gallery-add-wrap { display:block; }
+.btn-add-gallery { width:100%; padding:14px; background:rgba(255,255,255,.07); border:2px dashed rgba(255,255,255,.4); color:#fff; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-add-gallery:hover { background:rgba(255,255,255,.14); }
+.extra-grid { display:grid; grid-template-columns:1.55fr 1fr 1fr; gap:6px; }
+.extra-photo-item { position:relative; overflow:hidden; height:180px; background:#ccc; }
+.extra-photo-item img { width:100%; height:100%; object-fit:cover; }
+.btn-del-extra { display:none; position:absolute; top:8px; right:8px; z-index:6; background:rgba(220,40,40,.85); border:none; border-radius:50%; color:#fff; width:28px; height:28px; font-size:.85rem; cursor:pointer; align-items:center; justify-content:center; }
+body.host-mode .extra-photo-item:hover .btn-del-extra { display:flex; }
+.btn-change-extra { display:none; position:absolute; bottom:8px; left:50%; transform:translateX(-50%); z-index:6; background:#fff; border:none; border-radius:6px; color:#3d2010; padding:5px 12px; font-family:var(--sans); font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 </style>
 </head>
 <body>
@@ -336,35 +367,55 @@ footer {
     영덕감성산장
   </a>
   <nav class="header-nav">
-    <a href="#about">공간소개</a>
+    <a href="#about">공간 소개</a>
     <a href="#amenities">편의시설</a>
-    <a href="#surroundings">주변환경</a>
-    <a href="#reviews">후기</a>
-    <a href="#host">호스트</a>
+    <a href="#surroundings">주변 환경</a>
+    <a href="#reviews">남기신 후기</a>
+    <a href="review.html">후기 남기기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <button class="btn-reserve-header" onclick="document.querySelector('.btn-reserve').click()">예약 문의</button>
 </header>
 
 <!-- GALLERY -->
-<section class="gallery">
-  <div class="photo-grid">
-    <div class="photo-main">
+<section class="gallery" id="gallerySection">
+  <div class="photo-grid" id="mainGrid">
+    <div class="photo-main" data-slot="0">
       <div class="photo-placeholder">🌿</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(0);event.stopPropagation()">📷 사진 변경</button>
+      </div>
     </div>
-    <div class="photo-sub">
+    <div class="photo-sub" data-slot="1">
       <div class="photo-placeholder">🪟</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(1);event.stopPropagation()">📷 사진 변경</button>
+      </div>
     </div>
-    <div class="photo-sub">
+    <div class="photo-sub" data-slot="2">
       <div class="photo-placeholder">🔍</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(2);event.stopPropagation()">📷 사진 변경</button>
+      </div>
     </div>
-    <div class="photo-sub">
+    <div class="photo-sub" data-slot="3">
       <div class="photo-placeholder">🌊</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(3);event.stopPropagation()">📷 사진 변경</button>
+      </div>
     </div>
-    <div class="photo-sub" style="position:relative;">
+    <div class="photo-sub" data-slot="4" style="position:relative;">
       <div class="photo-placeholder">📷</div>
-      <button class="btn-all-photos">⊞ 사진 모두 보기</button>
+      <button class="btn-all-photos" onclick="location.href='pic_view.html'">⊞ 사진 모두 보기</button>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(4);event.stopPropagation()">📷 사진 변경</button>
+      </div>
     </div>
   </div>
+  <div class="gallery-add-wrap">
+    <button class="btn-add-gallery" onclick="startAddPhoto()">+ 사진 추가</button>
+  </div>
+  <div class="extra-grid" id="extraGrid"></div>
 </section>
 
 <!-- MAIN CONTENT -->
@@ -458,54 +509,16 @@ footer {
 
     <!-- REVIEWS -->
     <section id="reviews">
-      <div class="rating-big">
-        <div class="rating-num">4.69</div>
+      <div class="rating-big" id="ratingBig">
+        <div class="rating-num" id="ratingNum">4.69</div>
         <div>
-          <div class="stars-row">★★★★★</div>
-          <div style="font-size:.85rem;color:var(--muted);margin-top:4px;">후기 39개</div>
+          <div class="stars-row" id="ratingStars">★★★★★</div>
+          <div style="font-size:.85rem;color:var(--muted);margin-top:4px;" id="ratingCount">후기 로딩 중...</div>
         </div>
       </div>
-      <div class="reviews-grid">
-        <div class="review-card">
-          <div class="review-header">
-            <div class="review-avatar" style="background:linear-gradient(135deg,#3a57e8,#7b5fff);">지</div>
-            <div>
-              <div class="review-name">지연</div>
-              <div class="review-date">2025년 11월</div>
-            </div>
-          </div>
-          <p class="review-text">바다 뷰가 정말 환상적이었어요! 산 속에서 동해를 바라보는 느낌이 너무 특별했습니다. 조용하고 아늑한 분위기에서 완전한 힐링을 했어요.</p>
-        </div>
-        <div class="review-card">
-          <div class="review-header">
-            <div class="review-avatar" style="background:linear-gradient(135deg,#0aad8e,#00c9a7);">민</div>
-            <div>
-              <div class="review-name">민준</div>
-              <div class="review-date">2025년 10월</div>
-            </div>
-          </div>
-          <p class="review-text">호스트분이 정말 친절하시고 숙소가 사진보다 더 예뻤어요. 화목난로 덕분에 가을밤이 따뜻했고, 주방도 잘 갖춰져 있어서 직접 해먹는 재미도 있었습니다.</p>
-        </div>
-        <div class="review-card">
-          <div class="review-header">
-            <div class="review-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316);">수</div>
-            <div>
-              <div class="review-name">수진</div>
-              <div class="review-date">2025년 9월</div>
-            </div>
-          </div>
-          <p class="review-text">테라스에서 일출 보는 게 꿈이었는데 이루었어요 ☀️ 별채라 프라이버시도 완벽하고, 주변 자연 경관도 너무 아름다웠습니다. 꼭 다시 오고 싶어요!</p>
-        </div>
-        <div class="review-card">
-          <div class="review-header">
-            <div class="review-avatar" style="background:linear-gradient(135deg,#ef4444,#e8174a);">태</div>
-            <div>
-              <div class="review-name">태양</div>
-              <div class="review-date">2025년 8월</div>
-            </div>
-          </div>
-          <p class="review-text">위치가 정말 최고입니다. 영덕 대게도 근처에서 먹을 수 있고, 블루로드 트레킹도 즐겼어요. 숙소 자체도 너무 감성적이고 청결했습니다.</p>
-        </div>
+      <div class="reviews-grid" id="reviewsGrid"></div>
+      <div style="text-align:right;margin-top:14px;">
+        <a href="review.html" style="font-size:.85rem;color:var(--primary);font-weight:700;text-decoration:none;">후기 전체보기 →</a>
       </div>
     </section>
 
@@ -605,6 +618,17 @@ footer {
   </div>
 </section>
 
+<!-- 후기 상세 팝업 -->
+<div id="rvDetailBg" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);justify-content:center;align-items:center;" onclick="closeRvDetail(event)">
+  <div id="rvDetailBox" style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.22);position:relative;">
+    <button onclick="closeRvDetail()" style="position:absolute;top:16px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#aaa;line-height:1;">✕</button>
+    <div id="rvDetailContent"></div>
+    <div style="margin-top:20px;text-align:center;">
+      <a href="review.html" style="font-size:.85rem;color:var(--primary);font-weight:700;text-decoration:none;">후기 전체보기 →</a>
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">
@@ -612,15 +636,156 @@ footer {
     영덕감성산장
   </div>
   <nav class="footer-nav">
-    <a href="#about">공간소개</a>
+    <a href="#about">공간 소개</a>
     <a href="#amenities">편의시설</a>
-    <a href="#reviews">후기</a>
-    <a href="#host">호스트</a>
+    <a href="#reviews">남기신 후기</a>
+    <a href="review.html">후기 남기기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
 </footer>
 
 <script>
+// ── 남긴후기 동적 렌더링 ─────────────
+const _RV_CATS = [
+  {key:'clean',label:'청결도'},{key:'kind',label:'친절도'},
+  {key:'location',label:'위치'},{key:'value',label:'가성비'},{key:'facility',label:'시설'},
+];
+const _RV_AVATAR_COLORS = [
+  'linear-gradient(135deg,#3a57e8,#7b5fff)',
+  'linear-gradient(135deg,#0aad8e,#00c9a7)',
+  'linear-gradient(135deg,#f59e0b,#f97316)',
+  'linear-gradient(135deg,#ef4444,#e8174a)',
+  'linear-gradient(135deg,var(--primary),#c8956c)',
+];
+let _rvSource = [];
+
+function _rvEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+function _rvFmt(ym) {
+  if (!ym) return '';
+  const [y,m] = ym.split('-');
+  return `${y}년 ${m}월`;
+}
+function _rvStars(n) {
+  const r = Math.round(n||0);
+  return '★'.repeat(r) + '☆'.repeat(5-r);
+}
+
+(function renderRecentReviews() {
+  const SAMPLE = [
+    { guestName:'지연', stayDate:'2025-11', avg:5, text:'바다 뷰가 정말 환상적이었어요! 산 속에서 동해를 바라보는 느낌이 너무 특별했습니다. 조용하고 아늑한 분위기에서 완전한 힐링을 했어요.', avatarBg:'linear-gradient(135deg,#3a57e8,#7b5fff)' },
+    { guestName:'민준', stayDate:'2025-10', avg:5, text:'호스트분이 정말 친절하시고 숙소가 사진보다 더 예뻤어요. 화목난로 덕분에 가을밤이 따뜻했고, 주방도 잘 갖춰져 있어서 직접 해먹는 재미도 있었습니다.', avatarBg:'linear-gradient(135deg,#0aad8e,#00c9a7)' },
+    { guestName:'수진', stayDate:'2025-09', avg:5, text:'테라스에서 일출 보는 게 꿈이었는데 이루었어요. 별채라 프라이버시도 완벽하고, 주변 자연 경관도 너무 아름다웠습니다. 꼭 다시 오고 싶어요!', avatarBg:'linear-gradient(135deg,#f59e0b,#f97316)' },
+    { guestName:'태양', stayDate:'2025-08', avg:4, text:'위치가 정말 최고입니다. 영덕 대게도 근처에서 먹을 수 있고, 블루로드 트레킹도 즐겼어요. 숙소 자체도 너무 감성적이고 청결했습니다.', avatarBg:'linear-gradient(135deg,#ef4444,#e8174a)' },
+  ];
+
+  let reviews = [];
+  try { reviews = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) {}
+
+  const useSample = reviews.length === 0;
+  _rvSource = useSample ? SAMPLE : [...reviews].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4);
+
+  if (!useSample) {
+    const avg = reviews.reduce((s,r) => s + (r.avg||0), 0) / reviews.length;
+    const full = Math.floor(avg + 0.25);
+    document.getElementById('ratingNum').textContent = avg.toFixed(2);
+    document.getElementById('ratingStars').textContent = '★'.repeat(full) + '☆'.repeat(5-full);
+    document.getElementById('ratingCount').textContent = `후기 ${reviews.length}개`;
+  } else {
+    document.getElementById('ratingNum').textContent = '4.69';
+    document.getElementById('ratingStars').textContent = '★★★★★';
+    document.getElementById('ratingCount').textContent = '후기 39개';
+  }
+
+  const grid = document.getElementById('reviewsGrid');
+  grid.innerHTML = _rvSource.map((r, i) => {
+    const initial = (r.guestName||'?')[0];
+    const bg = r.avatarBg || _RV_AVATAR_COLORS[i % _RV_AVATAR_COLORS.length];
+    const stars = _rvStars(r.avg||5);
+    const preview = r.text.length > 80 ? r.text.slice(0,80) + '…' : r.text;
+    return `
+      <div class="review-card" onclick="openRvDetail(${i})"
+           style="cursor:pointer;transition:box-shadow .15s;"
+           onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'"
+           onmouseout="this.style.boxShadow=''">
+        <div class="review-header">
+          <div class="review-avatar" style="background:${bg}">${initial}</div>
+          <div>
+            <div class="review-name">${_rvEsc(r.guestName)}</div>
+            <div class="review-date">${_rvFmt(r.stayDate)}</div>
+          </div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">${stars}</div>
+        </div>
+        <p class="review-text">${_rvEsc(preview)}</p>
+      </div>`;
+  }).join('');
+})();
+
+function openRvDetail(idx) {
+  const r = _rvSource[idx];
+  if (!r) return;
+  const initial = (r.guestName||'?')[0];
+  const bg = r.avatarBg || _RV_AVATAR_COLORS[idx % _RV_AVATAR_COLORS.length];
+  const photos = r.photos || [];
+
+  const catsHtml = (r.ratings && Object.keys(r.ratings).length)
+    ? `<div style="display:flex;flex-wrap:wrap;gap:10px 18px;margin:14px 0 16px;">
+        ${_RV_CATS.map(c => `
+          <div style="min-width:80px">
+            <div style="font-size:.72rem;color:#888;margin-bottom:3px">${c.label}</div>
+            <div style="font-size:.85rem;color:#f4a828">${'★'.repeat(r.ratings[c.key]||0)}${'☆'.repeat(5-(r.ratings[c.key]||0))}</div>
+          </div>`).join('')}
+      </div>`
+    : '';
+
+  const photosHtml = photos.length
+    ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;">
+        ${photos.map(p => `<img src="${p}" style="width:88px;height:88px;border-radius:9px;object-fit:cover;cursor:pointer"
+          onclick="this.requestFullscreen&&this.requestFullscreen()">`).join('')}
+      </div>`
+    : '';
+
+  const replyHtml = r.hostReply
+    ? `<div style="background:#f8f4ef;border-left:3px solid var(--primary);border-radius:0 9px 9px 0;padding:12px 16px;margin-top:16px;">
+        <div style="font-size:.75rem;color:var(--primary);font-weight:700;margin-bottom:4px">🏠 운영자 답변</div>
+        <div style="font-size:.87rem;color:#555;line-height:1.65">${_rvEsc(r.hostReply)}</div>
+       </div>`
+    : '';
+
+  document.getElementById('rvDetailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <div style="width:46px;height:46px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:700;flex-shrink:0">${initial}</div>
+      <div>
+        <div style="font-weight:700;font-size:.97rem">${_rvEsc(r.guestName)}</div>
+        <div style="font-size:.78rem;color:#888;margin-top:2px">${_rvFmt(r.stayDate)} 투숙${r.createdAt ? ' · 작성 ' + r.createdAt : ''}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:1.1rem;color:#f4a828;letter-spacing:1px">${_rvStars(r.avg||5)}</div>
+        <div style="font-size:.78rem;color:#aaa;margin-top:2px">${(r.avg||5).toFixed(1)} / 5.0</div>
+      </div>
+    </div>
+    ${catsHtml}
+    <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+    <p style="font-size:.9rem;line-height:1.75;color:#444">${_rvEsc(r.text)}</p>
+    ${photosHtml}
+    ${replyHtml}`;
+
+  const bg2 = document.getElementById('rvDetailBg');
+  bg2.style.display = 'flex';
+  setTimeout(() => bg2.style.opacity = 1, 10);
+}
+
+function closeRvDetail(e) {
+  if (e && e.target !== document.getElementById('rvDetailBg')) return;
+  document.getElementById('rvDetailBg').style.display = 'none';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('rvDetailBg').style.display = 'none';
+});
+
 // ── 날짜 선택 ────────────────────────
 const checkinEl = document.getElementById('checkinVal');
 const checkoutEl = document.getElementById('checkoutVal');
@@ -704,6 +869,152 @@ function handleReserve() {
     alert(`예약 요청이 완료되었습니다!\n\n체크인: ${formatDate(checkin)}\n체크아웃: ${formatDate(checkout)}\n인원: ${guestCount}명`);
   }
 }
+
+// ════════════════════════════════════════
+// HOST MODE
+// ════════════════════════════════════════
+const HOST_KEY  = 'pension_host';
+const HOST_PWD  = '1dl34';
+const SLOT_KEY  = 'idx_slots';
+const EXTRA_KEY = 'idx_extra';
+let editingSlot = null, editingExtraIdx = null;
+
+function checkHostAuth() {
+  if (localStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authField').value = '';
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+}
+function closeAuth() { document.getElementById('authOverlay').classList.remove('open'); }
+function closeAuthOutside(e) { if (e.target === document.getElementById('authOverlay')) closeAuth(); }
+function confirmAuth() {
+  if (document.getElementById('authField').value === HOST_PWD) {
+    localStorage.setItem(HOST_KEY, '1'); closeAuth(); activateHost();
+  } else {
+    document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
+    document.getElementById('authField').value = ''; document.getElementById('authField').focus();
+  }
+}
+function activateHost() { document.body.classList.add('host-mode'); }
+function exitHostMode() { localStorage.removeItem(HOST_KEY); document.body.classList.remove('host-mode'); }
+
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── 갤러리 슬롯 사진 변경 ──
+function startEditSlot(slot) { editingSlot = slot; document.getElementById('fileSlot').click(); }
+function onSlotFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  compressImage(file, src => {
+    const data = JSON.parse(localStorage.getItem(SLOT_KEY) || '{}');
+    data[editingSlot] = src;
+    try { localStorage.setItem(SLOT_KEY, JSON.stringify(data)); } catch(err) { console.warn('storage 용량 초과'); }
+    applySlotPhoto(editingSlot, src);
+  });
+  e.target.value = '';
+}
+function applySlotPhoto(slot, src) {
+  const el = document.querySelector(`[data-slot="${slot}"]`); if (!el) return;
+  let img = el.querySelector('.slot-img');
+  if (!img) {
+    img = document.createElement('img'); img.className = 'slot-img';
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;';
+    el.prepend(img);
+  }
+  img.src = src;
+}
+
+// ── 사진 추가 ──
+function startAddPhoto() { document.getElementById('fileAdd').click(); }
+function onAddFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  compressImage(file, src => {
+    const extras = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]');
+    extras.push(src);
+    try { localStorage.setItem(EXTRA_KEY, JSON.stringify(extras)); } catch(err) { console.warn('storage 용량 초과'); }
+    renderExtras();
+  });
+  e.target.value = '';
+}
+function renderExtras() {
+  const extras = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]');
+  document.getElementById('extraGrid').innerHTML = extras.map((src, i) => `
+    <div class="extra-photo-item">
+      <img src="${src}" alt="">
+      <button class="btn-del-extra" onclick="delExtra(${i});event.stopPropagation()">✕</button>
+      <button class="btn-change-extra" onclick="startChangeExtra(${i});event.stopPropagation()">📷 변경</button>
+    </div>`).join('');
+}
+function delExtra(idx) {
+  if (!confirm('이 사진을 삭제할까요?')) return;
+  const extras = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]');
+  extras.splice(idx, 1);
+  localStorage.setItem(EXTRA_KEY, JSON.stringify(extras)); renderExtras();
+}
+function startChangeExtra(idx) { editingExtraIdx = idx; document.getElementById('fileExtra').click(); }
+function onExtraFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  compressImage(file, src => {
+    const extras = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]');
+    extras[editingExtraIdx] = src;
+    try { localStorage.setItem(EXTRA_KEY, JSON.stringify(extras)); } catch(err) { console.warn('storage 용량 초과'); }
+    renderExtras();
+  });
+  e.target.value = '';
+}
+
+// ── 초기화 ──
+(function initHost() {
+  if (localStorage.getItem(HOST_KEY) === '1') activateHost();
+  const slots = JSON.parse(localStorage.getItem(SLOT_KEY) || '{}');
+  Object.entries(slots).forEach(([slot, src]) => applySlotPhoto(slot, src));
+  renderExtras();
+})();
 </script>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuthOutside(event)">
+  <div class="auth-box">
+    <div class="auth-box-title">🔐 호스트 인증</div>
+    <div class="auth-box-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력"
+      onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-btns">
+      <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
+      <button class="btn-auth-ok" onclick="confirmAuth()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOST BADGE -->
+<div class="host-badge" id="hostBadge">
+  ✏️ 호스트 모드
+  <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
+</div>
+
+<!-- HIDDEN FILE INPUTS -->
+<input type="file" id="fileSlot"  accept="image/*" style="display:none" onchange="onSlotFile(event)">
+<input type="file" id="fileAdd"   accept="image/*" style="display:none" onchange="onAddFile(event)">
+<input type="file" id="fileExtra" accept="image/*" style="display:none" onchange="onExtraFile(event)">
 </body>
 </html>
