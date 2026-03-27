@@ -1150,6 +1150,7 @@ function handleReserve() {
     `체크인: <b>${formatDate(checkin)}</b> &nbsp;→&nbsp; 체크아웃: <b>${formatDate(checkout)}</b><br>인원: <b>${guestCount}명</b> &nbsp;·&nbsp; <b>${nights}박</b> &nbsp;·&nbsp; 예상 요금: <b>${totalText}</b>`;
   document.getElementById('rsvReqName').value = '';
   document.getElementById('rsvReqPhone').value = '';
+  document.getElementById('rsvReqEmail').value = '';
   document.getElementById('rsvReqMemo').value = '';
   document.getElementById('rsvReqErr').classList.remove('show');
   document.getElementById('rsvReqBg').classList.add('open');
@@ -1167,11 +1168,14 @@ function toDateStr(d) {
 function submitReservation() {
   const name  = document.getElementById('rsvReqName').value.trim();
   const phone = document.getElementById('rsvReqPhone').value.trim();
+  const email = document.getElementById('rsvReqEmail').value.trim();
   const memo  = document.getElementById('rsvReqMemo').value.trim();
   const errEl = document.getElementById('rsvReqErr');
   errEl.classList.remove('show');
   if (!name)  { errEl.textContent = '이름을 입력해주세요.';    errEl.classList.add('show'); return; }
   if (!phone) { errEl.textContent = '연락처를 입력해주세요.'; errEl.classList.add('show'); return; }
+  if (!email) { errEl.textContent = '이메일을 입력해주세요.'; errEl.classList.add('show'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '올바른 이메일 형식이 아닙니다.'; errEl.classList.add('show'); return; }
 
   const nights   = Math.round((checkout - checkin) / (1000*60*60*24));
   const totalNum = parseInt(document.getElementById('totalPrice').textContent.replace(/[^0-9]/g, '')) || 0;
@@ -1182,6 +1186,7 @@ function submitReservation() {
     id: 'rsv_' + Date.now(),
     guestName: name,
     phone: phone,
+    email: email,
     checkin:  toDateStr(checkin),
     checkout: toDateStr(checkout),
     nights:   nights,
@@ -1359,6 +1364,11 @@ function onExtraFile(e) {
     <div class="rsv-req-field">
       <label>연락처 *</label>
       <input type="tel" id="rsvReqPhone" placeholder="010-0000-0000"
+             onkeydown="if(event.key==='Enter')document.getElementById('rsvReqEmail').focus()">
+    </div>
+    <div class="rsv-req-field">
+      <label>이메일 *</label>
+      <input type="email" id="rsvReqEmail" placeholder="example@email.com"
              onkeydown="if(event.key==='Enter')submitReservation()">
     </div>
     <div class="rsv-req-field">
