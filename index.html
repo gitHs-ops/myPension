@@ -597,9 +597,12 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 
     <!-- LOCATION -->
     <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:12px;">위치</h2>
-    <div class="map-placeholder">
-      🗺️
-      <div class="map-label">📍 영덕군, 경상북도, 대한민국</div>
+    <div style="border-radius:12px;overflow:hidden;height:280px;border:1px solid var(--border);">
+      <iframe
+        src="https://maps.google.com/maps?q=경북+영덕군+영덕대게로+767-48&z=16&output=embed"
+        width="100%" height="280" style="border:0;display:block;"
+        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
     </div>
     <p style="font-size:.85rem;color:var(--muted);margin-top:10px;line-height:1.6;">
       경북 영덕군 · 동해 해안가와 접한 산 중턱에 위치. 영덕 대게 거리까지 차로 15분, 강구항까지 20분 거리입니다.
