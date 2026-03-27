@@ -453,7 +453,8 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
       <button class="sms-btn-send" id="smsSendBtn" onclick="sendSmsApp()">📱 문자 발송</button>
     </div>
     <div class="sms-divider">또는 이메일로 발송</div>
-    <button class="sms-btn-email" id="smsEmailBtn" onclick="sendEmailNotification()">✉️ 이메일 발송</button>
+    <button class="sms-btn-email" id="smsEmailBtn" onclick="sendEmailNotification()">✉️ 이메일 발송 1 (EmailJS)</button>
+    <button class="sms-btn-email" id="smsEmailBtn2" onclick="sendEmailGAS()" style="margin-top:6px;background:#f0fff4;color:#1a7a3a;border-color:#b2dfca;">✉️ 이메일 발송 2 (Google)</button>
   </div>
 </div>
 
@@ -475,6 +476,7 @@ const EJS_PUBLIC_KEY        = 'ZtCJZtJkeMhYsZSeN';
 const EJS_SERVICE_ID        = 'service_92ic4gd';
 const EJS_TEMPLATE_CONFIRM  = 'template_fbg83fx';
 const EJS_TEMPLATE_CANCEL   = 'template_f3emqr5';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzpKlWexxoz_qOjFK_NYRmqi-Sa28V9vtOl48joj6b1FhM35e6MY0WBinTVFCUoyO9C1g/exec';
 emailjs.init({ publicKey: EJS_PUBLIC_KEY });
 
 // ── STATE ──
@@ -786,6 +788,39 @@ async function sendSmsApp() {
   } finally {
     btn.disabled = false;
     btn.textContent = '📱 문자 발송';
+  }
+}
+
+async function sendEmailGAS() {
+  const toEmail = document.getElementById('smsEmail').value.trim();
+  const msg     = document.getElementById('smsMsg').value.trim();
+  if (!toEmail) { showToast('이메일 주소를 입력해주세요.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) { showToast('올바른 이메일 형식이 아닙니다.'); return; }
+
+  const guestName = document.getElementById('smsSub').textContent
+    .replace('님께 확정 안내를 보내세요', '').replace('님께 취소 안내를 보내세요', '').trim();
+  const subject = SMS_CURRENT_STATUS === 'confirmed'
+    ? '[영덕감성산장] 예약이 확정되었습니다'
+    : '[영덕감성산장] 예약 취소 안내';
+
+  const btn = document.getElementById('smsEmailBtn2');
+  btn.disabled = true;
+  btn.textContent = '발송 중...';
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method: 'POST',
+      body:   JSON.stringify({ to_email: toEmail, to_name: guestName, subject, message: msg }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || '발송 실패');
+    document.getElementById('smsBg').classList.remove('open');
+    showToast('이메일이 성공적으로 발송되었습니다! (Google)');
+  } catch (e) {
+    showToast('발송 실패: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✉️ 이메일 발송 2 (Google)';
   }
 }
 
