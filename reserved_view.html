@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예약 현황 — 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222;
+  --sub: #555;
+  --muted: #888;
+  --border: #ddd;
+  --surface: #fff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.1);
+  --sans: 'Noto Sans KR', sans-serif;
+  --confirmed: #6b3a1f;
+  --pending: #d97706;
+  --cancelled: #9ca3af;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header { padding:10px 22px; border-radius:999px; background:#3d2010; color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── HERO ── */
+.hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; display:flex; align-items:center; justify-content:space-between; }
+.hero-left { display:flex; flex-direction:column; }
+.btn-back-main { display:inline-flex; align-items:center; gap:5px; color:rgba(255,255,255,.7); text-decoration:none; font-size:.82rem; font-weight:600; margin-bottom:12px; transition:color .15s; width:fit-content; }
+.btn-back-main:hover { color:#fff; }
+.hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
+.hero p { font-size:.92rem; opacity:.75; }
+.btn-add-rsv { background:#fff; color:var(--primary); border:none; padding:12px 26px; border-radius:999px; font-family:var(--sans); font-size:.9rem; font-weight:700; cursor:pointer; transition:transform .15s; display:none; white-space:nowrap; }
+body.host-mode .btn-add-rsv { display:block; }
+.btn-add-rsv:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.2); }
+
+/* ── STATS ── */
+.stats-wrap { max-width:960px; margin:28px auto 0; padding:0 24px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.stat-card { background:var(--surface); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); }
+.stat-label { font-size:.75rem; color:var(--muted); font-weight:600; margin-bottom:6px; }
+.stat-val { font-size:1.6rem; font-weight:900; color:var(--primary); }
+.stat-sub { font-size:.72rem; color:var(--muted); margin-top:3px; }
+.stat-revenue { filter:blur(6px); pointer-events:none; transition:filter .2s; }
+body.host-mode .stat-revenue { filter:none; pointer-events:auto; }
+
+/* ── MAIN LAYOUT ── */
+.main-wrap { max-width:960px; margin:24px auto 80px; padding:0 24px; display:grid; grid-template-columns:1fr 340px; gap:28px; align-items:start; }
+
+/* ── CALENDAR ── */
+.cal-section { background:var(--surface); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.cal-title { font-size:1rem; font-weight:900; }
+.cal-nav { display:flex; gap:6px; }
+.cal-nav button { background:none; border:1px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1rem; transition:background .12s; }
+.cal-nav button:hover { background:var(--bg); }
+.cal-wd-row { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.cal-wd { text-align:center; font-size:.72rem; color:var(--muted); font-weight:600; padding:4px 0; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-cell { height:48px; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; }
+.cal-cell:hover:not(.other-month) .cal-num { background:var(--bg); }
+.cal-num { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:.85rem; position:relative; z-index:1; transition:background .1s; }
+.cal-cell.other-month .cal-num { color:#ccc; cursor:default; }
+.cal-cell.today .cal-num { font-weight:900; color:var(--primary); border:1.5px solid var(--primary); }
+/* range band */
+.cal-cell::before { content:''; position:absolute; top:50%; transform:translateY(-50%); height:34px; left:0; right:0; }
+.cal-cell.rsv-mid::before { background:rgba(107,58,31,.12); }
+.cal-cell.rsv-start::before { background:linear-gradient(to right, transparent 50%, rgba(107,58,31,.12) 50%); }
+.cal-cell.rsv-end::before   { background:linear-gradient(to left,  transparent 50%, rgba(107,58,31,.12) 50%); }
+.cal-cell.rsv-start .cal-num,
+.cal-cell.rsv-end   .cal-num { background:var(--primary); color:#fff; }
+.cal-cell.rsv-single .cal-num { background:var(--primary); color:#fff; }
+/* pending */
+.cal-cell.rsv-pend-mid::before    { background:rgba(217,119,6,.12); }
+.cal-cell.rsv-pend-start::before  { background:linear-gradient(to right, transparent 50%, rgba(217,119,6,.12) 50%); }
+.cal-cell.rsv-pend-end::before    { background:linear-gradient(to left,  transparent 50%, rgba(217,119,6,.12) 50%); }
+.cal-cell.rsv-pend-start .cal-num,
+.cal-cell.rsv-pend-end   .cal-num { background:var(--pending); color:#fff; }
+/* legend */
+.cal-legend { display:flex; gap:16px; margin-top:14px; padding-top:14px; border-top:1px solid var(--bg); }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--muted); }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+
+/* ── LIST SECTION ── */
+.list-section { display:flex; flex-direction:column; gap:14px; }
+.list-header { display:flex; align-items:center; justify-content:space-between; }
+.list-title { font-size:.95rem; font-weight:900; }
+.filter-tabs { display:flex; gap:4px; }
+.ftab { background:none; border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:.75rem; font-family:var(--sans); cursor:pointer; color:var(--muted); transition:all .12s; }
+.ftab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+.rsv-card { background:var(--surface); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); border-left:4px solid var(--border); }
+.rsv-card.confirmed { border-left-color:var(--confirmed); }
+.rsv-card.pending   { border-left-color:var(--pending); }
+.rsv-card.cancelled { border-left-color:var(--cancelled); opacity:.7; }
+.rsv-row1 { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.rsv-guest { display:flex; align-items:center; gap:8px; }
+.rsv-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#c8956c); display:flex; align-items:center; justify-content:center; font-size:.9rem; color:#fff; font-weight:700; flex-shrink:0; }
+.rsv-name { font-weight:700; font-size:.9rem; }
+.rsv-guests-count { font-size:.74rem; color:var(--muted); }
+.status-badge { font-size:.7rem; font-weight:700; padding:3px 9px; border-radius:10px; }
+.status-badge.confirmed { background:#fdf1e8; color:var(--confirmed); }
+.status-badge.pending   { background:#fef3c7; color:var(--pending); }
+.status-badge.cancelled { background:#f3f4f6; color:var(--cancelled); }
+.rsv-dates { font-size:.82rem; color:var(--sub); margin-bottom:6px; }
+.rsv-dates b { color:var(--text); }
+.rsv-price { font-size:.8rem; color:var(--muted); }
+.rsv-price b { color:var(--primary); font-size:.88rem; }
+.rsv-memo { font-size:.76rem; color:var(--muted); margin-top:5px; font-style:italic; }
+.rsv-actions { display:none; gap:6px; margin-top:10px; }
+body.host-mode .rsv-actions { display:flex; }
+.btn-rsv { font-size:.75rem; padding:5px 12px; border-radius:14px; border:1px solid var(--border); background:var(--surface); cursor:pointer; color:var(--text); transition:background .12s; }
+.btn-rsv:hover { background:var(--bg); }
+.btn-rsv.del { border-color:#e53935; color:#e53935; }
+.btn-rsv.del:hover { background:#fff5f5; }
+.empty-list { text-align:center; padding:48px 20px; color:var(--muted); }
+.empty-list .ei { font-size:2.5rem; margin-bottom:10px; }
+
+/* ── GUEST VIEW NOTICE ── */
+.guest-notice { background:var(--surface); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); font-size:.85rem; color:var(--muted); line-height:1.7; text-align:center; }
+body.host-mode .guest-notice { display:none; }
+.list-section-inner { display:none; }
+body.host-mode .list-section-inner { display:contents; }
+
+/* ── MODAL ── */
+.modal-bg { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
+.modal-bg.open { display:flex; }
+.modal { background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.modal-title { font-size:1.05rem; font-weight:900; color:var(--primary); margin-bottom:20px; }
+.form-row { margin-bottom:14px; }
+.form-lbl { display:block; font-size:.78rem; color:var(--muted); margin-bottom:5px; font-weight:600; }
+.form-input { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.9rem; background:#faf8f5; transition:border-color .15s; }
+.form-input:focus { outline:none; border-color:var(--primary); }
+textarea.form-input { resize:vertical; min-height:70px; }
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.status-select { appearance:none; cursor:pointer; }
+.modal-btns { display:flex; gap:8px; margin-top:20px; }
+.btn-ok { flex:1; background:var(--primary); color:#fff; border:none; padding:12px; border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.9rem; cursor:pointer; }
+.btn-ok:hover { background:var(--primary-dark); }
+.btn-cl { background:#f0ebe4; color:var(--text); border:none; padding:12px 18px; border-radius:9px; font-family:var(--sans); font-size:.88rem; cursor:pointer; }
+.nights-preview { font-size:.78rem; color:var(--primary); margin-top:4px; font-weight:600; min-height:16px; }
+.form-err { color:#e53935; font-size:.78rem; margin-top:8px; display:none; }
+.form-err.show { display:block; }
+
+/* ── SMS MODAL ── */
+.sms-bg { display:none; position:fixed; inset:0; z-index:800; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
+.sms-bg.open { display:flex; }
+.sms-box { background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:440px; box-shadow:0 12px 48px rgba(0,0,0,.25); }
+.sms-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.sms-icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.sms-icon.confirmed { background:#fdf1e8; }
+.sms-icon.cancelled { background:#f3f4f6; }
+.sms-title { font-size:1rem; font-weight:900; color:var(--primary); }
+.sms-sub { font-size:.78rem; color:var(--muted); margin-top:1px; }
+.sms-to { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.sms-to-label { font-size:.75rem; color:var(--muted); font-weight:700; white-space:nowrap; }
+.sms-phone-input { flex:1; padding:8px 11px; border:1px solid var(--border); border-radius:8px; font-family:var(--sans); font-size:.88rem; }
+.sms-phone-input:focus { outline:none; border-color:var(--primary); }
+.sms-msg-wrap { position:relative; }
+.sms-msg { width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.85rem; line-height:1.7; resize:vertical; min-height:130px; background:#faf8f5; }
+.sms-msg:focus { outline:none; border-color:var(--primary); }
+.sms-char { text-align:right; font-size:.72rem; color:var(--muted); margin-top:4px; }
+.sms-actions { display:flex; gap:8px; margin-top:16px; }
+.sms-btn-copy { flex:1; background:#f0ebe4; color:var(--text); border:none; padding:11px; border-radius:9px; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .12s; }
+.sms-btn-copy:hover { background:#e8dfd6; }
+.sms-btn-send { flex:1; background:var(--primary); color:#fff; border:none; padding:11px; border-radius:9px; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .12s; }
+.sms-btn-send:hover { background:var(--primary-dark); }
+.sms-btn-skip { background:none; border:none; padding:11px 14px; font-family:var(--sans); font-size:.82rem; color:var(--muted); cursor:pointer; }
+.sms-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:9px 20px; border-radius:20px; font-size:.82rem; font-weight:600; z-index:900; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+.sms-toast.show { opacity:1; }
+
+/* ── AUTH ── */
+.auth-bg { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
+.auth-bg.open { display:flex; }
+.auth-box { background:#fff; border-radius:16px; padding:30px 32px; width:320px; text-align:center; }
+.auth-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
+.auth-sub { font-size:.82rem; color:var(--muted); margin-bottom:18px; }
+.auth-input { width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:9px; text-align:center; font-size:1rem; letter-spacing:3px; font-family:var(--sans); margin-bottom:10px; }
+.auth-input:focus { outline:none; border-color:var(--primary); }
+.auth-err { color:#e53935; font-size:.8rem; margin-bottom:10px; display:none; }
+.auth-err.show { display:block; }
+.auth-ok { width:100%; background:var(--primary); color:#fff; border:none; padding:12px; border-radius:9px; font-family:var(--sans); font-size:.92rem; font-weight:700; cursor:pointer; }
+.auth-cancel { margin-top:8px; width:100%; background:transparent; border:none; color:var(--muted); font-size:.8rem; cursor:pointer; }
+
+/* ── HOST BADGE ── */
+.host-badge { display:none; position:fixed; bottom:28px; left:28px; z-index:300; background:var(--primary); color:#fff; border:none; padding:10px 18px; border-radius:999px; font-family:var(--sans); font-size:.78rem; font-weight:700; cursor:pointer; box-shadow:0 3px 16px rgba(0,0,0,.2); gap:8px; align-items:center; }
+body.host-mode .host-badge { display:flex; }
+.host-badge a { color:#fff; text-decoration:none; opacity:.8; transition:opacity .15s; }
+.host-badge a:hover { opacity:1; }
+.host-badge-sep { opacity:.35; }
+
+/* ── FOOTER ── */
+footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center; justify-content:space-between; }
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; text-decoration:none; }
+.footer-logo-icon { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:.85rem; }
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:860px) {
+  .stats-wrap { grid-template-columns:1fr 1fr; }
+  .main-wrap { grid-template-columns:1fr; }
+  .hero { padding:32px 20px 26px; flex-direction:column; gap:14px; align-items:flex-start; }
+  header.header { padding:0 16px; }
+  footer { flex-direction:column; gap:14px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:12px; }
+}
+@media(max-width:480px) {
+  .stats-wrap { grid-template-columns:1fr 1fr; gap:10px; }
+  .form-row-2 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <a class="logo" href="index.html">
+    <div class="logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html">홈</a>
+    <a href="review.html">후기 남기기</a>
+    <a href="pic_view.html">사진 모두보기</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
+    <button class="btn-reserve-header" onclick="location.href='pension_reservation.html'">예약 문의</button>
+  </nav>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-left">
+    <a class="btn-back-main" href="index.html">← 메인으로 돌아가기</a>
+    <h1>예약 현황</h1>
+    <p>영덕감성산장 예약 일정을 확인하세요</p>
+  </div>
+  <button class="btn-add-rsv" onclick="openRsvModal()">＋ 예약 추가</button>
+</section>
+
+<!-- ── STATS ── -->
+<div class="stats-wrap">
+  <div class="stat-card">
+    <div class="stat-label">전체 예약</div>
+    <div class="stat-val" id="statTotal">0</div>
+    <div class="stat-sub">확정 기준</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">이번 달</div>
+    <div class="stat-val" id="statMonth">0</div>
+    <div class="stat-sub" id="statMonthLabel">건</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">총 박수</div>
+    <div class="stat-val" id="statNights">0</div>
+    <div class="stat-sub">확정 기준</div>
+  </div>
+  <div class="stat-card stat-revenue">
+    <div class="stat-label">예상 매출</div>
+    <div class="stat-val" id="statRevenue">₩0</div>
+    <div class="stat-sub">확정 기준</div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main-wrap">
+
+  <!-- 달력 -->
+  <div class="cal-section">
+    <div class="cal-header">
+      <span class="cal-title" id="calTitle"></span>
+      <div class="cal-nav">
+        <button onclick="navMonth(-1)">‹</button>
+        <button onclick="navMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="cal-wd-row">
+      <div class="cal-wd">일</div><div class="cal-wd">월</div><div class="cal-wd">화</div>
+      <div class="cal-wd">수</div><div class="cal-wd">목</div><div class="cal-wd">금</div>
+      <div class="cal-wd">토</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--confirmed)"></div>확정</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pending)"></div>대기중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>가능</div>
+    </div>
+  </div>
+
+  <!-- 예약 목록 -->
+  <div class="list-section">
+    <div class="list-header">
+      <span class="list-title">예약 목록</span>
+      <div class="filter-tabs">
+        <button class="ftab active" data-filter="all"    onclick="setFilter('all')">전체</button>
+        <button class="ftab"        data-filter="confirmed" onclick="setFilter('confirmed')">확정</button>
+        <button class="ftab"        data-filter="pending"   onclick="setFilter('pending')">대기</button>
+        <button class="ftab"        data-filter="cancelled" onclick="setFilter('cancelled')">취소</button>
+      </div>
+    </div>
+
+    <!-- 비호스트 안내 -->
+    <div class="guest-notice">
+      🔒 예약 상세 정보는 호스트만 확인할 수 있습니다.<br>
+      예약 문의는 <a href="pension_reservation.html" style="color:var(--primary);font-weight:700">예약 문의 페이지</a>를 이용해주세요.
+    </div>
+
+    <!-- 호스트 전용 목록 -->
+    <div class="list-section-inner">
+      <div id="rsvList"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a class="footer-logo" href="index.html">
+    <div class="footer-logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="footer-nav">
+    <a href="index.html">홈</a>
+    <a href="review.html">후기 남기기</a>
+    <a href="pic_view.html">사진 모두보기</a>
+    <a href="reserved_view.html">예약 현황</a>
+    <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- 예약 추가/수정 -->
+<div class="modal-bg" id="rsvModal">
+  <div class="modal">
+    <div class="modal-title" id="rsvModalTitle">＋ 예약 추가</div>
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">투숙객 이름 *</label>
+        <input class="form-input" id="inGuestName" type="text" placeholder="홍길동" maxlength="20">
+      </div>
+      <div>
+        <label class="form-lbl">연락처</label>
+        <input class="form-input" id="inPhone" type="tel" placeholder="010-0000-0000">
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">체크인 *</label>
+        <input class="form-input" id="inCheckin" type="date" oninput="previewNights()">
+      </div>
+      <div>
+        <label class="form-lbl">체크아웃 *</label>
+        <input class="form-input" id="inCheckout" type="date" oninput="previewNights()">
+      </div>
+    </div>
+    <div class="nights-preview" id="nightsPreview"></div>
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">인원</label>
+        <input class="form-input" id="inGuests" type="number" min="1" max="10" value="2">
+      </div>
+      <div>
+        <label class="form-lbl">총 요금 (원)</label>
+        <input class="form-input" id="inPrice" type="number" min="0" step="1000" placeholder="자동 계산">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">상태</label>
+      <select class="form-input status-select" id="inStatus">
+        <option value="confirmed">확정</option>
+        <option value="pending">대기중</option>
+        <option value="cancelled">취소</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">메모</label>
+      <textarea class="form-input" id="inMemo" placeholder="늦은 체크인, 특이사항 등"></textarea>
+    </div>
+    <div class="form-err" id="rsvErr"></div>
+    <div class="modal-btns">
+      <button class="btn-cl" onclick="closeRsvModal()">취소</button>
+      <button class="btn-ok" onclick="saveRsv()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth -->
+<div class="auth-bg" id="authBg">
+  <div class="auth-box">
+    <div class="auth-title">🔐 호스트 인증</div>
+    <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-input" id="authInput" type="password" placeholder="암호 입력"
+           onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr">암호가 올바르지 않습니다.</div>
+    <button class="auth-ok" onclick="confirmAuth()">확인</button>
+    <button class="auth-cancel" onclick="closeAuthModal()">취소</button>
+  </div>
+</div>
+
+<!-- SMS 발송 모달 -->
+<div class="sms-bg" id="smsBg" onclick="closeSmsModal(event)">
+  <div class="sms-box">
+    <div class="sms-header">
+      <div class="sms-icon" id="smsIcon"></div>
+      <div>
+        <div class="sms-title" id="smsTitle"></div>
+        <div class="sms-sub" id="smsSub"></div>
+      </div>
+    </div>
+    <div class="sms-to">
+      <span class="sms-to-label">수신자</span>
+      <input class="sms-phone-input" id="smsPhone" type="tel" placeholder="010-0000-0000">
+    </div>
+    <div class="sms-msg-wrap">
+      <textarea class="sms-msg" id="smsMsg" oninput="updateSmsChar()"></textarea>
+    </div>
+    <div class="sms-char"><span id="smsCharCount">0</span>자</div>
+    <div class="sms-actions">
+      <button class="sms-btn-skip" onclick="closeSmsModal()">건너뛰기</button>
+      <button class="sms-btn-copy" onclick="copySmsMsg()">📋 복사</button>
+      <button class="sms-btn-send" id="smsSendBtn" onclick="sendSmsApp()">📱 문자 발송</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="sms-toast" id="smsToast"></div>
+
+<!-- Host Badge -->
+<div class="host-badge">
+  <span>✏️ 호스트 모드</span>
+  <span class="host-badge-sep">|</span>
+  <a href="pension_reservation.html">예약 문의 확인</a>
+  <span class="host-badge-sep">|</span>
+  <span style="cursor:pointer;opacity:.75" onclick="exitHostMode()">종료</span>
+</div>
+
+<script>
+// ── STATE ──
+let RESERVATIONS = [];
+let HOST_MODE = false;
+let FILTER = 'all';
+let EDIT_ID = null;
+let CAL_MONTH = new Date();
+
+// ── INIT ──
+function init() {
+  try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e) { RESERVATIONS = []; }
+  HOST_MODE = localStorage.getItem('pension_host') === '1';
+  if (HOST_MODE) document.body.classList.add('host-mode');
+  CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  renderStats();
+  renderCalendar();
+  renderList();
+}
+
+// ── PERSIST ──
+function saveRsvData() {
+  try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+}
+
+// ── DATES ──
+function parseDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
+function fmtDate(s) {
+  if (!s) return '';
+  const d = parseDate(s);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+function fmtShort(s) {
+  if (!s) return '';
+  const d = parseDate(s);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function nightsBetween(cin, cout) {
+  if (!cin || !cout) return 0;
+  return Math.max(0, Math.round((parseDate(cout) - parseDate(cin)) / (1000*60*60*24)));
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+// ── STATS ──
+function renderStats() {
+  const confirmed = RESERVATIONS.filter(r => r.status === 'confirmed');
+  const now = new Date();
+  const thisMonth = confirmed.filter(r => {
+    const d = parseDate(r.checkin);
+    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  const totalNights = confirmed.reduce((s,r) => s + (r.nights||0), 0);
+  const revenue = confirmed.reduce((s,r) => s + (r.totalPrice||0), 0);
+  document.getElementById('statTotal').textContent  = confirmed.length;
+  document.getElementById('statMonth').textContent  = thisMonth.length;
+  document.getElementById('statMonthLabel').textContent = `${now.getMonth()+1}월 기준`;
+  document.getElementById('statNights').textContent = totalNights;
+  document.getElementById('statRevenue').textContent = `₩${revenue.toLocaleString()}`;
+}
+
+// ── CALENDAR ──
+function navMonth(dir) {
+  CAL_MONTH = new Date(CAL_MONTH.getFullYear(), CAL_MONTH.getMonth() + dir, 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const y = CAL_MONTH.getFullYear(), m = CAL_MONTH.getMonth();
+  document.getElementById('calTitle').textContent = `${y}년 ${m+1}월`;
+  const startDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayS = todayStr();
+
+  // Build a map of date → reservation info
+  const dateMap = {};
+  RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
+    if (!r.checkin || !r.checkout) return;
+    const cin  = parseDate(r.checkin);
+    const cout = parseDate(r.checkout);
+    const cur  = new Date(cin);
+    while (cur < cout) {
+      const ds = cur.toISOString().slice(0,10);
+      if (!dateMap[ds] || r.status === 'confirmed') dateMap[ds] = { id:r.id, status:r.status, isStart: ds===r.checkin, isEnd: false };
+      const next = new Date(cur); next.setDate(next.getDate()+1);
+      if (next >= cout) dateMap[ds].isEnd = false;
+      cur.setDate(cur.getDate()+1);
+    }
+    // mark checkout day as range-end
+    const coutDs = r.checkout;
+    if (!dateMap[coutDs]) dateMap[coutDs] = { id:r.id, status:r.status, isStart:false, isEnd:true };
+    else dateMap[coutDs].isEnd = true;
+  });
+
+  let html = '';
+  for (let i=0; i<startDow; i++) html += `<div class="cal-cell other-month"><div class="cal-num"></div></div>`;
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const info = dateMap[ds];
+    const isToday = ds === todayS;
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (info) {
+      const p = info.status === 'pending' ? 'rsv-pend' : 'rsv';
+      if (info.isStart && info.isEnd)   cls += ` rsv-single`;
+      else if (info.isStart)            cls += ` ${p}-start`;
+      else if (info.isEnd)              cls += ` ${p}-end`;
+      else                              cls += ` ${p}-mid`;
+    }
+    const clickAttr = info ? `onclick="scrollToRsv('${info.id}')"` : '';
+    html += `<div class="${cls}" ${clickAttr}><div class="cal-num">${d}</div></div>`;
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function scrollToRsv(id) {
+  if (!HOST_MODE) return;
+  const el = document.getElementById('rc_' + id);
+  if (el) { el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.outline='2px solid var(--primary)'; setTimeout(()=>el.style.outline='',1500); }
+}
+
+// ── LIST ──
+function setFilter(f) {
+  FILTER = f;
+  document.querySelectorAll('.ftab').forEach(el => el.classList.toggle('active', el.dataset.filter === f));
+  renderList();
+}
+
+function renderList() {
+  const el = document.getElementById('rsvList');
+  let list = [...RESERVATIONS].sort((a,b) => (a.checkin||'').localeCompare(b.checkin||''));
+  if (FILTER !== 'all') list = list.filter(r => r.status === FILTER);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-list"><div class="ei">📋</div>${FILTER==='all'?'등록된 예약이 없습니다.':'해당 상태의 예약이 없습니다.'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(r => {
+    const initial = (r.guestName||'?')[0];
+    const nights = r.nights || nightsBetween(r.checkin, r.checkout);
+    const statusLabel = {confirmed:'확정', pending:'대기중', cancelled:'취소'}[r.status] || r.status;
+    return `
+    <div class="rsv-card ${r.status}" id="rc_${r.id}">
+      <div class="rsv-row1">
+        <div class="rsv-guest">
+          <div class="rsv-avatar">${initial}</div>
+          <div>
+            <div class="rsv-name">${esc(r.guestName)}</div>
+            <div class="rsv-guests-count">${r.guests||1}명</div>
+          </div>
+        </div>
+        <span class="status-badge ${r.status}">${statusLabel}</span>
+      </div>
+      <div class="rsv-dates">
+        <b>${fmtShort(r.checkin)}</b> 체크인 → <b>${fmtShort(r.checkout)}</b> 체크아웃 &nbsp;·&nbsp; ${nights}박
+      </div>
+      ${r.totalPrice ? `<div class="rsv-price">총 요금: <b>₩${r.totalPrice.toLocaleString()}</b></div>` : ''}
+      ${r.phone ? `<div class="rsv-price" style="margin-top:2px">연락처: ${esc(r.phone)}</div>` : ''}
+      ${r.memo ? `<div class="rsv-memo">"${esc(r.memo)}"</div>` : ''}
+      <div class="rsv-actions">
+        <select class="btn-rsv" style="font-family:var(--sans);font-size:.75rem" onchange="changeStatus('${r.id}',this.value)">
+          <option value="confirmed" ${r.status==='confirmed'?'selected':''}>확정</option>
+          <option value="pending"   ${r.status==='pending'  ?'selected':''}>대기중</option>
+          <option value="cancelled" ${r.status==='cancelled'?'selected':''}>취소</option>
+        </select>
+        <button class="btn-rsv" onclick="openRsvModal('${r.id}')">✏️ 수정</button>
+        <button class="btn-rsv del" onclick="deleteRsv('${r.id}')">🗑 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── STATUS CHANGE ──
+function changeStatus(id, status) {
+  const r = RESERVATIONS.find(r => r.id === id);
+  if (!r) return;
+  const prev = r.status;
+  r.status = status;
+  saveRsvData();
+  renderStats();
+  renderCalendar();
+  renderList();
+  if ((status === 'confirmed' || status === 'cancelled') && prev !== status) {
+    openSmsModal(r, status);
+  }
+}
+
+// ── SMS ──
+function openSmsModal(r, status) {
+  const nights = r.nights || nightsBetween(r.checkin, r.checkout);
+  const icon  = document.getElementById('smsIcon');
+  const title = document.getElementById('smsTitle');
+  const sub   = document.getElementById('smsSub');
+
+  icon.className = `sms-icon ${status}`;
+  if (status === 'confirmed') {
+    icon.textContent = '✅';
+    title.textContent = '예약 확정 문자 발송';
+    sub.textContent   = `${r.guestName}님께 확정 안내를 보내세요`;
+  } else {
+    icon.textContent = '❌';
+    title.textContent = '예약 취소 문자 발송';
+    sub.textContent   = `${r.guestName}님께 취소 안내를 보내세요`;
+  }
+
+  document.getElementById('smsPhone').value = r.phone || '';
+
+  const msg = status === 'confirmed'
+    ? buildConfirmMsg(r, nights)
+    : buildCancelMsg(r);
+  document.getElementById('smsMsg').value = msg;
+  updateSmsChar();
+  document.getElementById('smsBg').classList.add('open');
+}
+
+function buildConfirmMsg(r, nights) {
+  return `[영덕감성산장] ${r.guestName}님, 예약이 확정되었습니다 :)
+
+체크인:  ${fmtDate(r.checkin)}
+체크아웃: ${fmtDate(r.checkout)}
+${nights}박 / ${r.guests || 1}명
+
+궁금하신 점은 언제든지 연락 주세요.
+감사합니다!`;
+}
+
+function buildCancelMsg(r) {
+  return `[영덕감성산장] ${r.guestName}님, 아쉽게도 요청하신 예약이 취소되었습니다.
+
+불편을 드려 죄송합니다.
+다음에 또 방문해 주시면 더욱 잘 모시겠습니다.
+감사합니다.`;
+}
+
+function updateSmsChar() {
+  const len = document.getElementById('smsMsg').value.length;
+  document.getElementById('smsCharCount').textContent = len;
+}
+
+function closeSmsModal(e) {
+  if (!e || e.target === document.getElementById('smsBg')) {
+    document.getElementById('smsBg').classList.remove('open');
+  }
+}
+
+function copySmsMsg() {
+  const msg = document.getElementById('smsMsg').value;
+  navigator.clipboard.writeText(msg).then(() => {
+    showToast('메시지가 복사되었습니다!');
+  }).catch(() => {
+    // fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = msg; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('메시지가 복사되었습니다!');
+  });
+}
+
+// ── SOLAPI ──
+const SOLAPI_KEY    = 'NCSW8NPCMTPJCZUY';
+const SOLAPI_SECRET = 'BMGQIPJJCMJCET6FDYVUZWOH3JI1JGM7';
+const SOLAPI_FROM   = '01026989056';
+
+async function solapiAuth() {
+  const date = new Date().toISOString();
+  const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map(b => b.toString(16).padStart(2,'0')).join('');
+  const enc  = new TextEncoder();
+  const key  = await crypto.subtle.importKey(
+    'raw', enc.encode(SOLAPI_SECRET),
+    { name:'HMAC', hash:'SHA-256' }, false, ['sign']
+  );
+  const sig  = await crypto.subtle.sign('HMAC', key, enc.encode(date + salt));
+  const hex  = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
+  return { header: `HMAC-SHA256 apiKey=${SOLAPI_KEY}, date=${date}, salt=${salt}, signature=${hex}` };
+}
+
+async function sendSmsApp() {
+  const phone = document.getElementById('smsPhone').value.replace(/[^0-9]/g, '');
+  const msg   = document.getElementById('smsMsg').value.trim();
+  if (!phone) { showToast('연락처를 입력해주세요.'); return; }
+  if (!msg)   { showToast('메시지를 입력해주세요.'); return; }
+
+  const btn = document.getElementById('smsSendBtn');
+  btn.disabled = true;
+  btn.textContent = '발송 중...';
+
+  try {
+    const { header } = await solapiAuth();
+    const res = await fetch('https://api.solapi.com/messages/v4/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': header },
+      body: JSON.stringify({ message: { to: phone, from: SOLAPI_FROM, text: msg } })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.errorMessage || data.message || '발송 실패');
+    document.getElementById('smsBg').classList.remove('open');
+    showToast('문자가 성공적으로 발송되었습니다!');
+  } catch (e) {
+    showToast('발송 실패: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📱 문자 발송';
+  }
+}
+
+function showToast(msg) {
+  const el = document.getElementById('smsToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── DELETE ──
+function deleteRsv(id) {
+  if (!confirm('이 예약을 삭제하시겠어요?')) return;
+  RESERVATIONS = RESERVATIONS.filter(r => r.id !== id);
+  saveRsvData();
+  renderStats();
+  renderCalendar();
+  renderList();
+}
+
+// ── MODAL ──
+function openRsvModal(id) {
+  EDIT_ID = id || null;
+  const r = id ? RESERVATIONS.find(r => r.id === id) : null;
+  document.getElementById('rsvModalTitle').textContent = r ? '✏️ 예약 수정' : '＋ 예약 추가';
+  document.getElementById('inGuestName').value = r?.guestName || '';
+  document.getElementById('inPhone').value     = r?.phone || '';
+  document.getElementById('inCheckin').value   = r?.checkin || '';
+  document.getElementById('inCheckout').value  = r?.checkout || '';
+  document.getElementById('inGuests').value    = r?.guests || 2;
+  document.getElementById('inPrice').value     = r?.totalPrice || '';
+  document.getElementById('inStatus').value    = r?.status || 'confirmed';
+  document.getElementById('inMemo').value      = r?.memo || '';
+  document.getElementById('rsvErr').classList.remove('show');
+  previewNights();
+  document.getElementById('rsvModal').classList.add('open');
+}
+
+function closeRsvModal() { document.getElementById('rsvModal').classList.remove('open'); }
+
+function previewNights() {
+  const cin  = document.getElementById('inCheckin').value;
+  const cout = document.getElementById('inCheckout').value;
+  const n = nightsBetween(cin, cout);
+  const el = document.getElementById('nightsPreview');
+  if (cin && cout && n > 0) {
+    if (!document.getElementById('inPrice').value) {
+      const prices = JSON.parse(localStorage.getItem('pension_prices') || '{}');
+      const nr = prices.nightRate || 120000;
+      const cf = prices.cleanFee !== undefined ? prices.cleanFee : 30000;
+      const sr = prices.svcRate !== undefined ? prices.svcRate : 0.12;
+      const sub = nr * n;
+      const total = sub + cf + Math.round(sub * sr);
+      document.getElementById('inPrice').value = total;
+    }
+    el.textContent = `${n}박 (${fmtDate(cin)} ~ ${fmtDate(cout)})`;
+  } else {
+    el.textContent = cin && cout && n <= 0 ? '체크아웃은 체크인 이후 날짜로 선택해주세요.' : '';
+  }
+}
+
+function saveRsv() {
+  const errEl = document.getElementById('rsvErr');
+  errEl.classList.remove('show');
+  const name   = document.getElementById('inGuestName').value.trim();
+  const cin    = document.getElementById('inCheckin').value;
+  const cout   = document.getElementById('inCheckout').value;
+  const guests = parseInt(document.getElementById('inGuests').value) || 1;
+  const price  = parseInt(document.getElementById('inPrice').value) || 0;
+  const status = document.getElementById('inStatus').value;
+  const memo   = document.getElementById('inMemo').value.trim();
+  const phone  = document.getElementById('inPhone').value.trim();
+
+  if (!name) { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
+  if (!cin)  { showErr(errEl, '체크인 날짜를 선택해주세요.'); return; }
+  if (!cout) { showErr(errEl, '체크아웃 날짜를 선택해주세요.'); return; }
+  if (nightsBetween(cin, cout) <= 0) { showErr(errEl, '체크아웃은 체크인 이후여야 합니다.'); return; }
+
+  const nights = nightsBetween(cin, cout);
+
+  if (EDIT_ID) {
+    const r = RESERVATIONS.find(r => r.id === EDIT_ID);
+    if (r) Object.assign(r, {guestName:name, phone, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo});
+  } else {
+    RESERVATIONS.push({ id:'rsv_'+Date.now(), guestName:name, phone, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo, createdAt:todayStr() });
+  }
+
+  saveRsvData();
+  closeRsvModal();
+  renderStats();
+  renderCalendar();
+  renderList();
+}
+
+function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
+
+// ── HOST AUTH ──
+function checkHostAuth() {
+  if (HOST_MODE) return;
+  document.getElementById('authInput').value = '';
+  document.getElementById('authErr').classList.remove('show');
+  document.getElementById('authBg').classList.add('open');
+  setTimeout(() => document.getElementById('authInput').focus(), 80);
+}
+function closeAuthModal() { document.getElementById('authBg').classList.remove('open'); }
+function confirmAuth() {
+  if (document.getElementById('authInput').value === '1dl34') {
+    activateHost();
+  } else {
+    document.getElementById('authErr').classList.add('show');
+    document.getElementById('authInput').value = '';
+    document.getElementById('authInput').focus();
+  }
+}
+function activateHost() {
+  HOST_MODE = true;
+  localStorage.setItem('pension_host', '1');
+  document.body.classList.add('host-mode');
+  closeAuthModal();
+  renderList();
+}
+function exitHostMode() {
+  HOST_MODE = false;
+  localStorage.removeItem('pension_host');
+  document.body.classList.remove('host-mode');
+  renderList();
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['rsvModal','authBg','smsBg'].forEach(id => document.getElementById(id).classList.remove('open'));
+  }
+});
+document.getElementById('rsvModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('rsvModal')) closeRsvModal();
+});
+document.getElementById('authBg').addEventListener('click', e => {
+  if (e.target === document.getElementById('authBg')) closeAuthModal();
+});
+
+init();
+</script>
+</body>
+</html>

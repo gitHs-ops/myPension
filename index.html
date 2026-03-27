@@ -357,6 +357,24 @@ body.host-mode .price-edit-btn { display:inline; }
 .cal-clear-btn { background:none; border:none; font-size:.78rem; color:var(--muted); cursor:pointer; text-decoration:underline; }
 .date-cell.active { background:var(--bg); }
 
+/* ── RESERVATION REQUEST MODAL ── */
+.rsv-req-bg { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
+.rsv-req-bg.open { display:flex; }
+.rsv-req-box { background:#fff; border-radius:16px; padding:28px 30px; width:100%; max-width:420px; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.rsv-req-title { font-size:1.05rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
+.rsv-req-summary { font-size:.83rem; color:var(--sub); background:var(--bg); border-radius:8px; padding:10px 14px; line-height:1.9; margin-bottom:16px; }
+.rsv-req-field { margin-bottom:12px; }
+.rsv-req-field label { display:block; font-size:.75rem; color:var(--muted); font-weight:600; margin-bottom:4px; }
+.rsv-req-field input, .rsv-req-field textarea { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.9rem; background:#faf8f5; }
+.rsv-req-field input:focus, .rsv-req-field textarea:focus { outline:none; border-color:var(--primary); }
+.rsv-req-field textarea { resize:vertical; min-height:60px; }
+.rsv-req-btns { display:flex; gap:8px; margin-top:18px; }
+.rsv-req-ok { flex:1; background:var(--primary); color:#fff; border:none; padding:12px; border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.9rem; cursor:pointer; }
+.rsv-req-ok:hover { background:var(--primary-dark); }
+.rsv-req-cl { background:#f0ebe4; color:var(--text); border:none; padding:12px 18px; border-radius:9px; font-family:var(--sans); font-size:.88rem; cursor:pointer; }
+.rsv-req-err { color:#e53935; font-size:.78rem; margin-top:6px; display:none; }
+.rsv-req-err.show { display:block; }
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px) {
   .header { padding:0 20px; }
@@ -424,6 +442,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <a href="#surroundings">주변 환경</a>
     <a href="#reviews">남기신 후기</a>
     <a href="review.html">후기 남기기</a>
+    <a href="reserved_view.html">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <button class="btn-reserve-header" onclick="document.querySelector('.btn-reserve').click()">예약 문의</button>
@@ -643,8 +662,11 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
         </div>
       </div>
 
-      <button class="btn-reserve" onclick="handleReserve()">예약 가능 여부 보기</button>
+      <button class="btn-reserve" onclick="handleReserve()">예약 신청</button>
       <p class="no-charge-notice">예약 확정 전에는 요금이 청구되지 않습니다</p>
+      <p style="text-align:center;margin-bottom:14px;">
+        <a href="reserved_view.html" style="font-size:.82rem;color:var(--primary);font-weight:700;text-decoration:none;">📅 예약 가능 날짜 달력으로 보기 →</a>
+      </p>
 
       <div class="price-breakdown">
         <div class="price-row">
@@ -730,6 +752,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <a href="#amenities">편의시설</a>
     <a href="#reviews">남기신 후기</a>
     <a href="review.html">후기 남기기</a>
+    <a href="reserved_view.html">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
@@ -1113,13 +1136,65 @@ function sharePage() {
 
 // ── 예약 ────────────────────────────
 function handleReserve() {
-  if(!checkin || !checkout) {
+  if (!checkin || !checkout) {
     alert('체크인 · 체크아웃 날짜를 선택해 주세요.');
-  } else if(checkout <= checkin) {
-    alert('체크아웃 날짜는 체크인 이후여야 합니다.');
-  } else {
-    alert(`예약 요청이 완료되었습니다!\n\n체크인: ${formatDate(checkin)}\n체크아웃: ${formatDate(checkout)}\n인원: ${guestCount}명`);
+    return;
   }
+  if (checkout <= checkin) {
+    alert('체크아웃 날짜는 체크인 이후여야 합니다.');
+    return;
+  }
+  const nights = Math.round((checkout - checkin) / (1000*60*60*24));
+  const totalText = document.getElementById('totalPrice').textContent;
+  document.getElementById('rsvReqSummary').innerHTML =
+    `체크인: <b>${formatDate(checkin)}</b> &nbsp;→&nbsp; 체크아웃: <b>${formatDate(checkout)}</b><br>인원: <b>${guestCount}명</b> &nbsp;·&nbsp; <b>${nights}박</b> &nbsp;·&nbsp; 예상 요금: <b>${totalText}</b>`;
+  document.getElementById('rsvReqName').value = '';
+  document.getElementById('rsvReqPhone').value = '';
+  document.getElementById('rsvReqMemo').value = '';
+  document.getElementById('rsvReqErr').classList.remove('show');
+  document.getElementById('rsvReqBg').classList.add('open');
+  setTimeout(() => document.getElementById('rsvReqName').focus(), 80);
+}
+
+function closeRsvReq(e) {
+  if (e.target === document.getElementById('rsvReqBg')) document.getElementById('rsvReqBg').classList.remove('open');
+}
+
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function submitReservation() {
+  const name  = document.getElementById('rsvReqName').value.trim();
+  const phone = document.getElementById('rsvReqPhone').value.trim();
+  const memo  = document.getElementById('rsvReqMemo').value.trim();
+  const errEl = document.getElementById('rsvReqErr');
+  errEl.classList.remove('show');
+  if (!name)  { errEl.textContent = '이름을 입력해주세요.';    errEl.classList.add('show'); return; }
+  if (!phone) { errEl.textContent = '연락처를 입력해주세요.'; errEl.classList.add('show'); return; }
+
+  const nights   = Math.round((checkout - checkin) / (1000*60*60*24));
+  const totalNum = parseInt(document.getElementById('totalPrice').textContent.replace(/[^0-9]/g, '')) || 0;
+  const todayS   = toDateStr(new Date());
+
+  const reservations = JSON.parse(localStorage.getItem('pension_reservations') || '[]');
+  reservations.push({
+    id: 'rsv_' + Date.now(),
+    guestName: name,
+    phone: phone,
+    checkin:  toDateStr(checkin),
+    checkout: toDateStr(checkout),
+    nights:   nights,
+    guests:   guestCount,
+    totalPrice: totalNum,
+    status:   'pending',
+    memo:     memo,
+    createdAt: todayS
+  });
+  localStorage.setItem('pension_reservations', JSON.stringify(reservations));
+
+  document.getElementById('rsvReqBg').classList.remove('open');
+  alert(`예약 문의가 접수되었습니다!\n호스트가 확인 후 연락 드리겠습니다.\n\n이름: ${name}\n연락처: ${phone}`);
 }
 
 // ════════════════════════════════════════
@@ -1261,6 +1336,8 @@ function onExtraFile(e) {
 <!-- HOST BADGE -->
 <div class="host-badge" id="hostBadge">
   ✏️ 호스트 모드
+  <span style="opacity:.35">|</span>
+  <a href="reserved_view.html" style="color:#fff;text-decoration:none;opacity:.8;font-size:.75rem;font-weight:700;">📅 예약현황</a>
   <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
 </div>
 
@@ -1268,5 +1345,32 @@ function onExtraFile(e) {
 <input type="file" id="fileSlot"  accept="image/*" style="display:none" onchange="onSlotFile(event)">
 <input type="file" id="fileAdd"   accept="image/*" style="display:none" onchange="onAddFile(event)">
 <input type="file" id="fileExtra" accept="image/*" style="display:none" onchange="onExtraFile(event)">
+
+<!-- 예약 문의 모달 -->
+<div class="rsv-req-bg" id="rsvReqBg" onclick="closeRsvReq(event)">
+  <div class="rsv-req-box">
+    <div class="rsv-req-title">예약 문의 접수</div>
+    <div class="rsv-req-summary" id="rsvReqSummary"></div>
+    <div class="rsv-req-field">
+      <label>이름 *</label>
+      <input type="text" id="rsvReqName" placeholder="홍길동" maxlength="20"
+             onkeydown="if(event.key==='Enter')document.getElementById('rsvReqPhone').focus()">
+    </div>
+    <div class="rsv-req-field">
+      <label>연락처 *</label>
+      <input type="tel" id="rsvReqPhone" placeholder="010-0000-0000"
+             onkeydown="if(event.key==='Enter')submitReservation()">
+    </div>
+    <div class="rsv-req-field">
+      <label>메모 (선택)</label>
+      <textarea id="rsvReqMemo" placeholder="늦은 체크인, 반려동물 동반 등 특이사항"></textarea>
+    </div>
+    <div class="rsv-req-err" id="rsvReqErr"></div>
+    <div class="rsv-req-btns">
+      <button class="rsv-req-cl" onclick="document.getElementById('rsvReqBg').classList.remove('open')">취소</button>
+      <button class="rsv-req-ok" onclick="submitReservation()">문의 접수하기</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
