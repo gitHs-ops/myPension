@@ -274,16 +274,20 @@ body.host-mode .fab-add { display:flex; }
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="photo-count-badge">총 12장</div>
     <a href="pic_slide.html" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 18px;font-size:.85rem;font-weight:700;color:#fff;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">▶ 슬라이드 보기</a>
+    <a href="pic_video.html" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 18px;font-size:.85rem;font-weight:700;color:#fff;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🎬 동영상</a>
   </div>
 </div>
 
 <!-- FILTER BAR -->
-<div class="filter-bar">
-  <button class="filter-btn active" onclick="filterCards('all', this)">전체</button>
-  <button class="filter-btn" onclick="filterCards('exterior', this)">외관 · 전경</button>
-  <button class="filter-btn" onclick="filterCards('interior', this)">실내 공간</button>
-  <button class="filter-btn" onclick="filterCards('view', this)">전망 · 자연</button>
-  <button class="filter-btn" onclick="filterCards('facility', this)">편의시설</button>
+<div class="filter-bar" style="justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button class="filter-btn active" onclick="filterCards('all', this)">전체</button>
+    <button class="filter-btn" onclick="filterCards('exterior', this)">외관 · 전경</button>
+    <button class="filter-btn" onclick="filterCards('interior', this)">실내 공간</button>
+    <button class="filter-btn" onclick="filterCards('view', this)">전망 · 자연</button>
+    <button class="filter-btn" onclick="filterCards('facility', this)">편의시설</button>
+  </div>
+  <button onclick="hostCheckThenAdd()" style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:999px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);font-family:var(--sans);font-size:.85rem;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap;" onmouseover="this.style.background='#f5ede6'" onmouseout="this.style.background='#fff'">📷 이미지 업로드</button>
 </div>
 
 <!-- GALLERY GRID -->
@@ -358,6 +362,16 @@ let editingPhotoId = null;
 let newPhotoData  = null;
 
 // ── 초기화 ────────────────────────────────────────────
+function hostCheckThenAdd() {
+  if (localStorage.getItem(HOST_KEY) === '1') { openCardModal(null); return; }
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authField').value = '';
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+  _pendingAfterAuth = () => openCardModal(null);
+}
+let _pendingAfterAuth = null;
+
 function init() {
   const saved = localStorage.getItem(PV_KEY);
   cards = saved ? JSON.parse(saved) : DEFAULT_CARDS.map(c => ({...c}));
@@ -477,6 +491,7 @@ function closeAuthOutside(e) { if (e.target === document.getElementById('authOve
 function confirmAuth() {
   if (document.getElementById('authField').value === HOST_PWD) {
     localStorage.setItem(HOST_KEY, '1'); closeAuth(); activateHost();
+    if (_pendingAfterAuth) { _pendingAfterAuth(); _pendingAfterAuth = null; }
   } else {
     document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
     document.getElementById('authField').value = ''; document.getElementById('authField').focus();

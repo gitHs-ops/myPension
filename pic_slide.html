@@ -123,6 +123,7 @@ body { font-family:var(--sans); background:#0a0a0a; color:#fff; height:100dvh; d
 <div class="top-bar">
   <a class="btn-back" href="pic_view.html">‹ 카드 보기</a>
   <div class="slide-counter" id="slideCounter">1 / 12</div>
+  <button onclick="hostCheckThenUpload()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 16px;font-family:inherit;font-size:.82rem;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.22)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">📷 이미지 업로드</button>
   <div class="filter-tabs" id="filterTabs">
     <button class="filter-tab active" onclick="setFilter('all',this)">전체</button>
     <button class="filter-tab" onclick="setFilter('exterior',this)">외관</button>
@@ -256,6 +257,136 @@ document.addEventListener('touchend', e => {
 });
 
 init();
+
+// ── 이미지 업로드 ──
+const HOST_KEY = 'pension_host';
+const HOST_PWD = '1dl34';
+const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
+let _pendingAuth = null;
+
+function hostCheckThenUpload() {
+  if (localStorage.getItem(HOST_KEY) === '1') { openUploadModal(); return; }
+  const ao = document.getElementById('slideAuthOverlay');
+  ao.style.display = 'flex';
+  document.getElementById('slideAuthErr').textContent = '';
+  document.getElementById('slideAuthField').value = '';
+  setTimeout(() => document.getElementById('slideAuthField').focus(), 80);
+  _pendingAuth = openUploadModal;
+}
+function closeSlideAuth() { document.getElementById('slideAuthOverlay').style.display = 'none'; }
+function confirmSlideAuth() {
+  if (document.getElementById('slideAuthField').value === HOST_PWD) {
+    localStorage.setItem(HOST_KEY, '1');
+    closeSlideAuth();
+    if (_pendingAuth) { _pendingAuth(); _pendingAuth = null; }
+  } else {
+    document.getElementById('slideAuthErr').textContent = '인증 암호가 올바르지 않습니다.';
+    document.getElementById('slideAuthField').value = '';
+    document.getElementById('slideAuthField').focus();
+  }
+}
+function openUploadModal() {
+  document.getElementById('slideUploadTitle').value = '';
+  document.getElementById('slideUploadCat').value = 'exterior';
+  document.getElementById('slideUploadDesc').value = '';
+  document.getElementById('slideUploadPreview').style.display = 'none';
+  document.getElementById('slideUploadPlaceholder').style.display = 'flex';
+  document.getElementById('slideUploadOverlay').style.display = 'flex';
+  _uploadImgData = null;
+}
+function closeUploadModal() { document.getElementById('slideUploadOverlay').style.display = 'none'; }
+
+let _uploadImgData = null;
+function compressUpload(file, cb) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h*MAX/w); w=MAX; } else { w=Math.round(w*MAX/h); h=MAX; } }
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg',0.72));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function onUploadFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  compressUpload(file, src => {
+    _uploadImgData = src;
+    const prev = document.getElementById('slideUploadPreview');
+    prev.src = src; prev.style.display = 'block';
+    document.getElementById('slideUploadPlaceholder').style.display = 'none';
+  });
+  e.target.value = '';
+}
+function saveUpload() {
+  const title = document.getElementById('slideUploadTitle').value.trim();
+  const cat   = document.getElementById('slideUploadCat').value;
+  const desc  = document.getElementById('slideUploadDesc').value.trim();
+  if (!title) { alert('제목을 입력하세요.'); return; }
+  if (!_uploadImgData) { alert('사진을 선택하세요.'); return; }
+
+  const saved = localStorage.getItem(PV_KEY);
+  const cards = saved ? JSON.parse(saved) : DEFAULT_CARDS.map(c=>({...c}));
+  const newId = cards.length ? Math.max(...cards.map(c=>c.id))+1 : 1;
+  cards.push({ id:newId, cat, featured:false, bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🖼️', imgData:_uploadImgData, category:CAT_LABELS[cat], title, desc });
+  try { localStorage.setItem(PV_KEY, JSON.stringify(cards)); } catch(e) { alert('저장 실패: 용량 부족'); return; }
+
+  allCards = cards;
+  setFilter(currentFilter, document.querySelector('.filter-tab.active'));
+  closeUploadModal();
+  showSlideToast('사진이 추가되었습니다!');
+}
+function showSlideToast(msg) {
+  const t = document.getElementById('slideToast');
+  t.textContent = msg; t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2200);
+}
 </script>
+
+<!-- 업로드 모달 -->
+<div id="slideUploadOverlay" onclick="if(event.target===this)closeUploadModal()" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-size:1.05rem;font-weight:900;margin-bottom:18px;color:#222;">📷 이미지 업로드</div>
+    <div id="slideUploadPlaceholder" onclick="document.getElementById('slideFileInput').click()" style="height:120px;border:2px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.88rem;color:#aaa;cursor:pointer;margin-bottom:14px;">클릭하여 사진 선택</div>
+    <img id="slideUploadPreview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:14px;" alt="">
+    <input type="file" id="slideFileInput" accept="image/*" style="display:none" onchange="onUploadFile(event)">
+    <select id="slideUploadCat" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;margin-bottom:10px;outline:none;">
+      <option value="exterior">외관 · 전경</option>
+      <option value="interior">실내 공간</option>
+      <option value="view">전망 · 자연</option>
+      <option value="facility">편의시설</option>
+    </select>
+    <input id="slideUploadTitle" type="text" placeholder="사진 제목" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;margin-bottom:10px;outline:none;">
+    <textarea id="slideUploadDesc" placeholder="설명 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;resize:vertical;min-height:60px;outline:none;margin-bottom:16px;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeUploadModal()" style="flex:1;padding:12px;border-radius:8px;background:#f0f0f0;color:#555;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="saveUpload()" style="flex:1;padding:12px;border-radius:8px;background:#6b3a1f;color:#fff;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 호스트 인증 모달 -->
+<div id="slideAuthOverlay" onclick="if(event.target===this)closeSlideAuth()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-size:1.05rem;font-weight:900;margin-bottom:6px;">🔐 호스트 인증</div>
+    <div style="font-size:.82rem;color:#888;margin-bottom:18px;">호스트 암호를 입력하세요.</div>
+    <input id="slideAuthField" type="password" placeholder="암호 입력" onkeydown="if(event.key==='Enter')confirmSlideAuth()" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:9px;font-family:inherit;font-size:.9rem;outline:none;margin-bottom:6px;">
+    <div id="slideAuthErr" style="font-size:.75rem;color:#e05252;height:16px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeSlideAuth()" style="flex:1;padding:11px;border-radius:8px;background:#f0f0f0;color:#555;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="confirmSlideAuth()" style="flex:1;padding:11px;border-radius:8px;background:#6b3a1f;color:#fff;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="slideToast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 22px;border-radius:20px;font-size:.84rem;font-weight:600;z-index:900;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;"></div>
+
 </body>
 </html>
