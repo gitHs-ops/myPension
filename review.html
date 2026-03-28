@@ -48,13 +48,10 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .btn-reserve-header:hover { background:#5c3319; }
 
 /* ── HERO ── */
-.hero {
-  background:linear-gradient(135deg, #3d2210 0%, #6b3a1f 55%, #8b5c3a 100%);
-  padding:52px 48px 44px; color:#fff;
-  display:flex; align-items:center; justify-content:space-between;
-}
-.hero h1 { font-size:2rem; font-weight:900; margin-bottom:6px; }
-.hero p { font-size:.95rem; opacity:.75; }
+.hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; display:flex; align-items:center; justify-content:space-between; }
+.hero-left { display:flex; flex-direction:column; }
+.hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
+.hero p { font-size:.92rem; opacity:.75; }
 .btn-write {
   background:#fff; color:var(--primary);
   border:none; padding:13px 30px; border-radius:999px;
@@ -343,18 +340,21 @@ footer {
     영덕감성산장
   </a>
   <nav class="header-nav">
-    <a href="index.html#about">공간소개</a>
+    <a href="index.html#about">공간 소개</a>
     <a href="index.html#amenities">편의시설</a>
-    <a href="pic_view.html">사진 모두보기</a>
+    <a href="index.html#surroundings">주변 환경</a>
+    <a href="pic_view.html">갤러리</a>
+    <a href="review.html">게스트 후기</a>
+    <a href="reserved_view.html">예약현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
 </header>
 
 <!-- ── HERO ── -->
 <section class="hero">
-  <div style="display:flex;align-items:center;gap:16px;">
+  <div class="hero-left" style="flex-direction:row;align-items:center;gap:16px;">
     <h1 style="margin-bottom:0;">게스트 후기</h1>
-    <p>실제 투숙객의 솔직한 경험을 확인하세요</p>
+    <p style="opacity:.75;font-size:.92rem;">실제 투숙객의 솔직한 경험을 확인하세요</p>
   </div>
   <button class="btn-write" onclick="openWriteModal()">✍️ 후기 작성하기</button>
 </section>
