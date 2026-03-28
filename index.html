@@ -441,7 +441,6 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <a href="#amenities">편의시설</a>
     <a href="#surroundings">주변 환경</a>
     <a href="pic_view.html">갤러리</a>
-    <a href="#reviews">게스트 후기</a>
     <a href="review.html">게스트 후기</a>
     <a href="reserved_view.html">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
@@ -554,7 +553,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <hr class="divider">
 
     <!-- DESCRIPTION -->
-    <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:12px;">숙소 소개</h2>
+    <h2 id="about" style="font-size:1.1rem;font-weight:800;margin-bottom:12px;">숙소 소개</h2>
     <p class="desc-text" id="descText">
       동해바다가 내려다 보이는 영덕 감성 산장입니다. 아름다운 자연 속에서 조용하고 편안한 휴식을 즐길 수 있는 공간으로, 주변의 울창한 나무와 탁 트인 동해 전망이 인상적입니다. 별채 전체를 단독으로 사용하시므로 프라이버시가 완벽하게 보장됩니다. 1층에는 거실 겸 주방이 있으며, 화목난로와 아늑한 분위기가 특징입니다. 테라스에서 바라보는 일출은 잊지 못할 추억이 될 것입니다. 근처에 영덕 대게 거리, 블루로드 트레킹 코스 등 다양한 관광명소가 있어 알찬 여행을 즐기실 수 있습니다.
     </p>
@@ -563,7 +562,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <hr class="divider">
 
     <!-- AMENITIES -->
-    <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:4px;">숙소 편의시설</h2>
+    <h2 id="amenities" style="font-size:1.1rem;font-weight:800;margin-bottom:4px;">숙소 편의시설</h2>
     <div class="amenities-grid">
       <div class="amenity-item"><span class="amenity-icon">🌊</span> 바다 전망</div>
       <div class="amenity-item"><span class="amenity-icon">📶</span> 무선 인터넷</div>
@@ -597,7 +596,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <hr class="divider">
 
     <!-- LOCATION -->
-    <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:12px;">위치</h2>
+    <h2 id="surroundings" style="font-size:1.1rem;font-weight:800;margin-bottom:12px;">위치</h2>
     <div style="border-radius:12px;overflow:hidden;height:280px;border:1px solid var(--border);">
       <iframe
         src="https://maps.google.com/maps?q=경북+영덕군+영덕대게로+767-48&z=16&output=embed"
@@ -754,7 +753,6 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
   <nav class="footer-nav">
     <a href="#about">공간 소개</a>
     <a href="#amenities">편의시설</a>
-    <a href="#reviews">게스트 후기</a>
     <a href="review.html">게스트 후기</a>
     <a href="reserved_view.html">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
