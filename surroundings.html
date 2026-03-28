@@ -74,8 +74,17 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 }
 .spot-card:hover { transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,.13); }
 .spot-thumb {
-  height:140px; display:flex; align-items:center; justify-content:center;
-  font-size:3.2rem; position:relative; flex-shrink:0;
+  height:180px; display:flex; align-items:center; justify-content:center;
+  font-size:3.2rem; position:relative; flex-shrink:0; overflow:hidden;
+}
+.spot-thumb img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; transition:transform .3s;
+}
+.spot-card:hover .spot-thumb img { transform:scale(1.05); }
+.spot-thumb .thumb-icon {
+  position:relative; z-index:1;
+  text-shadow:0 2px 8px rgba(0,0,0,.4);
 }
 .spot-badge {
   position:absolute; top:10px; right:10px;
@@ -267,6 +276,7 @@ const SPOTS = [
     cat: 'nature',
     icon: '🌅',
     bg: 'linear-gradient(135deg,#1a6b8a,#0d4d6b)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/31/1230631_image2_1.jpg',
     name: '영덕 해맞이공원 · 창포말등대',
     badge: '도보 5분',
     near: true,
@@ -278,6 +288,7 @@ const SPOTS = [
     cat: 'activity',
     icon: '🌬️',
     bg: 'linear-gradient(135deg,#2d6a4f,#1b4332)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/39/2399539_image2_1.JPG',
     name: '영덕 풍력발전단지',
     badge: '차로 5분',
     near: true,
@@ -289,6 +300,7 @@ const SPOTS = [
     cat: 'activity',
     icon: '🥾',
     bg: 'linear-gradient(135deg,#3a5a8a,#1e3a5a)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/29/2617829_image2_1.JPG',
     name: '영덕 블루로드',
     badge: '인근 출발',
     near: true,
@@ -300,6 +312,7 @@ const SPOTS = [
     cat: 'food',
     icon: '🦀',
     bg: 'linear-gradient(135deg,#8b2500,#5c1a00)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/23/2028423_image2_1.JPG',
     name: '강구항 · 영덕대게거리',
     badge: '차로 15분',
     near: false,
@@ -311,6 +324,7 @@ const SPOTS = [
     cat: 'nature',
     icon: '🌊',
     bg: 'linear-gradient(135deg,#1565a8,#0d3d6b)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/25/1925825_image2_1.JPG',
     name: '삼사해상공원',
     badge: '차로 20분',
     near: false,
@@ -322,6 +336,7 @@ const SPOTS = [
     cat: 'nature',
     icon: '⛵',
     bg: 'linear-gradient(135deg,#0d5c6b,#083d47)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/24/3083924_image2_1.JPG',
     name: '죽도산 전망대 · 축산항',
     badge: '차로 25분',
     near: false,
@@ -333,6 +348,7 @@ const SPOTS = [
     cat: 'culture',
     icon: '🏘️',
     bg: 'linear-gradient(135deg,#5c4a1a,#3a2e0d)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/86/2433886_image2_1.JPG',
     name: '괴시리 전통마을',
     badge: '차로 30분',
     near: false,
@@ -344,6 +360,7 @@ const SPOTS = [
     cat: 'nature',
     icon: '🏖️',
     bg: 'linear-gradient(135deg,#1a7a8a,#0d5060)',
+    img: 'http://tong.visitkorea.or.kr/cms/resource/49/3515949_image2_1.jpg',
     name: '고래불해수욕장',
     badge: '차로 30분',
     near: false,
@@ -390,7 +407,8 @@ function renderSpots() {
   grid.innerHTML = list.map(s => `
     <div class="spot-card">
       <div class="spot-thumb" style="background:${s.bg};">
-        ${s.icon}
+        ${s.img ? `<img src="${s.img}" alt="${s.name}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <span class="thumb-icon">${s.img ? '' : s.icon}</span>
         <span class="spot-badge${s.near ? ' near' : ''}">${s.badge}</span>
       </div>
       <div class="spot-body">
