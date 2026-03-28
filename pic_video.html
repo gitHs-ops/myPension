@@ -352,8 +352,8 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
       <option value="view">전망 · 자연</option>
       <option value="facility">편의시설</option>
     </select>
-    <label class="vm-label">제목</label>
-    <input class="vm-input" id="vmVideoTitle" type="text" placeholder="동영상 제목">
+    <label class="vm-label">제목 (선택)</label>
+    <input class="vm-input" id="vmVideoTitle" type="text" placeholder="동영상 제목 (선택 입력)">
     <label class="vm-label">설명</label>
     <textarea class="vm-textarea" id="vmVideoDesc" placeholder="동영상 설명을 입력하세요"></textarea>
     <label class="vm-label">길이 (선택)</label>
@@ -444,7 +444,8 @@ function filterVideos(cat, btn) {
   applyFilter();
 }
 function applyFilter() {
-  filtered = currentFilter === 'all' ? videos : videos.filter(v => v.cat === currentFilter);
+  filtered = (currentFilter === 'all' ? videos : videos.filter(v => v.cat === currentFilter))
+    .slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   renderGrid();
 }
 
@@ -569,7 +570,6 @@ function saveVideo() {
   const desc       = document.getElementById('vmVideoDesc').value.trim();
   const duration   = document.getElementById('vmDuration').value.trim();
 
-  if (!title) { alert('제목을 입력하세요.'); return; }
   if (!youtubeUrl && !pendingFileData && !editingId) { alert('YouTube URL 또는 동영상 파일을 선택하세요.'); return; }
 
   const youtubeId = extractYoutubeId(youtubeUrl);
@@ -588,6 +588,7 @@ function saveVideo() {
       youtubeUrl: youtubeId ? youtubeUrl : '',
       youtubeId: youtubeId || null,
       fileData: pendingFileData ? pendingFileData.url : null,
+      createdAt: Date.now(),
     });
   }
 

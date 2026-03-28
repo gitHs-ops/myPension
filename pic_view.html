@@ -406,7 +406,8 @@ function compressImage(file, callback) {
 
 // ── 갤러리 렌더 ──────────────────────────────────────
 function renderGallery() {
-  const filtered = currentFilter === 'all' ? cards : cards.filter(c => c.cat === currentFilter);
+  const filtered = (currentFilter === 'all' ? cards : cards.filter(c => c.cat === currentFilter))
+    .slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   document.getElementById('galleryGrid').innerHTML = filtered.map((c, i) => {
     const photoContent = c.imgData
       ? `<img src="${c.imgData}" style="width:100%;height:100%;object-fit:cover;">`
@@ -550,13 +551,12 @@ function saveCardModal() {
   const desc     = document.getElementById('cmCardDesc').value.trim();
   const cat      = document.getElementById('cmCardCat').value;
   const featured = document.getElementById('cmFeatured').checked;
-  if (!title) { alert('제목을 입력하세요.'); return; }
   if (editingCardId) {
     const c = cards.find(c => c.id === editingCardId);
     if (c) { c.title = title; c.desc = desc; c.cat = cat; c.category = CAT_LABELS[cat]; c.featured = featured; if (newPhotoData) c.imgData = newPhotoData; }
   } else {
     const newId = cards.length ? Math.max(...cards.map(c => c.id)) + 1 : 1;
-    cards.push({ id:newId, cat, featured, bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🖼️', imgData:newPhotoData, category:CAT_LABELS[cat], title, desc });
+    cards.push({ id:newId, cat, featured, bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🖼️', imgData:newPhotoData, category:CAT_LABELS[cat], title, desc, createdAt:Date.now() });
   }
   saveCards(); renderGallery(); closeCardModal();
 }
@@ -595,8 +595,8 @@ init();
       <option value="view">전망 · 자연</option>
       <option value="facility">편의시설</option>
     </select>
-    <label class="cm-label">제목</label>
-    <input class="cm-input" id="cmCardTitle" type="text" placeholder="사진 제목">
+    <label class="cm-label">제목 (선택)</label>
+    <input class="cm-input" id="cmCardTitle" type="text" placeholder="사진 제목 (선택 입력)">
     <label class="cm-label">설명</label>
     <textarea class="cm-textarea" id="cmCardDesc" placeholder="사진 설명을 입력하세요"></textarea>
     <div style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.88rem;">
