@@ -446,7 +446,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <a href="reserved_view.html">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
-  <button class="btn-reserve-header" onclick="document.querySelector('.btn-reserve').click()">예약 문의</button>
+  <button class="btn-reserve-header" onclick="document.getElementById('booking-widget').scrollIntoView({behavior:'smooth'})">예약 문의</button>
 </header>
 
 <!-- GALLERY -->
@@ -613,7 +613,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 
   <!-- RIGHT: BOOKING WIDGET -->
   <div class="booking-wrap">
-    <div class="booking-card">
+    <div class="booking-card" id="booking-widget">
 
       <div class="booking-rating">
         <span style="color:var(--primary);">★</span> 4.69 · <a href="#reviews" style="color:var(--text);font-weight:700;text-decoration:underline;">후기 39개</a>
