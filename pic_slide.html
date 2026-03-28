@@ -8,64 +8,110 @@
 <style>
 :root {
   --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f4f2ee;
+  --shadow: 0 2px 16px rgba(0,0,0,.10);
   --sans: 'Noto Sans KR', sans-serif;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:var(--sans); background:#0a0a0a; color:#fff; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+body { font-family:var(--sans); color:var(--text); background:#0a0a0a; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
 
-/* ── TOP BAR ── */
-.top-bar {
-  position:relative; z-index:10;
+/* ── HEADER ── */
+.header {
+  position:relative; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px; flex-shrink:0;
   display:flex; align-items:center; justify-content:space-between;
-  padding:16px 24px;
-  background:linear-gradient(to bottom, rgba(0,0,0,.75), transparent);
 }
-.btn-back {
-  display:flex; align-items:center; gap:8px;
-  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
-  color:#fff; border-radius:999px; padding:8px 18px;
-  font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer;
-  text-decoration:none; transition:background .15s;
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
 }
-.btn-back:hover { background:rgba(255,255,255,.22); }
-.slide-counter {
-  font-size:.9rem; font-weight:700; color:rgba(255,255,255,.8);
-  background:rgba(0,0,0,.35); border-radius:999px; padding:6px 16px;
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
 }
-.filter-tabs {
-  display:flex; gap:6px;
-}
-.filter-tab {
-  padding:7px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.2);
-  background:rgba(255,255,255,.08); color:rgba(255,255,255,.65);
-  font-family:var(--sans); font-size:.78rem; font-weight:600; cursor:pointer;
-  transition:all .15s; white-space:nowrap;
-}
-.filter-tab.active { background:rgba(255,255,255,.9); color:#1a1a1a; border-color:transparent; }
+.btn-reserve-header:hover { background:#5c3319; }
 
-/* ── MAIN PHOTO ── */
+/* ── PAGE HERO ── */
+.page-hero {
+  background:linear-gradient(135deg,#2a3a2a 0%,#3a5a30 50%,#2a4a28 100%);
+  padding:16px 48px 14px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.page-hero-left { display:flex; align-items:center; gap:20px; }
+.page-hero-sub { font-size:.7rem; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,.5); text-transform:uppercase; white-space:nowrap; }
+.page-hero-title { font-size:1rem; font-weight:900; color:#fff; }
+.page-hero-desc { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.6; }
+.hero-right { display:flex; align-items:center; gap:10px; }
+.slide-count-badge {
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+  border-radius:999px; padding:7px 16px;
+  font-size:.85rem; font-weight:700; color:#fff; white-space:nowrap;
+}
+.hero-link {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  border-radius:999px; padding:7px 16px;
+  font-size:.85rem; font-weight:700; color:#fff; text-decoration:none;
+  transition:background .15s;
+}
+.hero-link:hover { background:rgba(255,255,255,.25); }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  background:#111; border-bottom:1px solid rgba(255,255,255,.08);
+  padding:0 48px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-tabs { display:flex; align-items:center; gap:2px; }
+.filter-btn {
+  flex-shrink:0; padding:14px 16px;
+  border:none; border-bottom:2.5px solid transparent;
+  background:transparent; font-family:var(--sans);
+  font-size:.85rem; font-weight:600; color:rgba(255,255,255,.45);
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.filter-btn:hover { color:rgba(255,255,255,.8); }
+.filter-btn.active { color:#fff; border-bottom-color:#fff; }
+.btn-upload {
+  flex-shrink:0; display:flex; align-items:center; gap:6px;
+  padding:7px 16px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.85); font-family:var(--sans); font-size:.82rem; font-weight:700;
+  cursor:pointer; transition:background .15s; white-space:nowrap;
+}
+.btn-upload:hover { background:rgba(255,255,255,.18); }
+
+/* ── SLIDE AREA ── */
+.slide-area { flex:1; display:flex; flex-direction:column; overflow:hidden; background:#0a0a0a; }
+
 .slide-main {
   flex:1; position:relative; display:flex; align-items:center; justify-content:center;
   overflow:hidden;
 }
-.slide-img {
-  max-width:100%; max-height:100%;
-  object-fit:contain;
-  transition:opacity .25s ease;
-  user-select:none;
-}
-.slide-placeholder {
-  display:flex; align-items:center; justify-content:center;
-  width:100%; height:100%;
-  font-size:6rem; opacity:.3;
-}
+.slide-img { max-width:100%; max-height:100%; object-fit:contain; user-select:none; }
+.slide-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:6rem; opacity:.3; }
 
-/* ── NAV BUTTONS ── */
 .nav-btn {
   position:absolute; top:50%; transform:translateY(-50%);
-  width:52px; height:52px; border-radius:50%;
+  width:50px; height:50px; border-radius:50%;
   background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
-  color:#fff; font-size:1.5rem; cursor:pointer;
+  color:#fff; font-size:1.4rem; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   transition:background .15s; z-index:5;
 }
@@ -75,80 +121,102 @@ body { font-family:var(--sans); background:#0a0a0a; color:#fff; height:100dvh; d
 
 /* ── INFO BAR ── */
 .info-bar {
+  padding:14px 24px 10px; flex-shrink:0;
   background:linear-gradient(to top, rgba(0,0,0,.85), transparent);
-  padding:20px 24px 12px;
-  position:relative; z-index:10;
 }
-.info-category {
-  font-size:.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
-  color:rgba(255,255,255,.5); margin-bottom:4px;
-}
-.info-title { font-size:1.05rem; font-weight:800; margin-bottom:4px; }
+.info-category { font-size:.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:3px; }
+.info-title { font-size:1rem; font-weight:800; color:#fff; margin-bottom:3px; }
 .info-desc { font-size:.82rem; color:rgba(255,255,255,.6); line-height:1.6; }
 
 /* ── THUMBNAIL STRIP ── */
 .thumb-strip {
-  display:flex; gap:8px; padding:12px 24px 20px;
-  overflow-x:auto; -webkit-overflow-scrolling:touch;
-  background:rgba(0,0,0,.6);
+  display:flex; gap:8px; padding:10px 24px 16px; flex-shrink:0;
+  overflow-x:auto; -webkit-overflow-scrolling:touch; background:rgba(0,0,0,.7);
 }
 .thumb-strip::-webkit-scrollbar { height:3px; }
 .thumb-strip::-webkit-scrollbar-thumb { background:rgba(255,255,255,.25); border-radius:2px; }
 .thumb {
-  flex-shrink:0; width:64px; height:48px; border-radius:6px;
-  overflow:hidden; cursor:pointer; border:2px solid transparent;
-  transition:border-color .15s, opacity .15s; opacity:.55;
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.4rem;
+  flex-shrink:0; width:64px; height:46px; border-radius:6px; overflow:hidden;
+  cursor:pointer; border:2px solid transparent; transition:border-color .15s, opacity .15s;
+  opacity:.5; display:flex; align-items:center; justify-content:center;
 }
 .thumb.active { border-color:#fff; opacity:1; }
-.thumb:hover { opacity:.85; }
+.thumb:hover { opacity:.82; }
 .thumb img { width:100%; height:100%; object-fit:cover; }
-.thumb-bg { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
+.thumb-bg { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
 
-/* ── MOBILE ── */
-@media(max-width:600px) {
-  .filter-tabs { display:none; }
-  .info-title { font-size:.95rem; }
-  .nav-btn { width:40px; height:40px; font-size:1.2rem; }
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .header { padding:0 20px; }
+  .page-hero { padding:12px 16px 10px; flex-wrap:wrap; gap:8px; }
+  .filter-bar { padding:0 16px; }
   .nav-prev { left:8px; }
   .nav-next { right:8px; }
-  .thumb { width:52px; height:38px; }
+}
+@media(max-width:600px) {
+  .header-nav { display:none; }
+  .filter-btn { padding:12px 10px; font-size:.8rem; }
 }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="top-bar">
-  <a class="btn-back" href="pic_view.html">‹ 카드 보기</a>
-  <div class="slide-counter" id="slideCounter">1 / 12</div>
-  <button onclick="hostCheckThenUpload()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 16px;font-family:inherit;font-size:.82rem;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.22)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">📷 이미지 업로드</button>
-  <div class="filter-tabs" id="filterTabs">
-    <button class="filter-tab active" onclick="setFilter('all',this)">전체</button>
-    <button class="filter-tab" onclick="setFilter('exterior',this)">외관</button>
-    <button class="filter-tab" onclick="setFilter('interior',this)">실내</button>
-    <button class="filter-tab" onclick="setFilter('view',this)">전망</button>
-    <button class="filter-tab" onclick="setFilter('facility',this)">편의시설</button>
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="index.html">
+    <span class="logo-icon">🏠</span>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about">공간 소개</a>
+    <a href="index.html#amenities">편의시설</a>
+    <a href="index.html#surroundings">주변 환경</a>
+    <a href="pic_view.html">갤러리</a>
+    <a href="index.html#reviews">남기신 후기</a>
+  </nav>
+  <button class="btn-reserve-header" onclick="location.href='index.html#booking'">예약 문의</button>
+</header>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-left">
+    <p class="page-hero-sub">// Photo Slideshow</p>
+    <h1 class="page-hero-title">사진 슬라이드보기</h1>
+    <p class="page-hero-desc">동해바다 전망과 자연 속 감성 공간을<br>슬라이드로 감상해보세요.</p>
+  </div>
+  <div class="hero-right">
+    <div class="slide-count-badge" id="slideCounter">1 / 12</div>
+    <a href="pic_view.html" class="hero-link">🖼 카드 보기</a>
+    <a href="pic_video.html" class="hero-link">🎬 동영상</a>
   </div>
 </div>
 
-<!-- MAIN PHOTO -->
-<div class="slide-main" id="slideMain">
-  <button class="nav-btn nav-prev" onclick="move(-1)">‹</button>
-  <div id="slideContent" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
-  <button class="nav-btn nav-next" onclick="move(1)">›</button>
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
+    <button class="filter-btn" onclick="setFilter('exterior',this)">외관 · 전경</button>
+    <button class="filter-btn" onclick="setFilter('interior',this)">실내 공간</button>
+    <button class="filter-btn" onclick="setFilter('view',this)">전망 · 자연</button>
+    <button class="filter-btn" onclick="setFilter('facility',this)">편의시설</button>
+  </div>
+  <button class="btn-upload" onclick="hostCheckThenUpload()">📷 이미지 업로드</button>
 </div>
 
-<!-- INFO BAR -->
-<div class="info-bar">
-  <div class="info-category" id="infoCategory"></div>
-  <div class="info-title" id="infoTitle"></div>
-  <div class="info-desc" id="infoDesc"></div>
+<!-- SLIDE AREA -->
+<div class="slide-area">
+  <div class="slide-main" id="slideMain">
+    <button class="nav-btn nav-prev" onclick="move(-1)">‹</button>
+    <div id="slideContent" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
+    <button class="nav-btn nav-next" onclick="move(1)">›</button>
+  </div>
+  <div class="info-bar">
+    <div class="info-category" id="infoCategory"></div>
+    <div class="info-title" id="infoTitle"></div>
+    <div class="info-desc" id="infoDesc"></div>
+  </div>
+  <div class="thumb-strip" id="thumbStrip"></div>
 </div>
-
-<!-- THUMBNAIL STRIP -->
-<div class="thumb-strip" id="thumbStrip"></div>
 
 <script>
 const PV_KEY = 'pv_cards';
@@ -175,19 +243,16 @@ let currentFilter = 'all';
 function init() {
   const saved = localStorage.getItem(PV_KEY);
   allCards = saved ? JSON.parse(saved) : DEFAULT_CARDS.map(c => ({...c}));
-
-  // URL 파라미터로 시작 인덱스 지정 가능 (?idx=3)
   const params = new URLSearchParams(location.search);
   const startIdx = parseInt(params.get('idx') || '0');
   const startFilter = params.get('cat') || 'all';
-
-  setFilter(startFilter, document.querySelector(`.filter-tab[onclick*="'${startFilter}'"]`) || document.querySelector('.filter-tab'));
+  setFilter(startFilter, document.querySelector(`.filter-btn[onclick*="'${startFilter}'"]`) || document.querySelector('.filter-btn'));
   currentIdx = Math.min(startIdx, filtered.length - 1);
   render();
 }
 
 function setFilter(cat, btn) {
-  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   currentFilter = cat;
   filtered = (cat === 'all' ? allCards : allCards.filter(c => c.cat === cat))
@@ -200,22 +265,16 @@ function setFilter(cat, btn) {
 function render() {
   if (!filtered.length) return;
   const d = filtered[currentIdx];
-
-  // 메인 사진
   const content = document.getElementById('slideContent');
   if (d.imgData) {
-    content.innerHTML = `<img class="slide-img" src="${d.imgData}" alt="${d.title}">`;
+    content.innerHTML = `<img class="slide-img" src="${d.imgData}" alt="${d.title || ''}">`;
   } else {
     content.innerHTML = `<div class="slide-placeholder" style="background:${d.bg};width:100%;height:100%;">${d.icon}</div>`;
   }
-
-  // 정보
-  document.getElementById('infoCategory').textContent = d.category;
-  document.getElementById('infoTitle').textContent    = d.title;
-  document.getElementById('infoDesc').textContent     = d.desc;
+  document.getElementById('infoCategory').textContent = d.category || '';
+  document.getElementById('infoTitle').textContent    = d.title || '';
+  document.getElementById('infoDesc').textContent     = d.desc || '';
   document.getElementById('slideCounter').textContent = `${currentIdx + 1} / ${filtered.length}`;
-
-  // 썸네일 활성화
   document.querySelectorAll('.thumb').forEach((t, i) => {
     t.classList.toggle('active', i === currentIdx);
     if (i === currentIdx) t.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
@@ -231,27 +290,20 @@ function renderThumbs() {
   }).join('');
 }
 
-function goTo(idx) {
-  currentIdx = idx;
-  render();
-}
-
+function goTo(idx) { currentIdx = idx; render(); }
 function move(dir) {
   if (!filtered.length) return;
   currentIdx = (currentIdx + dir + filtered.length) % filtered.length;
   render();
 }
 
-// 키보드 네비게이션
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  move(-1);
   if (e.key === 'ArrowRight') move(1);
   if (e.key === 'Escape')     location.href = 'pic_view.html';
 });
-
-// 스와이프 지원
 let touchStartX = 0;
-document.getElementById('slideMain' ) && document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
 document.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - touchStartX;
   if (Math.abs(dx) > 50) move(dx < 0 ? 1 : -1);
@@ -267,8 +319,7 @@ let _pendingAuth = null;
 
 function hostCheckThenUpload() {
   if (localStorage.getItem(HOST_KEY) === '1') { openUploadModal(); return; }
-  const ao = document.getElementById('slideAuthOverlay');
-  ao.style.display = 'flex';
+  document.getElementById('slideAuthOverlay').style.display = 'flex';
   document.getElementById('slideAuthErr').textContent = '';
   document.getElementById('slideAuthField').value = '';
   setTimeout(() => document.getElementById('slideAuthField').focus(), 80);
@@ -330,15 +381,13 @@ function saveUpload() {
   const cat   = document.getElementById('slideUploadCat').value;
   const desc  = document.getElementById('slideUploadDesc').value.trim();
   if (!_uploadImgData) { alert('사진을 선택하세요.'); return; }
-
   const saved = localStorage.getItem(PV_KEY);
   const cards = saved ? JSON.parse(saved) : DEFAULT_CARDS.map(c=>({...c}));
   const newId = cards.length ? Math.max(...cards.map(c=>c.id))+1 : 1;
   cards.push({ id:newId, cat, featured:false, bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🖼️', imgData:_uploadImgData, category:CAT_LABELS[cat], title, desc, createdAt:Date.now() });
   try { localStorage.setItem(PV_KEY, JSON.stringify(cards)); } catch(e) { alert('저장 실패: 용량 부족'); return; }
-
   allCards = cards;
-  setFilter(currentFilter, document.querySelector('.filter-tab.active'));
+  setFilter(currentFilter, document.querySelector('.filter-btn.active'));
   closeUploadModal();
   showSlideToast('사진이 추가되었습니다!');
 }
@@ -350,8 +399,8 @@ function showSlideToast(msg) {
 </script>
 
 <!-- 업로드 모달 -->
-<div id="slideUploadOverlay" onclick="if(event.target===this)closeUploadModal()" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+<div id="slideUploadOverlay" onclick="if(event.target===this)closeUploadModal()" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);">
     <div style="font-size:1.05rem;font-weight:900;margin-bottom:18px;color:#222;">📷 이미지 업로드</div>
     <div id="slideUploadPlaceholder" onclick="document.getElementById('slideFileInput').click()" style="height:120px;border:2px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.88rem;color:#aaa;cursor:pointer;margin-bottom:14px;">클릭하여 사진 선택</div>
     <img id="slideUploadPreview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:14px;" alt="">
@@ -372,8 +421,8 @@ function showSlideToast(msg) {
 </div>
 
 <!-- 호스트 인증 모달 -->
-<div id="slideAuthOverlay" onclick="if(event.target===this)closeSlideAuth()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:18px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+<div id="slideAuthOverlay" onclick="if(event.target===this)closeSlideAuth()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.35);">
     <div style="font-size:1.05rem;font-weight:900;margin-bottom:6px;">🔐 호스트 인증</div>
     <div style="font-size:.82rem;color:#888;margin-bottom:18px;">호스트 암호를 입력하세요.</div>
     <input id="slideAuthField" type="password" placeholder="암호 입력" onkeydown="if(event.key==='Enter')confirmSlideAuth()" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:9px;font-family:inherit;font-size:.9rem;outline:none;margin-bottom:6px;">
