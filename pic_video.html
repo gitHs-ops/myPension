@@ -339,12 +339,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <label class="vm-label">YouTube URL</label>
     <input class="vm-input" id="vmYoutubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
     <div class="vm-hint">YouTube 공유 링크 또는 일반 URL을 붙여넣으세요.</div>
-    <div class="vm-or">── 또는 직접 업로드 ──</div>
-    <div class="vm-file-area" onclick="document.getElementById('vmFileInput').click()">
-      🎬 클릭하여 동영상 파일 선택 (mp4, mov)
-    </div>
-    <input type="file" id="vmFileInput" accept="video/*" style="display:none" onchange="onVideoFile(event)">
-    <div id="vmFileName" style="font-size:.78rem;color:var(--muted);margin-top:6px;"></div>
     <label class="vm-label">카테고리</label>
     <select class="vm-select" id="vmCat">
       <option value="exterior">외관 · 전경</option>
@@ -412,7 +406,6 @@ let filtered = [];
 let currentFilter = 'all';
 let currentPlayerIdx = 0;
 let editingId = null;
-let pendingFileData = null; // { url (objectURL), name }
 
 // ── 초기화 ──
 function hostCheckThenAdd() {
@@ -465,9 +458,7 @@ function renderGrid() {
   grid.innerHTML = filtered.map((v, i) => {
     const thumbHtml = v.youtubeId
       ? `<img src="https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
-      : v.fileData
-        ? `<video src="${v.fileData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" muted preload="metadata"></video>`
-        : `<div class="video-thumb-placeholder"><span class="thumb-icon">🎬</span><span>${v.title}</span></div>`;
+      : `<div class="video-thumb-placeholder"><span class="thumb-icon">🎬</span><span>${v.title || ''}</span></div>`;
 
     return `
     <div class="video-card" onclick="openPlayer(${i})">
@@ -502,8 +493,6 @@ function renderPlayer() {
 
   if (v.youtubeId) {
     inner.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-  } else if (v.fileData) {
-    inner.innerHTML = `<video src="${v.fileData}" controls autoplay style="width:100%;height:100%;"></video>`;
   } else {
     inner.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;opacity:.3;">🎬</div>`;
   }
@@ -541,7 +530,6 @@ function extractYoutubeId(url) {
 // ── 동영상 추가 모달 ──
 function openVideoModal(id) {
   editingId = id;
-  pendingFileData = null;
   const v = id ? videos.find(v => v.id === id) : null;
   document.getElementById('vmTitle').textContent   = id ? '동영상 수정' : '동영상 추가';
   document.getElementById('vmYoutubeUrl').value    = v?.youtubeUrl || '';
@@ -549,19 +537,10 @@ function openVideoModal(id) {
   document.getElementById('vmVideoTitle').value    = v?.title || '';
   document.getElementById('vmVideoDesc').value     = v?.desc || '';
   document.getElementById('vmDuration').value      = v?.duration || '';
-  document.getElementById('vmFileName').textContent = '';
   document.getElementById('vmOverlay').classList.add('open');
 }
-function closeVideoModal() { document.getElementById('vmOverlay').classList.remove('open'); pendingFileData = null; }
+function closeVideoModal() { document.getElementById('vmOverlay').classList.remove('open'); }
 function closeVmOutside(e) { if (e.target === document.getElementById('vmOverlay')) closeVideoModal(); }
-
-function onVideoFile(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const url = URL.createObjectURL(file);
-  pendingFileData = { url, name: file.name };
-  document.getElementById('vmFileName').textContent = '선택된 파일: ' + file.name;
-  e.target.value = '';
-}
 
 function saveVideo() {
   const youtubeUrl = document.getElementById('vmYoutubeUrl').value.trim();
@@ -570,7 +549,7 @@ function saveVideo() {
   const desc       = document.getElementById('vmVideoDesc').value.trim();
   const duration   = document.getElementById('vmDuration').value.trim();
 
-  if (!youtubeUrl && !pendingFileData && !editingId) { alert('YouTube URL 또는 동영상 파일을 선택하세요.'); return; }
+  if (!youtubeUrl && !editingId) { alert('YouTube URL을 입력하세요.'); return; }
 
   const youtubeId = extractYoutubeId(youtubeUrl);
 
@@ -578,16 +557,13 @@ function saveVideo() {
     const v = videos.find(v => v.id === editingId);
     if (v) {
       Object.assign(v, { cat, category:CAT_LABELS[cat], title, desc, duration });
-      if (youtubeUrl) { v.youtubeUrl = youtubeUrl; v.youtubeId = youtubeId; v.fileData = null; }
-      if (pendingFileData) { v.fileData = pendingFileData.url; v.youtubeUrl = ''; v.youtubeId = null; }
+      if (youtubeUrl) { v.youtubeUrl = youtubeUrl; v.youtubeId = youtubeId; }
     }
   } else {
     const newId = videos.length ? Math.max(...videos.map(v => v.id)) + 1 : 1;
     videos.push({
       id: newId, cat, category: CAT_LABELS[cat], title, desc, duration,
-      youtubeUrl: youtubeId ? youtubeUrl : '',
-      youtubeId: youtubeId || null,
-      fileData: pendingFileData ? pendingFileData.url : null,
+      youtubeUrl, youtubeId: youtubeId || null,
       createdAt: Date.now(),
     });
   }
