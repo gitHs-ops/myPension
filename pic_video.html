@@ -268,7 +268,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   .player-nav { display:none; }
 }
 </style>
-<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"qqq","desc":"qqqqqqqqqqq111111111111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=c8B0bHptIbY&pp=0gcJCdkKAYcqIYzv","youtubeId":"c8B0bHptIbY","createdAt":1775097141500},{"id":2,"cat":"exterior","category":"외관 · 전경","title":"aaaaaaaaaa","desc":"aaaaaaaaaaaaaaaa","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=uIZpewPx4Ps","youtubeId":"uIZpewPx4Ps","createdAt":1775097186489},{"id":3,"cat":"exterior","category":"외관 · 전경","title":"dddddddddddddddd","desc":"ddddddddd1","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=ENpCpAl-Ulw&pp=0gcJCdkKAYcqIYzv","youtubeId":"ENpCpAl-Ulw","createdAt":1775097211526},{"id":4,"cat":"exterior","category":"외관 · 전경","title":"dddddddddddddddd","desc":"ttttt  12311111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=DTu5fl17hU0&pp=0gcJCdkKAYcqIYzv","youtubeId":"DTu5fl17hU0","createdAt":1775098158638}];</script>
 </head>
 <body class="host-mode" style="">
 
@@ -635,10 +634,37 @@ function exitHostMode() {
   document.body.classList.remove('host-mode');
 }
 
+// ── HTML 내보내기 ──
 function exportEmbeddedHTML() {
-  const dataStr = JSON.stringify(videos);
-  fetch(location.href)
-    .then(r => r.text())
-    .then(src => {
-      src = src.replace(/</body>
+  // videoGrid의 현재 DOM을 비우고, 데이터를 <script> 상수로 주입
+  let html = document.documentElement.outerHTML;
+
+  // ① 렌더된 videoGrid 내용 제거 (빈 상태로)
+  html = html.replace(
+    /<div class="video-grid" id="videoGrid">[\s\S]*?<\/div>/,
+    '<div class="video-grid" id="videoGrid"><!-- JS 렌더링 --><\/div>'
+  );
+
+  // ② 기존 embed 스크립트 제거
+  html = html.replace(/<script id="__vid_emb__">[\s\S]*?<\/script>\n?/g, '');
+
+  // ③ 데이터 스크립트를 </head> 앞에 삽입
+  const data = '<script id="__vid_emb__">window.__EMBED_VID__=' + JSON.stringify(videos) + ';<\/script>';
+  html = html.replace('<\/head>', data + '\n<\/head>');
+
+  // ④ 다운로드
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pic_video.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const t = document.getElementById('exportToast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+init();
+</script>
+</body>
 </html>
