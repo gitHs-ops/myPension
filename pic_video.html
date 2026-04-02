@@ -443,7 +443,6 @@ function hostCheckThenAdd() {
 let _pendingAfterAuth = null;
 
 function init() {
-  // export된 파일: embed 데이터 우선, 없으면 localStorage
   if (window.__EMBED_VID__ && window.__EMBED_VID__.length) {
     videos = window.__EMBED_VID__;
   } else {
@@ -454,13 +453,208 @@ function init() {
   applyFilter();
 }
 
-// ── HTML 내보내기 ──
-// fetch로 원본 소스를 가져와 데이터만 주입 → DOM 오염 없음
+function saveVideos() {
+  try { localStorage.setItem(VID_KEY, JSON.stringify(videos)); } catch(e) {}
+}
+
+// ── 필터 ──
+function filterVideos(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = cat;
+  applyFilter();
+}
+function applyFilter() {
+  filtered = (currentFilter === 'all' ? videos : videos.filter(v => v.cat === currentFilter))
+    .slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  renderGrid();
+}
+
+// ── 렌더 ──
+function renderGrid() {
+  const grid = document.getElementById('videoGrid');
+  const empty = document.getElementById('emptyMsg');
+  document.getElementById('videoCountBadge').textContent = `총 ${videos.length}개`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map((v, i) => {
+    const thumbHtml = v.youtubeId
+      ? `<img src="https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
+      : `<div class="video-thumb-placeholder"><span class="thumb-icon">🎬</span><span>${v.title || ''}</span></div>`;
+
+    return `
+    <div class="video-card" onclick="openPlayer(${i})">
+      <div class="video-thumb" style="position:relative;">
+        ${thumbHtml}
+        <div class="play-overlay">
+          <div class="play-btn">▶</div>
+        </div>
+        ${v.duration ? `<div class="video-duration">${v.duration}</div>` : ''}
+        <button class="btn-del-video" onclick="deleteVideo(${v.id});event.stopPropagation()">✕</button>
+      </div>
+      <div class="card-body" style="position:relative;">
+        <span class="card-category">${v.category}</span>
+        <div class="card-title">${v.title}</div>
+        ${v.desc ? `<div class="card-desc">${v.desc}</div>` : ''}
+        <button class="btn-edit-video" onclick="openVideoModal(${v.id});event.stopPropagation()">✏️ 수정</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 플레이어 ──
+function openPlayer(idx) {
+  currentPlayerIdx = idx;
+  renderPlayer();
+  document.getElementById('playerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function renderPlayer() {
+  const v = filtered[currentPlayerIdx];
+  if (!v) return;
+  const inner = document.getElementById('playerInner');
+
+  if (v.youtubeId) {
+    inner.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0&enablejsapi=1" allow="autoplay; fullscreen; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  } else {
+    inner.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;opacity:.3;">🎬</div>`;
+  }
+  document.getElementById('playerCat').textContent   = v.category;
+  document.getElementById('playerTitle').textContent = v.title;
+}
+function playerMove(dir) {
+  if (!filtered.length) return;
+  // iframe autoplay 중단
+  document.getElementById('playerInner').innerHTML = '';
+  currentPlayerIdx = (currentPlayerIdx + dir + filtered.length) % filtered.length;
+  renderPlayer();
+}
+function closePlayer() {
+  document.getElementById('playerInner').innerHTML = '';
+  document.getElementById('playerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closePlayerOutside(e) { if (e.target === document.getElementById('playerOverlay')) closePlayer(); }
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('playerOverlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  playerMove(-1);
+  if (e.key === 'ArrowRight') playerMove(1);
+  if (e.key === 'Escape')     closePlayer();
+});
+
+// ── YouTube ID 추출 ──
+function extractYoutubeId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+// ── 동영상 추가 모달 ──
+function openVideoModal(id) {
+  editingId = id;
+  const v = id ? videos.find(v => v.id === id) : null;
+  document.getElementById('vmTitle').textContent   = id ? '동영상 수정' : '동영상 추가';
+  document.getElementById('vmYoutubeUrl').value    = v?.youtubeUrl || '';
+  document.getElementById('vmCat').value           = v?.cat || 'exterior';
+  document.getElementById('vmVideoTitle').value    = v?.title || '';
+  document.getElementById('vmVideoDesc').value     = v?.desc || '';
+  document.getElementById('vmDuration').value      = v?.duration || '';
+  document.getElementById('vmOverlay').classList.add('open');
+}
+function closeVideoModal() { document.getElementById('vmOverlay').classList.remove('open'); }
+function closeVmOutside(e) { if (e.target === document.getElementById('vmOverlay')) closeVideoModal(); }
+
+function saveVideo() {
+  const youtubeUrl = document.getElementById('vmYoutubeUrl').value.trim();
+  const cat        = document.getElementById('vmCat').value;
+  const title      = document.getElementById('vmVideoTitle').value.trim();
+  const desc       = document.getElementById('vmVideoDesc').value.trim();
+  const duration   = document.getElementById('vmDuration').value.trim();
+
+  if (!youtubeUrl && !editingId) { alert('YouTube URL을 입력하세요.'); return; }
+
+  const youtubeId = extractYoutubeId(youtubeUrl);
+
+  if (editingId) {
+    const v = videos.find(v => v.id === editingId);
+    if (v) {
+      Object.assign(v, { cat, category:CAT_LABELS[cat], title, desc, duration });
+      if (youtubeUrl) { v.youtubeUrl = youtubeUrl; v.youtubeId = youtubeId; }
+    }
+  } else {
+    const newId = videos.length ? Math.max(...videos.map(v => v.id)) + 1 : 1;
+    videos.push({
+      id: newId, cat, category: CAT_LABELS[cat], title, desc, duration,
+      youtubeUrl, youtubeId: youtubeId || null,
+      createdAt: Date.now(),
+    });
+  }
+
+  saveVideos();
+  applyFilter();
+  closeVideoModal();
+}
+
+function deleteVideo(id) {
+  if (!confirm('이 동영상을 삭제할까요?')) return;
+  videos = videos.filter(v => v.id !== id);
+  saveVideos(); applyFilter();
+}
+
+// ── HOST AUTH ──
+function checkHostAuth() {
+  if (localStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authField').value = '';
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+}
+function closeAuth() { document.getElementById('authOverlay').classList.remove('open'); }
+function confirmAuth() {
+  if (document.getElementById('authField').value === HOST_PWD) {
+    localStorage.setItem(HOST_KEY, '1');
+    closeAuth();
+    document.body.classList.add('host-mode');
+    if (_pendingAfterAuth) { _pendingAfterAuth(); _pendingAfterAuth = null; }
+  } else {
+    document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
+    document.getElementById('authField').value = '';
+    document.getElementById('authField').focus();
+  }
+}
+function exitHostMode() {
+  localStorage.removeItem(HOST_KEY);
+  document.body.classList.remove('host-mode');
+}
+
 function exportEmbeddedHTML() {
+  const dataStr = JSON.stringify(videos);
   fetch(location.href)
     .then(r => r.text())
     .then(src => {
-      // 이미 embed 태그가 있으면 교체, 없으면 </head> 앞에 삽입
-      const tag = '<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"qqq","desc":"qqqqqqqqqqq111111111111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=c8B0bHptIbY&pp=0gcJCdkKAYcqIYzv","youtubeId":"c8B0bHptIbY","createdAt":1775097141500},{"id":2,"cat":"exterior","category":"외관 · 전경","title":"aaaaaaaaaa","desc":"aaaaaaaaaaaaaaaa","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=uIZpewPx4Ps","youtubeId":"uIZpewPx4Ps","createdAt":1775097186489},{"id":3,"cat":"exterior","category":"외관 · 전경","title":"dddddddddddddddd","desc":"ddddddddd1","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=ENpCpAl-Ulw&pp=0gcJCdkKAYcqIYzv","youtubeId":"ENpCpAl-Ulw","createdAt":1775097211526}];</script>
+      src = src.replace(/<script id="__vid_emb__">[\s\S]*?<\/script>\n?/g, '');
+      const tag = '<scr'+'ipt id="__vid_emb__">window.__EMBED_VID__=' + dataStr + ';<\/scr'+'ipt>';
+      src = src.replace('</head>', tag + '\n</head>');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([src], {type:'text/html;charset=utf-8'}));
+      a.download = 'pic_video.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      const t = document.getElementById('exportToast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
+    })
+    .catch(() => alert('내보내기 실패: GitHub Pages에서 실행해 주세요.'));
+}
+
+init();
+</script>
 </body>
 </html>
