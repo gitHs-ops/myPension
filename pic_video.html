@@ -205,6 +205,11 @@ body.host-mode .card-body .btn-edit-video { display:flex; }
 body.host-mode .host-badge { display:flex; }
 .btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
 .btn-host-export { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-edit-video { display:none; position:absolute; bottom:8px; right:8px; z-index:10; background:var(--primary); border:none; border-radius:6px; color:#fff; padding:4px 10px; font-family:var(--sans); font-size:.72rem; font-weight:700; cursor:pointer; align-items:center; gap:4px; }
+body.host-mode .card-body .btn-edit-video { display:flex; }
+.export-toast { display:none; position:fixed; bottom:80px; left:24px; z-index:500; background:#222; color:#fff; padding:10px 18px; border-radius:10px; font-size:.82rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.25); }
+.export-toast.show { display:block; }
+.btn-host-export { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
 .export-toast { display:none; position:fixed; bottom:80px; left:24px; z-index:500; background:#222; color:#fff; padding:10px 18px; border-radius:10px; font-size:.82rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.25); }
 .export-toast.show { display:block; }
 
@@ -438,10 +443,38 @@ function hostCheckThenAdd() {
 let _pendingAfterAuth = null;
 
 function init() {
-  const saved = localStorage.getItem(VID_KEY);
-  videos = saved ? JSON.parse(saved) : [];
+  // export된 파일: embed 데이터 우선, 없으면 localStorage
+  if (window.__EMBED_VID__ && window.__EMBED_VID__.length) {
+    videos = window.__EMBED_VID__;
+  } else {
+    const saved = localStorage.getItem(VID_KEY);
+    videos = saved ? JSON.parse(saved) : [];
+  }
   if (localStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
   applyFilter();
+}
+
+// ── HTML 내보내기 ──
+// fetch로 원본 소스를 가져와 데이터만 주입 → DOM 오염 없음
+function exportEmbeddedHTML() {
+  fetch(location.href)
+    .then(r => r.text())
+    .then(src => {
+      // 이미 embed 태그가 있으면 교체, 없으면 </head> 앞에 삽입
+      const tag = '<script id="__vid_emb__">window.__EMBED_VID__=' + JSON.stringify(videos) + ';<\/script>';
+      let out = src.includes('id="__vid_emb__"')
+        ? src.replace(/<script id="__vid_emb__">[\s\S]*?<\/script>/, tag)
+        : src.replace('</head>', tag + '\n</head>');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([out], {type:'text/html;charset=utf-8'}));
+      a.download = 'pic_video.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      const t = document.getElementById('exportToast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
+    })
+    .catch(() => alert('내보내기 실패: 로컬 파일에서는 fetch가 제한됩니다. 서버(GitHub Pages)에서 실행해 주세요.'));
 }
 
 function saveVideos() {
@@ -625,9 +658,7 @@ function exitHostMode() {
   document.body.classList.remove('host-mode');
 }
 
-// ── HTML 내보내기 ──
-function exportEmbeddedHTML() {
-  const tag = '<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"qqq","desc":"qqqqqqqqqqqqqqqqqqqqqqq","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=c8B0bHptIbY","youtubeId":"c8B0bHptIbY","createdAt":1775095947901}];</script>
-
-
-</body></html>
+init();
+</script>
+</body>
+</html>
