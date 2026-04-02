@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>동영상 갤러리 - 영덕감성산장</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
 <style>
 :root {
   --primary: #6b3a1f;
@@ -266,7 +264,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 }
 </style>
 </head>
-<body>
+<body class="host-mode" style="">
 
 <!-- HEADER -->
 <header class="header">
@@ -291,7 +289,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <p class="page-hero-desc">영덕감성산장의 공간과 풍경을<br>영상으로 생생하게 경험해보세요.</p>
   </div>
   <div class="hero-btns">
-    <div class="video-count-badge" id="videoCountBadge">총 0개</div>
+    <div class="video-count-badge" id="videoCountBadge">총 1개</div>
     <a href="pic_view.html" class="hero-link">🖼 사진모두보기</a>
     <a href="pic_slide.html" class="hero-link">▶ 슬라이드보기</a>
   </div>
@@ -310,8 +308,24 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 
 <!-- GALLERY -->
 <div class="gallery-wrap">
-  <div class="video-grid" id="videoGrid"></div>
-  <div class="empty-msg" id="emptyMsg" style="display:none;">
+  <div class="video-grid" id="videoGrid">
+    <div class="video-card" onclick="openPlayer(0)">
+      <div class="video-thumb" style="position:relative;">
+        <img src="https://img.youtube.com/vi/c8B0bHptIbY/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+        <div class="play-overlay">
+          <div class="play-btn">▶</div>
+        </div>
+        
+        <button class="btn-del-video" onclick="deleteVideo(1);event.stopPropagation()">✕</button>
+      </div>
+      <div class="card-body" style="position:relative;">
+        <span class="card-category">외관 · 전경</span>
+        <div class="card-title">qqq</div>
+        <div class="card-desc">qqqqqqqqqqqqqqqqqqqqqqq</div>
+        <button class="btn-edit-video" onclick="openVideoModal(1);event.stopPropagation()">✏️ 수정</button>
+      </div>
+    </div></div>
+  <div class="empty-msg" id="emptyMsg" style="display: none;">
     <div class="empty-icon">🎬</div>
     <div>아직 등록된 동영상이 없습니다.</div>
     <div style="margin-top:6px;font-size:.82rem;">호스트 모드에서 동영상을 추가할 수 있습니다.</div>
@@ -329,8 +343,8 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <button class="player-nav player-next" onclick="playerMove(1)">›</button>
     <div class="player-inner" id="playerInner"></div>
     <div class="player-info">
-      <div class="player-info-cat" id="playerCat"></div>
-      <div class="player-info-title" id="playerTitle"></div>
+      <div class="player-info-cat" id="playerCat">외관 · 전경</div>
+      <div class="player-info-title" id="playerTitle">qqq</div>
     </div>
   </div>
 </div>
@@ -338,7 +352,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 <!-- VIDEO ADD MODAL -->
 <div class="vm-overlay" id="vmOverlay" onclick="closeVmOutside(event)">
   <div class="vm-box">
-    <div class="vm-title" id="vmTitle">동영상 추가</div>
+    <div class="vm-title" id="vmTitle">동영상 수정</div>
     <label class="vm-label">YouTube URL</label>
     <input class="vm-input" id="vmYoutubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
     <div class="vm-hint">YouTube 공유 링크 또는 일반 URL을 붙여넣으세요.</div>
@@ -367,8 +381,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   <div class="auth-box">
     <div class="auth-box-title">🔐 호스트 인증</div>
     <div class="auth-box-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력"
-      onkeydown="if(event.key==='Enter')confirmAuth()">
+    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력" onkeydown="if(event.key==='Enter')confirmAuth()">
     <div class="auth-err" id="authErr"></div>
     <div class="auth-btns">
       <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
@@ -614,22 +627,7 @@ function exitHostMode() {
 
 // ── HTML 내보내기 ──
 function exportEmbeddedHTML() {
-  const tag = '<script id="__vid_emb__">window.__EMBED_VID__=' + JSON.stringify(videos) + ';<\/script>';
-  let html = document.documentElement.outerHTML;
-  html = html.includes('id="__vid_emb__"')
-    ? html.replace(/<script id="__vid_emb__">[\s\S]*?<\/script>/, tag)
-    : html.replace('</head>', tag + '\n</head>');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], {type:'text/html;charset=utf-8'}));
-  a.download = 'pic_video.html';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  const t = document.getElementById('exportToast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 4000);
-}
+  const tag = '<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"qqq","desc":"qqqqqqqqqqqqqqqqqqqqqqq","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=c8B0bHptIbY","youtubeId":"c8B0bHptIbY","createdAt":1775095947901}];</script>
 
-init();
-</script>
-</body>
-</html>
+
+</body></html>
