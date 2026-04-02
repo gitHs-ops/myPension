@@ -1,8 +1,10 @@
-<html lang="ko"><head>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>동영상 갤러리 - 영덕감성산장</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
   --primary: #6b3a1f;
@@ -199,6 +201,8 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 body.host-mode .fab-add { display:flex; }
 .btn-del-video { display:none; position:absolute; top:8px; right:8px; z-index:10; background:rgba(220,40,40,.85); border:none; border-radius:50%; color:#fff; width:28px; height:28px; font-size:.85rem; cursor:pointer; align-items:center; justify-content:center; }
 body.host-mode .video-thumb .btn-del-video { display:flex; }
+.btn-edit-video { display:none; position:absolute; bottom:8px; right:8px; z-index:10; background:var(--primary); border:none; border-radius:6px; color:#fff; padding:4px 10px; font-family:var(--sans); font-size:.72rem; font-weight:700; cursor:pointer; align-items:center; gap:4px; }
+body.host-mode .card-body .btn-edit-video { display:flex; }
 .host-badge { display:none; position:fixed; bottom:24px; left:24px; z-index:400; background:var(--primary); color:#fff; padding:9px 16px; border-radius:999px; font-size:.78rem; font-weight:700; box-shadow:0 3px 16px rgba(0,0,0,.2); align-items:center; gap:8px; }
 body.host-mode .host-badge { display:flex; }
 .btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
@@ -262,7 +266,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 }
 </style>
 </head>
-<body class="host-mode">
+<body>
 
 <!-- HEADER -->
 <header class="header">
@@ -287,7 +291,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <p class="page-hero-desc">영덕감성산장의 공간과 풍경을<br>영상으로 생생하게 경험해보세요.</p>
   </div>
   <div class="hero-btns">
-    <div class="video-count-badge" id="videoCountBadge">총 2개</div>
+    <div class="video-count-badge" id="videoCountBadge">총 0개</div>
     <a href="pic_view.html" class="hero-link">🖼 사진모두보기</a>
     <a href="pic_slide.html" class="hero-link">▶ 슬라이드보기</a>
   </div>
@@ -306,37 +310,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 
 <!-- GALLERY -->
 <div class="gallery-wrap">
-  <div class="video-grid" id="videoGrid">
-    <div class="video-card" onclick="openPlayer(0)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/uIZpewPx4Ps/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(2);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">room</div>
-        
-      </div>
-    </div>
-    <div class="video-card" onclick="openPlayer(1)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/c8B0bHptIbY/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(1);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">cat</div>
-        <div class="card-desc">cat</div>
-      </div>
-    </div></div>
+  <div class="video-grid" id="videoGrid"></div>
   <div class="empty-msg" id="emptyMsg" style="display:none;">
     <div class="empty-icon">🎬</div>
     <div>아직 등록된 동영상이 없습니다.</div>
@@ -393,7 +367,8 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   <div class="auth-box">
     <div class="auth-box-title">🔐 호스트 인증</div>
     <div class="auth-box-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력" onkeydown="if(event.key==='Enter')confirmAuth()">
+    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력"
+      onkeydown="if(event.key==='Enter')confirmAuth()">
     <div class="auth-err" id="authErr"></div>
     <div class="auth-btns">
       <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
@@ -501,10 +476,11 @@ function renderGrid() {
         ${v.duration ? `<div class="video-duration">${v.duration}</div>` : ''}
         <button class="btn-del-video" onclick="deleteVideo(${v.id});event.stopPropagation()">✕</button>
       </div>
-      <div class="card-body">
+      <div class="card-body" style="position:relative;">
         <span class="card-category">${v.category}</span>
         <div class="card-title">${v.title}</div>
         ${v.desc ? `<div class="card-desc">${v.desc}</div>` : ''}
+        <button class="btn-edit-video" onclick="openVideoModal(${v.id});event.stopPropagation()">✏️ 수정</button>
       </div>
     </div>`;
   }).join('');
@@ -523,7 +499,7 @@ function renderPlayer() {
   const inner = document.getElementById('playerInner');
 
   if (v.youtubeId) {
-    inner.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    inner.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0&enablejsapi=1" allow="autoplay; fullscreen; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   } else {
     inner.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;opacity:.3;">🎬</div>`;
   }
@@ -638,7 +614,22 @@ function exitHostMode() {
 
 // ── HTML 내보내기 ──
 function exportEmbeddedHTML() {
-  const tag = '<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"cat","desc":"cat","duration":"","youtubeUrl":"https://youtu.be/c8B0bHptIbY","youtubeId":"c8B0bHptIbY","createdAt":1775086696128},{"id":2,"cat":"exterior","category":"외관 · 전경","title":"room","desc":"","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=uIZpewPx4Ps","youtubeId":"uIZpewPx4Ps","createdAt":1775087658596}];</script>
+  const tag = '<script id="__vid_emb__">window.__EMBED_VID__=' + JSON.stringify(videos) + ';<\/script>';
+  let html = document.documentElement.outerHTML;
+  html = html.includes('id="__vid_emb__"')
+    ? html.replace(/<script id="__vid_emb__">[\s\S]*?<\/script>/, tag)
+    : html.replace('</head>', tag + '\n</head>');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], {type:'text/html;charset=utf-8'}));
+  a.download = 'pic_video.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const t = document.getElementById('exportToast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
 
-
-</body></html>
+init();
+</script>
+</body>
+</html>
