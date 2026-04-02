@@ -744,29 +744,15 @@ function copySmsMsg() {
   });
 }
 
-// ── SOLAPI ──
-const SOLAPI_KEY    = 'NCSW8NPCMTPJCZUY';
-const SOLAPI_SECRET = 'BMGQIPJJCMJCET6FDYVUZWOH3JI1JGM7';
-const SOLAPI_FROM   = '01026989056';
-
-async function solapiAuth() {
-  const date = new Date().toISOString();
-  const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-    .map(b => b.toString(16).padStart(2,'0')).join('');
-  const enc  = new TextEncoder();
-  const key  = await crypto.subtle.importKey(
-    'raw', enc.encode(SOLAPI_SECRET),
-    { name:'HMAC', hash:'SHA-256' }, false, ['sign']
-  );
-  const sig  = await crypto.subtle.sign('HMAC', key, enc.encode(date + salt));
-  const hex  = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
-  return { header: `HMAC-SHA256 apiKey=${SOLAPI_KEY}, date=${date}, salt=${salt}, signature=${hex}` };
-}
+// ── ALIGO SMS (via GAS 프록시) ──
+// ※ 아래 URL은 sms_proxy.gs 배포 후 발급받은 URL로 교체하세요
+const SMS_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwWXySJZi-EnBwi4JTqsgNyIbsp-VxxScAYYLCjc7kHbNyfr0EcCg1B3dQ0ooy8OIho/exec';
 
 async function sendSmsApp() {
   const phone = document.getElementById('smsPhone').value.replace(/[^0-9]/g, '');
   const msg   = document.getElementById('smsMsg').value.trim();
   if (!phone) { showToast('연락처를 입력해주세요.'); return; }
+  if (phone.length < 10) { showToast('올바른 전화번호를 입력해주세요.'); return; }
   if (!msg)   { showToast('메시지를 입력해주세요.'); return; }
 
   const btn = document.getElementById('smsSendBtn');
@@ -774,16 +760,13 @@ async function sendSmsApp() {
   btn.textContent = '발송 중...';
 
   try {
-    const { header } = await solapiAuth();
-    const res = await fetch('https://api.solapi.com/messages/v4/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': header },
-      body: JSON.stringify({ message: { to: phone, from: SOLAPI_FROM, text: msg } })
-    });
+    // GAS 프록시 GET 방식 (CORS 우회)
+    const qs  = new URLSearchParams({ action: 'sms', receiver: phone, msg: msg });
+    const res = await fetch(`${SMS_PROXY_URL}?${qs.toString()}`, { redirect: 'follow' });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.errorMessage || data.message || '발송 실패');
+    if (!data.success) throw new Error(data.error || '발송 실패');
     document.getElementById('smsBg').classList.remove('open');
-    showToast('문자가 성공적으로 발송되었습니다!');
+    showToast(`문자가 성공적으로 발송되었습니다! (${data.msg_type || 'SMS'})`);
   } catch (e) {
     showToast('발송 실패: ' + e.message);
   } finally {
