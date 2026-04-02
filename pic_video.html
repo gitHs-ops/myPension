@@ -268,6 +268,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   .player-nav { display:none; }
 }
 </style>
+<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"qqq","desc":"qqqqqqqqqqq111111111111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=c8B0bHptIbY&pp=0gcJCdkKAYcqIYzv","youtubeId":"c8B0bHptIbY","createdAt":1775097141500},{"id":2,"cat":"exterior","category":"외관 · 전경","title":"aaaaaaaaaa","desc":"aaaaaaaaaaaaaaaa","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=uIZpewPx4Ps","youtubeId":"uIZpewPx4Ps","createdAt":1775097186489},{"id":3,"cat":"exterior","category":"외관 · 전경","title":"dddddddddddddddd","desc":"ddddddddd1","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=ENpCpAl-Ulw&pp=0gcJCdkKAYcqIYzv","youtubeId":"ENpCpAl-Ulw","createdAt":1775097211526},{"id":4,"cat":"exterior","category":"외관 · 전경","title":"dddddddddddddddd","desc":"ttttt  12311111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=DTu5fl17hU0&pp=0gcJCdkKAYcqIYzv","youtubeId":"DTu5fl17hU0","createdAt":1775098158638}];</script>
 </head>
 <body class="host-mode" style="">
 
@@ -639,22 +640,5 @@ function exportEmbeddedHTML() {
   fetch(location.href)
     .then(r => r.text())
     .then(src => {
-      src = src.replace(/<script id="__vid_emb__">[\s\S]*?<\/script>\n?/g, '');
-      const tag = '<scr'+'ipt id="__vid_emb__">window.__EMBED_VID__=' + dataStr + ';<\/scr'+'ipt>';
-      src = src.replace('</head>', tag + '\n</head>');
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([src], {type:'text/html;charset=utf-8'}));
-      a.download = 'pic_video.html';
-      a.click();
-      URL.revokeObjectURL(a.href);
-      const t = document.getElementById('exportToast');
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 4000);
-    })
-    .catch(() => alert('내보내기 실패: GitHub Pages에서 실행해 주세요.'));
-}
-
-init();
-</script>
-</body>
+      src = src.replace(/</body>
 </html>
