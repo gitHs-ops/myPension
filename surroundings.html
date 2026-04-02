@@ -84,7 +84,9 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .spot-card:hover .spot-thumb img { transform:scale(1.05); }
 .spot-thumb .thumb-icon {
   position:relative; z-index:1;
-  text-shadow:0 2px 8px rgba(0,0,0,.4);
+  font-size:4rem;
+  text-shadow:0 2px 12px rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center;
 }
 .spot-badge {
   position:absolute; top:10px; right:10px;
@@ -273,122 +275,74 @@ footer {
 <script>
 const SPOTS = [
   {
-    cat: 'nature',
-    icon: '🌅',
-    bg: 'linear-gradient(135deg,#1a6b8a,#0d4d6b)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/31/1230631_image2_1.jpg',
-    name: '영덕 해맞이공원 · 창포말등대',
-    badge: '도보 5분',
-    near: true,
-    desc: '일출 명소로 유명한 해맞이공원. 영덕 대게의 집게발을 본뜬 창포말등대가 상징물이며, 2.1km 산책로와 685단 침목 계단이 조성돼 있습니다. 수선화·해당화 등 야생화가 계절마다 피어납니다.',
-    dist: '도보 약 5분',
-    mapq: '영덕+해맞이공원'
+    cat: 'nature', icon: '🌅', bg: 'linear-gradient(135deg,#1a6b8a,#0d4d6b)',
+    img: null,
+    name: '영덕 해맞이공원 · 창포말등대', badge: '도보 5분', near: true,
+    desc: '일출 명소로 유명한 해맞이공원. 영덕 대게 집게발을 본뜬 창포말등대(24m)가 상징물이며, 1,500개 나무계단 산책로와 전망데크가 조성돼 있습니다. 수선화·해당화 등 야생화가 계절마다 피어납니다.',
+    dist: '도보 약 5분', mapq: '영덕+해맞이공원'
   },
   {
-    cat: 'activity',
-    icon: '🌬️',
-    bg: 'linear-gradient(135deg,#2d6a4f,#1b4332)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/39/2399539_image2_1.JPG',
-    name: '영덕 풍력발전단지',
-    badge: '차로 5분',
-    near: true,
-    desc: '한 날개 길이 41m, 높이 80m의 대형 풍력발전기 24기가 동해를 내려다보는 언덕 위에 자리합니다. 신재생에너지관, 바람개비공원, 야영장이 있으며 블루로드 A코스와 연결됩니다.',
-    dist: '차로 약 5분',
-    mapq: '영덕+풍력발전단지'
+    cat: 'activity', icon: '💨', bg: 'linear-gradient(135deg,#2d6a4f,#1b4332)',
+    img: null,
+    name: '영덕 풍력발전단지', badge: '차로 5분', near: true,
+    desc: '날개 길이 41m, 높이 80m의 대형 풍력발전기 24기가 동해를 내려다보는 언덕에 자리합니다. 신재생에너지관, 바람개비공원, 야영장이 있으며 블루로드 A코스와 연결됩니다.',
+    dist: '차로 약 5분', mapq: '영덕+풍력발전단지'
   },
   {
-    cat: 'activity',
-    icon: '🥾',
-    bg: 'linear-gradient(135deg,#3a5a8a,#1e3a5a)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/29/2617829_image2_1.JPG',
-    name: '영덕 블루로드',
-    badge: '인근 출발',
-    near: true,
-    desc: '대게공원부터 고래불해수욕장까지 64.6km의 해안 트레킹 코스. A~D 4개 구간으로 나뉘며, B코스(푸른 대게의 길)가 백미입니다. 해안절벽·백사장·숲길을 넘나드는 영덕 대표 도보길.',
-    dist: '해맞이공원에서 바로 연결',
-    mapq: '영덕+블루로드'
+    cat: 'activity', icon: '🥾', bg: 'linear-gradient(135deg,#3a5a8a,#1e3a5a)',
+    img: null,
+    name: '영덕 블루로드', badge: '인근 출발', near: true,
+    desc: '대게공원부터 고래불해수욕장까지 64.6km 해안 트레킹 코스. A~D 4개 구간으로 나뉘며, B코스(푸른 대게의 길)가 백미입니다. 해안절벽·백사장·숲길을 넘나드는 영덕 대표 도보길.',
+    dist: '해맞이공원에서 바로 연결', mapq: '영덕+블루로드'
   },
   {
-    cat: 'food',
-    icon: '🦀',
-    bg: 'linear-gradient(135deg,#8b2500,#5c1a00)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/23/2028423_image2_1.JPG',
-    name: '강구항 · 영덕대게거리',
-    badge: '차로 15분',
-    near: false,
-    desc: '전국 최대 대게 집산지. 강구항 주변 3km에 100여 곳의 대게 식당이 밀집해 세계 최장 대게거리를 형성합니다. 고려 태조 왕건의 수라상에 올랐다는 전설의 영덕대게를 맛보세요.',
-    dist: '차로 약 15분',
-    mapq: '강구항+영덕대게거리'
+    cat: 'food', icon: '🦀', bg: 'linear-gradient(135deg,#8b2500,#5c1a00)',
+    img: null,
+    name: '강구항 · 영덕대게거리', badge: '차로 15분', near: false,
+    desc: '전국 최대 대게 집산지. 강구항 주변 3km에 100여 곳의 대게 식당이 밀집해 있습니다. 고려 태조 수라상에 올랐다는 전설의 영덕대게를 맛보세요.',
+    dist: '차로 약 15분', mapq: '강구항+영덕대게거리'
   },
   {
-    cat: 'nature',
-    icon: '🌊',
-    bg: 'linear-gradient(135deg,#1565a8,#0d3d6b)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/25/1925825_image2_1.JPG',
-    name: '삼사해상공원',
-    badge: '차로 20분',
-    near: false,
-    desc: '동해 해안절경을 한눈에 조망할 수 있는 공원. 어촌민속전시관에서 영덕 어촌 문화를 체험할 수 있고, 산책로를 따라 기암괴석과 에메랄드빛 바다가 펼쳐집니다.',
-    dist: '차로 약 20분',
-    mapq: '삼사해상공원+영덕'
+    cat: 'nature', icon: '🌊', bg: 'linear-gradient(135deg,#1565a8,#0d3d6b)',
+    img: null,
+    name: '삼사해상공원', badge: '차로 20분', near: false,
+    desc: '동해 해안절경을 한눈에 조망할 수 있는 공원. 경북대종(높이 42m)이 랜드마크이며, 어촌민속전시관에서 영덕 어촌 문화를 체험할 수 있습니다.',
+    dist: '차로 약 20분', mapq: '삼사해상공원+영덕'
   },
   {
-    cat: 'nature',
-    icon: '⛵',
-    bg: 'linear-gradient(135deg,#0d5c6b,#083d47)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/24/3083924_image2_1.JPG',
-    name: '죽도산 전망대 · 축산항',
-    badge: '차로 25분',
-    near: false,
-    desc: '1924년 개항한 축산항은 대게 위판장이 열리는 5대 항 중 하나. 죽도산 정상의 전망대에서 동해 최고의 미항으로 손꼽히는 축산항 전경과 일출을 감상할 수 있습니다.',
-    dist: '차로 약 25분',
-    mapq: '죽도산전망대+축산항'
+    cat: 'nature', icon: '⛵', bg: 'linear-gradient(135deg,#0d5c6b,#083d47)',
+    img: null,
+    name: '죽도산 전망대 · 축산항', badge: '차로 25분', near: false,
+    desc: '1924년 개항한 축산항은 대게 위판이 열리는 항구. 죽도산 전망대에서 동해 최고의 미항으로 손꼽히는 축산항 전경과 일출을 감상할 수 있습니다.',
+    dist: '차로 약 25분', mapq: '죽도산전망대+축산항'
   },
   {
-    cat: 'culture',
-    icon: '🏘️',
-    bg: 'linear-gradient(135deg,#5c4a1a,#3a2e0d)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/86/2433886_image2_1.JPG',
-    name: '괴시리 전통마을',
-    badge: '차로 30분',
-    near: false,
+    cat: 'culture', icon: '🏘️', bg: 'linear-gradient(135deg,#5c4a1a,#3a2e0d)',
+    img: null,
+    name: '괴시리 전통마을', badge: '차로 30분', near: false,
     desc: '고려 말 대학자 목은 이색의 출생지이자 영양남씨 집성촌. 조선 후기 영남 사대부 마을의 옛 모습을 간직한 국가민속문화재 마을로, 고택과 돌담길이 인상적입니다.',
-    dist: '차로 약 30분',
-    mapq: '괴시리+전통마을+영덕'
+    dist: '차로 약 30분', mapq: '괴시리+전통마을+영덕'
   },
   {
-    cat: 'nature',
-    icon: '🏖️',
-    bg: 'linear-gradient(135deg,#1a7a8a,#0d5060)',
-    img: 'http://tong.visitkorea.or.kr/cms/resource/49/3515949_image2_1.jpg',
-    name: '고래불해수욕장',
-    badge: '차로 30분',
-    near: false,
+    cat: 'nature', icon: '🏖️', bg: 'linear-gradient(135deg,#1a7a8a,#0d5060)',
+    img: null,
+    name: '고래불해수욕장', badge: '차로 30분', near: false,
     desc: '영덕 북부를 대표하는 명사이십리 해수욕장. 수심이 얕아 가족 여행지로 인기가 높으며, 고래불 오토캠핑장과 연계하여 여름 피서를 즐기기에 최적의 장소입니다.',
-    dist: '차로 약 30분',
-    mapq: '고래불해수욕장'
+    dist: '차로 약 30분', mapq: '고래불해수욕장'
   },
   {
-    cat: 'activity',
-    icon: '⚓',
-    bg: 'linear-gradient(135deg,#1a4a8a,#0d2d5c)',
-    name: '국립청소년해양센터',
-    badge: '도보 10분',
-    near: true,
-    desc: '창포리에 위치한 해양환경 체험센터. 2013년 개원하여 해양 체험 프로그램과 청소년 수련 활동을 운영합니다. 숙소에서 가까워 가볍게 방문하기 좋습니다.',
-    dist: '도보 약 10분',
-    mapq: '국립청소년해양센터+영덕'
+    cat: 'activity', icon: '⚓', bg: 'linear-gradient(135deg,#1a4a8a,#0d2d5c)',
+    img: null,
+    name: '국립청소년해양센터', badge: '도보 10분', near: true,
+    desc: '창포리에 위치한 해양환경 체험센터. 해양 체험 프로그램과 청소년 수련 활동을 운영합니다. 숙소에서 가까워 가볍게 방문하기 좋습니다.',
+    dist: '도보 약 10분', mapq: '국립청소년해양센터+영덕'
   },
   {
-    cat: 'culture',
-    icon: '🌲',
-    bg: 'linear-gradient(135deg,#2d5a3a,#1a3a22)',
-    name: '산림생태문화체험공원',
-    badge: '차로 5분',
-    near: true,
-    desc: '1997년 산불 피해지를 7년에 걸쳐 104ha 규모로 복원한 공원. 거대한 풍력발전기와 푸른 바다가 어우러지며, 정크&트릭아트전시관, 신재생에너지전시관, 해맞이캠핑장을 갖추고 있습니다.',
-    dist: '차로 약 5분',
-    mapq: '산림생태문화체험공원+영덕'
+    cat: 'culture', icon: '🌲', bg: 'linear-gradient(135deg,#2d5a3a,#1a3a22)',
+    img: null,
+    name: '산림생태문화체험공원', badge: '차로 5분', near: true,
+    desc: '1997년 산불 피해지를 7년에 걸쳐 104ha 규모로 복원한 공원. 풍력발전기와 푸른 바다가 어우러지며, 정크&트릭아트전시관, 신재생에너지전시관을 갖추고 있습니다.',
+    dist: '차로 약 5분', mapq: '산림생태문화체험공원+영덕'
   }
 ];
 
@@ -407,8 +361,7 @@ function renderSpots() {
   grid.innerHTML = list.map(s => `
     <div class="spot-card">
       <div class="spot-thumb" style="background:${s.bg};">
-        ${s.img ? `<img src="${s.img}" alt="${s.name}" loading="lazy" onerror="this.style.display='none'">` : ''}
-        <span class="thumb-icon">${s.img ? '' : s.icon}</span>
+        <span class="thumb-icon">${s.icon}</span>
         <span class="spot-badge${s.near ? ' near' : ''}">${s.badge}</span>
       </div>
       <div class="spot-body">
