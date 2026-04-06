@@ -1188,19 +1188,13 @@ if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-
 
 function checkHostAuth() {
   if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
-  document.getElementById('authOverlay').classList.add('open');
-  document.getElementById('authErr').textContent = '';
-  document.getElementById('authField').value = '';
-  setTimeout(() => document.getElementById('authField').focus(), 80);
-}
-function closeAuth() { document.getElementById('authOverlay').classList.remove('open'); }
-function closeAuthOutside(e) { if (e.target === document.getElementById('authOverlay')) closeAuth(); }
-function confirmAuth() {
-  if (document.getElementById('authField').value === HOST_PWD) {
-    sessionStorage.setItem(HOST_KEY, '1'); closeAuth(); activateHost();
+  const pwd = prompt('🔐 호스트 인증 암호를 입력하세요.');
+  if (pwd === null) return; // 취소
+  if (pwd === HOST_PWD) {
+    sessionStorage.setItem(HOST_KEY, '1');
+    activateHost();
   } else {
-    document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
-    document.getElementById('authField').value = ''; document.getElementById('authField').focus();
+    alert('암호가 올바르지 않습니다.');
   }
 }
 function activateHost() { document.body.classList.add('host-mode'); }
