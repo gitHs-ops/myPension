@@ -1020,8 +1020,10 @@ function clearDates() {
 // 달력 외부 클릭 시 닫기
 document.addEventListener('click', e => {
   const popup = document.getElementById('calPopup');
+  if (!popup) return;
   if (!popup.classList.contains('open')) return;
-  if (!document.querySelector('.date-picker').contains(e.target)) closeCal();
+  const picker = document.querySelector('.date-picker');
+  if (picker && !picker.contains(e.target)) closeCal();
 });
 
 // ── 요금 설정 ────────────────────────
@@ -1033,8 +1035,10 @@ function getCleanFee()  { return PRICE.cleanFee  !== undefined ? PRICE.cleanFee 
 function getSvcRate()   { return PRICE.svcRate    !== undefined ? PRICE.svcRate  : 0.12; }
 
 function applyPriceLabels() {
-  document.getElementById('priceNightLabel').textContent = `₩${getNightRate().toLocaleString()}`;
-  document.getElementById('priceCleanLabel').textContent = `₩${getCleanFee().toLocaleString()}`;
+  const n = document.getElementById('priceNightLabel');
+  const c = document.getElementById('priceCleanLabel');
+  if (n) n.textContent = `₩${getNightRate().toLocaleString()}`;
+  if (c) c.textContent = `₩${getCleanFee().toLocaleString()}`;
 }
 applyPriceLabels();
 
@@ -1071,9 +1075,11 @@ function savePriceModal() {
   calcPrice();
   closePriceModal();
 }
-document.getElementById('priceModalBg').addEventListener('click', e => {
-  if (e.target === document.getElementById('priceModalBg')) closePriceModal();
-});
+if (document.getElementById('priceModalBg')) {
+  document.getElementById('priceModalBg').addEventListener('click', e => {
+    if (e.target === document.getElementById('priceModalBg')) closePriceModal();
+  });
+}
 
 // ── 인원 선택 ────────────────────────
 let guestCount = 1;
