@@ -316,7 +316,7 @@ const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view
 let _pendingAuth = null;
 
 function hostCheckThenUpload() {
-  if (localStorage.getItem(HOST_KEY) === '1') { openUploadModal(); return; }
+  if (sessionStorage.getItem(HOST_KEY) === '1') { openUploadModal(); return; }
   document.getElementById('slideAuthOverlay').style.display = 'flex';
   document.getElementById('slideAuthErr').textContent = '';
   document.getElementById('slideAuthField').value = '';
@@ -326,7 +326,7 @@ function hostCheckThenUpload() {
 function closeSlideAuth() { document.getElementById('slideAuthOverlay').style.display = 'none'; }
 function confirmSlideAuth() {
   if (document.getElementById('slideAuthField').value === HOST_PWD) {
-    localStorage.setItem(HOST_KEY, '1');
+    sessionStorage.setItem(HOST_KEY, '1');
     closeSlideAuth();
     if (_pendingAuth) { _pendingAuth(); _pendingAuth = null; }
   } else {
