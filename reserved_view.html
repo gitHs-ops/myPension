@@ -253,7 +253,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <h1 style="margin-bottom:0;">예약 현황</h1>
     <p style="opacity:.75;font-size:.92rem;">영덕감성산장 예약 일정을 확인하세요</p>
   </div>
-  <button class="btn-add-rsv" onclick="openRsvModal()">＋ 예약 하기</button>
 </section>
 
 <!-- ── STATS ── -->
@@ -588,24 +587,21 @@ function renderCalendar() {
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const todayS = todayStr();
 
-  // Build a map of date → reservation info
+  // Build a map of date → reservation info (체크아웃일은 제외 — 다음 예약 체크인 가능)
   const dateMap = {};
   RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
     if (!r.checkin || !r.checkout) return;
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
+    const lastNight = new Date(cout); lastNight.setDate(lastNight.getDate() - 1);
+    const lastNightStr = lastNight.toISOString().slice(0,10);
     const cur  = new Date(cin);
     while (cur < cout) {
       const ds = cur.toISOString().slice(0,10);
-      if (!dateMap[ds] || r.status === 'confirmed') dateMap[ds] = { id:r.id, status:r.status, isStart: ds===r.checkin, isEnd: false };
-      const next = new Date(cur); next.setDate(next.getDate()+1);
-      if (next >= cout) dateMap[ds].isEnd = false;
+      if (!dateMap[ds] || r.status === 'confirmed')
+        dateMap[ds] = { id:r.id, status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
       cur.setDate(cur.getDate()+1);
     }
-    // mark checkout day as range-end
-    const coutDs = r.checkout;
-    if (!dateMap[coutDs]) dateMap[coutDs] = { id:r.id, status:r.status, isStart:false, isEnd:true };
-    else dateMap[coutDs].isEnd = true;
   });
 
   let html = '';

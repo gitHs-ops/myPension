@@ -40,6 +40,8 @@ body { font-family:var(--sans); color:var(--text); background:var(--surface); }
   color:var(--text); transition:color .15s;
 }
 .header-nav a:hover { color:var(--primary); }
+.host-only { display:none !important; }
+body.host-mode .host-only { display:inline !important; }
 .btn-reserve-header {
   padding:10px 22px; border-radius:999px;
   background:#3d2010; color:#fff; border:none;
@@ -471,7 +473,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <a href="surroundings.html">주변 환경</a>
     <a href="pic_view.html">갤러리</a>
     <a href="review.html">게스트 후기</a>
-    <a href="reserved_view.html">예약 현황</a>
+    <a href="reserved_view.html" class="host-only">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <button class="btn-reserve-header" onclick="location.href='reserved_guest.html'">예약 신청</button>
@@ -740,7 +742,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <a href="#about">공간 소개</a>
     <a href="#amenities">편의시설</a>
     <a href="review.html">게스트 후기</a>
-    <a href="reserved_view.html">예약 현황</a>
+    <a href="reserved_view.html" class="host-only">예약 현황</a>
     <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>

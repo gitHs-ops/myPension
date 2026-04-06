@@ -46,11 +46,6 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
 .hero p { font-size:.92rem; opacity:.75; }
 
-/* ── STATS ── */
-.stats-wrap { max-width:960px; margin:28px auto 0; padding:0 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.stat-card { background:var(--surface); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); }
-.stat-label { font-size:.75rem; color:var(--muted); font-weight:600; margin-bottom:6px; }
-.stat-val { font-size:1.6rem; font-weight:900; color:var(--primary); }
 .stat-sub { font-size:.72rem; color:var(--muted); margin-top:3px; }
 
 /* ── MAIN LAYOUT ── */
@@ -181,7 +176,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 
 /* ── RESPONSIVE ── */
 @media(max-width:860px) {
-  .stats-wrap { grid-template-columns:1fr 1fr 1fr; }
   .main-wrap  { grid-template-columns:1fr; }
   .hero { padding:32px 20px 26px; }
   header.header { padding:0 16px; }
@@ -189,7 +183,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   .footer-nav { flex-wrap:wrap; justify-content:center; gap:12px; }
 }
 @media(max-width:560px) {
-  .stats-wrap { grid-template-columns:1fr 1fr; }
 }
 </style>
 </head>
@@ -217,24 +210,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   <p>캘린더에서 날짜를 선택하고 예약을 신청하세요</p>
 </section>
 
-<!-- ── STATS ── -->
-<div class="stats-wrap">
-  <div class="stat-card">
-    <div class="stat-label">전체 예약</div>
-    <div class="stat-val" id="statTotal">0</div>
-    <div class="stat-sub">확정 기준</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">이번 달</div>
-    <div class="stat-val" id="statMonth">0</div>
-    <div class="stat-sub" id="statMonthLabel">건</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">총 박수</div>
-    <div class="stat-val" id="statNights">0</div>
-    <div class="stat-sub">확정 기준</div>
-  </div>
-</div>
 
 <!-- ── MAIN ── -->
 <div class="main-wrap">
@@ -506,21 +481,21 @@ function renderCalendar() {
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const todayS      = todayStr();
 
-  // 기존 예약 범위 맵
+  // 기존 예약 범위 맵 (체크아웃일은 제외 — 다음 예약의 체크인 가능)
   const dateMap = {};
   RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
     if (!r.checkin || !r.checkout) return;
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
+    const lastNight = new Date(cout); lastNight.setDate(lastNight.getDate() - 1);
+    const lastNightStr = lastNight.toISOString().slice(0,10);
     const cur  = new Date(cin);
     while (cur < cout) {
       const ds = cur.toISOString().slice(0,10);
       if (!dateMap[ds] || r.status === 'confirmed')
-        dateMap[ds] = { status:r.status, isStart: ds===r.checkin, isEnd: false };
+        dateMap[ds] = { status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
       cur.setDate(cur.getDate()+1);
     }
-    if (!dateMap[r.checkout]) dateMap[r.checkout] = { status:r.status, isStart:false, isEnd:true };
-    else dateMap[r.checkout].isEnd = true;
   });
 
   // 선택 범위 집합
