@@ -412,6 +412,18 @@ body.host-mode .host-badge { display:flex; }
 .btn-host-export:hover { background:rgba(255,220,100,.45); }
 .export-toast { display:none; position:fixed; bottom:80px; left:24px; z-index:999; background:#2a6a2a; color:#fff; padding:10px 18px; border-radius:10px; font-size:.82rem; font-weight:700; box-shadow:0 4px 18px rgba(0,0,0,.25); }
 .export-toast.show { display:block; }
+/* ── 호스트 인증 모달 ── */
+.auth-bg { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
+.auth-bg.open { display:flex; }
+.auth-box { background:#fff; border-radius:20px; padding:36px 32px; width:340px; text-align:center; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.auth-title { font-size:1.15rem; font-weight:900; margin-bottom:8px; }
+.auth-sub { font-size:.85rem; color:#888; margin-bottom:22px; line-height:1.6; }
+.auth-input { width:100%; padding:14px; border:1.5px solid #ddd; border-radius:12px; text-align:center; font-size:1rem; letter-spacing:3px; font-family:var(--sans); margin-bottom:10px; }
+.auth-input:focus { outline:none; border-color:var(--primary); }
+.auth-err { color:#e53935; font-size:.8rem; margin-bottom:10px; min-height:18px; }
+.auth-ok { width:100%; background:var(--primary); color:#fff; border:none; padding:14px; border-radius:12px; font-family:var(--sans); font-size:1rem; font-weight:700; cursor:pointer; margin-bottom:6px; }
+.auth-ok:hover { background:var(--primary-dark,#4a2510); }
+.auth-cancel { width:100%; background:transparent; border:none; color:#888; font-size:.88rem; font-family:var(--sans); cursor:pointer; padding:6px; }
 .photo-edit-overlay { display:none; position:absolute; inset:0; z-index:5; background:rgba(0,0,0,.45); align-items:center; justify-content:center; }
 body.host-mode .photo-main:hover .photo-edit-overlay,
 body.host-mode .photo-sub:hover .photo-edit-overlay { display:flex; }
@@ -1185,13 +1197,22 @@ let editingSlot = null, editingExtraIdx = null;
 
 function checkHostAuth() {
   if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
-  const pwd = prompt('🔐 호스트 인증 암호를 입력하세요.');
-  if (pwd === null) return; // 취소
-  if (pwd === HOST_PWD) {
+  document.getElementById('authField').value = '';
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authBg').classList.add('open');
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+}
+function closeAuth() { document.getElementById('authBg').classList.remove('open'); }
+function closeAuthOutside(e) { if (e.target === document.getElementById('authBg')) closeAuth(); }
+function confirmAuth() {
+  if (document.getElementById('authField').value === HOST_PWD) {
     sessionStorage.setItem(HOST_KEY, '1');
+    closeAuth();
     activateHost();
   } else {
-    alert('암호가 올바르지 않습니다.');
+    document.getElementById('authErr').textContent = '암호가 올바르지 않습니다.';
+    document.getElementById('authField').value = '';
+    document.getElementById('authField').focus();
   }
 }
 function activateHost() { document.body.classList.add('host-mode'); }
@@ -1355,6 +1376,19 @@ function exportEmbeddedHTML() {
       <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
       <button class="btn-auth-ok" onclick="confirmAuth()">확인</button>
     </div>
+  </div>
+</div>
+
+<!-- 호스트 인증 모달 -->
+<div class="auth-bg" id="authBg" onclick="closeAuthOutside(event)">
+  <div class="auth-box">
+    <div class="auth-title">🔐 호스트 인증</div>
+    <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-input" id="authField" type="password" placeholder="암호 입력"
+           onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr"></div>
+    <button class="auth-ok" onclick="confirmAuth()">확인</button>
+    <button class="auth-cancel" onclick="closeAuth()">취소</button>
   </div>
 </div>
 
