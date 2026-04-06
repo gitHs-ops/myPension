@@ -161,7 +161,7 @@ textarea.form-input { resize:vertical; min-height:70px; }
 /* ── SMS MODAL ── */
 .sms-bg { display:none; position:fixed; inset:0; z-index:800; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
 .sms-bg.open { display:flex; }
-.sms-box { background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:440px; box-shadow:0 12px 48px rgba(0,0,0,.25); }
+.sms-box { position:relative; background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:440px; box-shadow:0 12px 48px rgba(0,0,0,.25); }
 .sms-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
 .sms-icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
 .sms-icon.confirmed { background:#fdf1e8; }
@@ -187,6 +187,13 @@ textarea.form-input { resize:vertical; min-height:70px; }
 .sms-btn-email { width:100%; background:#f0f6ff; color:#2a5bd7; border:1.5px solid #c5d8f8; padding:11px; border-radius:9px; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .12s; margin-bottom:2px; }
 .sms-btn-email:hover { background:#deeaff; }
 .sms-btn-email:disabled { opacity:.6; cursor:default; }
+.sms-close-btn {
+  position:absolute; top:14px; right:16px;
+  background:none; border:none; font-size:1.3rem; color:var(--muted);
+  cursor:pointer; line-height:1; padding:2px 6px; border-radius:50%;
+  transition:background .12s, color .12s;
+}
+.sms-close-btn:hover { background:var(--bg); color:var(--text); }
 .sms-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:9px 20px; border-radius:20px; font-size:.82rem; font-weight:600; z-index:900; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
 .sms-toast.show { opacity:1; }
 
@@ -428,6 +435,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 <!-- SMS 발송 모달 -->
 <div class="sms-bg" id="smsBg" onclick="closeSmsModal(event)">
   <div class="sms-box">
+    <button class="sms-close-btn" onclick="closeSmsModal()" title="닫기">✕</button>
     <div class="sms-header">
       <div class="sms-icon" id="smsIcon"></div>
       <div>
@@ -448,8 +456,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     </div>
     <div class="sms-char"><span id="smsCharCount">0</span>자</div>
     <div class="sms-actions">
-      <button class="sms-btn-skip" onclick="closeSmsModal()">건너뛰기</button>
-      <button class="sms-btn-copy" onclick="copySmsMsg()">📋 복사</button>
       <button class="sms-btn-send" id="smsSendBtn" onclick="sendSmsApp()">📱 문자 발송</button>
     </div>
     <div class="sms-divider">또는 이메일로 발송</div>
@@ -693,15 +699,10 @@ function openSmsModal(r, status) {
 }
 
 function buildConfirmMsg(r, nights) {
-  return `[영덕감성산장] ${r.guestName}님, 예약이 확정되었습니다 :)
-
-체크인:  ${fmtDate(r.checkin)}
-체크아웃: ${fmtDate(r.checkout)}
-${nights}박 / ${r.guests || 1}명
-
-궁금하신 점은 언제든지 연락 주세요.
-연락번호: 010-2698-9056
-감사합니다!`;
+  return `[영덕감성산장] ${r.guestName}님 예약확정
+체크인 ${fmtShort(r.checkin)} / 체크아웃 ${fmtShort(r.checkout)}
+${nights}박 ${r.guests || 1}명
+문의 010 2698 9056`;
 }
 
 function buildCancelMsg(r) {
@@ -709,7 +710,7 @@ function buildCancelMsg(r) {
 
 불편을 드려 죄송합니다.
 다음에 또 방문해 주시면 더욱 잘 모시겠습니다.
-연락번호: 010-2698-9056
+연락처: 010 2698 9056
 감사합니다.`;
 }
 
