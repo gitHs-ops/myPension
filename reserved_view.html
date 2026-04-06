@@ -693,21 +693,23 @@ function openSmsModal(r, status) {
 }
 
 function buildConfirmMsg(r, nights) {
-  return `${r.guestName}님, 예약이 확정되었습니다 :)
+  return `[영덕감성산장] ${r.guestName}님, 예약이 확정되었습니다 :)
 
 체크인:  ${fmtDate(r.checkin)}
 체크아웃: ${fmtDate(r.checkout)}
 ${nights}박 / ${r.guests || 1}명
 
 궁금하신 점은 언제든지 연락 주세요.
+연락번호: 010-2698-9056
 감사합니다!`;
 }
 
 function buildCancelMsg(r) {
-  return `${r.guestName}님, 아쉽게도 요청하신 예약이 취소되었습니다.
+  return `[영덕감성산장] ${r.guestName}님, 아쉽게도 요청하신 예약이 취소되었습니다.
 
 불편을 드려 죄송합니다.
 다음에 또 방문해 주시면 더욱 잘 모시겠습니다.
+연락번호: 010-2698-9056
 감사합니다.`;
 }
 
