@@ -541,6 +541,7 @@ function saveRsvData() {
 
 // ── DATES ──
 function parseDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
+function dateStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function fmtDate(s) {
   if (!s) return '';
   const d = parseDate(s);
@@ -555,7 +556,7 @@ function nightsBetween(cin, cout) {
   if (!cin || !cout) return 0;
   return Math.max(0, Math.round((parseDate(cout) - parseDate(cin)) / (1000*60*60*24)));
 }
-function todayStr() { return new Date().toISOString().slice(0,10); }
+function todayStr() { return dateStr(new Date()); }
 
 // ── STATS ──
 function renderStats() {
@@ -594,10 +595,10 @@ function renderCalendar() {
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
     const lastNight = new Date(cout); lastNight.setDate(lastNight.getDate() - 1);
-    const lastNightStr = lastNight.toISOString().slice(0,10);
+    const lastNightStr = dateStr(lastNight);
     const cur  = new Date(cin);
     while (cur < cout) {
-      const ds = cur.toISOString().slice(0,10);
+      const ds = dateStr(cur);
       if (!dateMap[ds] || r.status === 'confirmed')
         dateMap[ds] = { id:r.id, status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
       cur.setDate(cur.getDate()+1);
