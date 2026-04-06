@@ -1319,8 +1319,11 @@ function exportEmbeddedHTML() {
   const slots  = JSON.parse(localStorage.getItem(SLOT_KEY)  || '{}');
   const extras = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]');
 
-  // 현재 HTML 전체 가져오기
+  // 현재 HTML 전체 가져오기 — 내보내기 시 host-mode 클래스 제거 후 캡처, 복원
+  const wasHost = document.body.classList.contains('host-mode');
+  if (wasHost) document.body.classList.remove('host-mode');
   let html = document.documentElement.outerHTML;
+  if (wasHost) document.body.classList.add('host-mode');
 
   // ① slot 사진: initHost에서 applySlotPhoto가 동적으로 img를 삽입하므로
   //    export용 HTML에는 SLOT_KEY localStorage 값을 JS 상수로 하드코딩
