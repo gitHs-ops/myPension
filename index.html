@@ -665,90 +665,6 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 
   </div>
 
-  <!-- RIGHT: BOOKING WIDGET -->
-  <div class="booking-wrap">
-    <div class="booking-card" id="booking-widget">
-
-      <div class="booking-rating">
-        <span style="color:var(--primary);">★</span> 4.69 · <a href="#reviews" style="color:var(--text);font-weight:700;text-decoration:underline;">후기 39개</a>
-      </div>
-
-      <div class="date-picker">
-        <div class="date-row">
-          <div class="date-cell" id="cellCheckin" onclick="openCal('checkin')">
-            <div class="date-label">체크인</div>
-            <div class="date-val" id="checkinVal">날짜 추가</div>
-          </div>
-          <div class="date-cell" id="cellCheckout" onclick="openCal('checkout')">
-            <div class="date-label">체크아웃</div>
-            <div class="date-val" id="checkoutVal">날짜 추가</div>
-          </div>
-        </div>
-      </div>
-      <div class="cal-popup" id="calPopup">
-        <div class="cal-instruction" id="calInstruction">체크인 날짜를 선택하세요</div>
-        <div class="cal-nav-row">
-          <button class="cal-nav-btn" onclick="navCal(-1)">‹</button>
-          <div class="cal-months" id="calMonths"></div>
-          <button class="cal-nav-btn" onclick="navCal(1)">›</button>
-        </div>
-        <div class="cal-footer-row">
-          <button class="cal-clear-btn" onclick="clearDates()">날짜 지우기</button>
-        </div>
-      </div>
-
-      <div class="guest-select" onclick="toggleGuests()">
-        <div>
-          <div class="guest-label">인원</div>
-          <div class="guest-val" id="guestVal">게스트 1명</div>
-        </div>
-        <div class="guest-arrow" id="guestArrow">▾</div>
-      </div>
-
-      <!-- Guest picker -->
-      <div id="guestPicker" style="display:none;border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:.9rem;font-weight:700;">성인</div>
-            <div style="font-size:.8rem;color:var(--muted);">만 13세 이상</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;">
-            <button onclick="changeGuest(-1)" style="width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:none;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
-            <span id="guestCount" style="font-weight:700;min-width:16px;text-align:center;">1</span>
-            <button onclick="changeGuest(1)" style="width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:none;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-reserve" onclick="handleReserve()">예약 신청</button>
-      <p class="no-charge-notice">예약 확정 전에는 요금이 청구되지 않습니다</p>
-      <p style="text-align:center;margin-bottom:14px;">
-        <a href="reserved_view.html" style="font-size:.82rem;color:var(--primary);font-weight:700;text-decoration:none;">📅 예약 가능 날짜 달력으로 보기 →</a>
-      </p>
-
-      <div class="price-breakdown">
-        <div class="price-row">
-          <span><span id="priceNightLabel">₩120,000</span> × <span id="nightsLabel">1박</span>
-            <button class="price-edit-btn" onclick="openPriceModal()" title="요금 편집">✏️</button>
-          </span>
-          <span id="subtotal">₩120,000</span>
-        </div>
-        <div class="price-row">
-          <span>청소비</span>
-          <span id="priceCleanLabel">₩30,000</span>
-        </div>
-        <div class="price-row">
-          <span>서비스 수수료</span>
-          <span id="serviceFee">₩14,400</span>
-        </div>
-        <div class="price-row total">
-          <span>합계</span>
-          <span id="totalPrice">₩164,400</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
 
 </div>
 
@@ -758,7 +674,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
   <h2 class="cta-title">동해 일출과 함께<br><span>특별한 하룻밤</span>을 경험하세요</h2>
   <p class="cta-desc">영덕감성산장에서 도심의 일상을 잠시 내려놓고<br>자연 속 진짜 휴식을 만나보세요.</p>
   <div class="cta-buttons">
-    <button class="btn-cta-primary" onclick="document.querySelector('.btn-reserve').click()">지금 예약하기</button>
+    <button class="btn-cta-primary" onclick="location.href='reserved_view.html'">지금 예약하기</button>
     <button class="btn-cta-outline" onclick="location.href='tel:010-0000-0000'">📞 전화 문의</button>
   </div>
 </section>

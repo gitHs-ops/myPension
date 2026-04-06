@@ -982,6 +982,21 @@ function saveRsv() {
   if (!cout) { showErr(errEl, '체크아웃 날짜를 선택해주세요.'); return; }
   if (nightsBetween(cin, cout) <= 0) { showErr(errEl, '체크아웃은 체크인 이후여야 합니다.'); return; }
 
+  // ── 예약 중복 체크 ──
+  const conflict = RESERVATIONS.find(r =>
+    r.id !== EDIT_ID &&          // 현재 수정 중인 예약 제외
+    r.status !== 'cancelled' &&  // 취소된 예약 제외
+    cin  < r.checkout &&         // 새 체크인이 기존 체크아웃 이전
+    cout > r.checkin             // 새 체크아웃이 기존 체크인 이후
+  );
+  if (conflict) {
+    showErr(errEl,
+      `⚠️ 예약 불가 — ${fmtDate(conflict.checkin)} ~ ${fmtDate(conflict.checkout)} 기간에 ` +
+      `"${conflict.guestName}"님의 예약이 있습니다.`
+    );
+    return;
+  }
+
   const nights = nightsBetween(cin, cout);
 
   let rsv;
