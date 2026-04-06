@@ -460,7 +460,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     </div>
     <div class="sms-divider">또는 이메일로 발송</div>
     <button class="sms-btn-email" id="smsEmailBtn" onclick="sendEmailGET()">✉️ 이메일 발송 (GAS MailApp)</button>
-    <button class="sms-btn-email" id="smsEmailBtn2" onclick="sendEmailGAS()" style="margin-top:6px;background:#f0fff4;color:#1a7a3a;border-color:#b2dfca;">✉️ 이메일 발송 2 (Google)</button>
   </div>
 </div>
 
@@ -488,17 +487,57 @@ let EDIT_ID = null;
 let CAL_MONTH = new Date();
 
 // ── INIT ──
-function init() {
-  try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e) { RESERVATIONS = []; }
+async function init() {
   HOST_MODE = localStorage.getItem('pension_host') === '1';
   if (HOST_MODE) document.body.classList.add('host-mode');
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  await loadFromGAS();
   renderStats();
   renderCalendar();
   renderList();
 }
 
-// ── PERSIST ──
+// ── GAS 연동 헬퍼 ──
+async function loadFromGAS() {
+  try {
+    const res  = await fetch(`${GAS_URL}?action=rsv_load`, { redirect: 'follow' });
+    const data = await res.json();
+    if (data.success) {
+      RESERVATIONS = data.reservations || [];
+      try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+    } else throw new Error(data.message);
+  } catch(e) {
+    // GAS 실패 시 로컬 캐시 사용
+    try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
+    console.warn('GAS 로드 실패 — 로컬 캐시 사용:', e.message);
+  }
+}
+
+async function upsertToGAS(rsv) {
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body:   JSON.stringify({ action: 'rsv_upsert', reservation: rsv }),
+      redirect: 'follow'
+    });
+  } catch(e) { console.warn('GAS upsert 실패:', e.message); }
+}
+
+async function deleteFromGAS(id) {
+  try {
+    const qs = new URLSearchParams({ action: 'rsv_delete', id });
+    await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+  } catch(e) { console.warn('GAS 삭제 실패:', e.message); }
+}
+
+async function updateStatusGAS(id, status) {
+  try {
+    const qs = new URLSearchParams({ action: 'rsv_status', id, status });
+    await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+  } catch(e) { console.warn('GAS 상태 업데이트 실패:', e.message); }
+}
+
+// ── PERSIST (로컬 캐시) ──
 function saveRsvData() {
   try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
 }
@@ -654,7 +693,7 @@ function renderList() {
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── STATUS CHANGE ──
-function changeStatus(id, status) {
+async function changeStatus(id, status) {
   const r = RESERVATIONS.find(r => r.id === id);
   if (!r) return;
   const prev = r.status;
@@ -663,6 +702,7 @@ function changeStatus(id, status) {
   renderStats();
   renderCalendar();
   renderList();
+  await updateStatusGAS(id, status);
   if ((status === 'confirmed' || status === 'cancelled') && prev !== status) {
     openSmsModal(r, status);
   }
@@ -771,38 +811,6 @@ async function sendSmsApp() {
   }
 }
 
-async function sendEmailGAS() {
-  const toEmail = document.getElementById('smsEmail').value.trim();
-  const msg     = document.getElementById('smsMsg').value.trim();
-  if (!toEmail) { showToast('이메일 주소를 입력해주세요.'); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) { showToast('올바른 이메일 형식이 아닙니다.'); return; }
-
-  const guestName = document.getElementById('smsSub').textContent
-    .replace('님께 확정 안내를 보내세요', '').replace('님께 취소 안내를 보내세요', '').trim();
-  const subject = SMS_CURRENT_STATUS === 'confirmed'
-    ? '[영덕감성산장] 예약이 확정되었습니다'
-    : '[영덕감성산장] 예약 취소 안내';
-
-  const btn = document.getElementById('smsEmailBtn2');
-  btn.disabled = true;
-  btn.textContent = '발송 중...';
-
-  try {
-    const res  = await fetch(GAS_URL, {
-      method: 'POST',
-      body:   JSON.stringify({ to_email: toEmail, to_name: guestName, subject, message: msg }),
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || '발송 실패');
-    document.getElementById('smsBg').classList.remove('open');
-    showToast('이메일이 성공적으로 발송되었습니다! (Google)');
-  } catch (e) {
-    showToast('발송 실패: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✉️ 이메일 발송 2 (Google)';
-  }
-}
 
 async function sendEmailGET() {
   const toEmail = document.getElementById('smsEmail').value.trim();
@@ -843,13 +851,14 @@ function showToast(msg) {
 }
 
 // ── DELETE ──
-function deleteRsv(id) {
+async function deleteRsv(id) {
   if (!confirm('이 예약을 삭제하시겠어요?')) return;
   RESERVATIONS = RESERVATIONS.filter(r => r.id !== id);
   saveRsvData();
   renderStats();
   renderCalendar();
   renderList();
+  await deleteFromGAS(id);
 }
 
 // ── MODAL ──
@@ -914,11 +923,13 @@ function saveRsv() {
 
   const nights = nightsBetween(cin, cout);
 
+  let rsv;
   if (EDIT_ID) {
-    const r = RESERVATIONS.find(r => r.id === EDIT_ID);
-    if (r) Object.assign(r, {guestName:name, phone, email, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo});
+    rsv = RESERVATIONS.find(r => r.id === EDIT_ID);
+    if (rsv) Object.assign(rsv, {guestName:name, phone, email, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo});
   } else {
-    RESERVATIONS.push({ id:'rsv_'+Date.now(), guestName:name, phone, email, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo, createdAt:todayStr() });
+    rsv = { id:'rsv_'+Date.now(), guestName:name, phone, email, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo, createdAt:todayStr() };
+    RESERVATIONS.push(rsv);
   }
 
   saveRsvData();
@@ -926,6 +937,7 @@ function saveRsv() {
   renderStats();
   renderCalendar();
   renderList();
+  if (rsv) upsertToGAS(rsv);
 }
 
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
