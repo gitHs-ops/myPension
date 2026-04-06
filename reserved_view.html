@@ -588,9 +588,16 @@ function renderCalendar() {
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const todayS = todayStr();
 
+  // 필터에 맞는 예약만 캘린더에 표시
+  let rsvForCal;
+  if      (FILTER === 'confirmed') rsvForCal = RESERVATIONS.filter(r => r.status === 'confirmed');
+  else if (FILTER === 'pending')   rsvForCal = RESERVATIONS.filter(r => r.status === 'pending');
+  else if (FILTER === 'cancelled') rsvForCal = [];
+  else                             rsvForCal = RESERVATIONS.filter(r => r.status !== 'cancelled');
+
   // Build a map of date → reservation info (체크아웃일은 제외 — 다음 예약 체크인 가능)
   const dateMap = {};
-  RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
+  rsvForCal.forEach(r => {
     if (!r.checkin || !r.checkout) return;
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
@@ -638,6 +645,7 @@ function setFilter(f) {
   FILTER = f;
   document.querySelectorAll('.ftab').forEach(el => el.classList.toggle('active', el.dataset.filter === f));
   renderList();
+  renderCalendar();
 }
 
 function renderList() {
