@@ -515,11 +515,24 @@ async function loadFromGAS() {
 
 async function upsertToGAS(rsv) {
   try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      body:   JSON.stringify({ action: 'rsv_upsert', reservation: rsv }),
-      redirect: 'follow'
+    const qs = new URLSearchParams({
+      action:     'rsv_upsert',
+      id:         rsv.id         || '',
+      guestName:  rsv.guestName  || '',
+      phone:      rsv.phone      || '',
+      email:      rsv.email      || '',
+      checkin:    rsv.checkin    || '',
+      checkout:   rsv.checkout   || '',
+      nights:     rsv.nights     || 0,
+      guests:     rsv.guests     || 1,
+      totalPrice: rsv.totalPrice || 0,
+      status:     rsv.status     || '',
+      memo:       rsv.memo       || '',
+      createdAt:  rsv.createdAt  || ''
     });
+    const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+    const data = await res.json();
+    if (!data.success) console.warn('GAS upsert 실패:', data.message);
   } catch(e) { console.warn('GAS upsert 실패:', e.message); }
 }
 
