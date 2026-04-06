@@ -90,6 +90,7 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .cal-cell.rsv-pend-end::before    { background:linear-gradient(to left,  transparent 50%, rgba(217,119,6,.12) 50%); }
 .cal-cell.rsv-pend-start .cal-num,
 .cal-cell.rsv-pend-end   .cal-num { background:var(--pending); color:#fff; cursor:default; }
+.cal-cell.rsv-pend-single .cal-num { background:var(--pending); color:#fff; cursor:default; }
 .cal-cell.rsv-pend-mid   .cal-num { cursor:default; }
 
 /* ── 선택 범위 (초록) ── */
@@ -511,7 +512,7 @@ function renderCalendar() {
     // 기존 예약 표시
     if (info) {
       const p = info.status === 'pending' ? 'rsv-pend' : 'rsv';
-      if (info.isStart && info.isEnd) cls += ' rsv-single';
+      if (info.isStart && info.isEnd) cls += ` ${p}-single`;
       else if (info.isStart)          cls += ` ${p}-start`;
       else if (info.isEnd)            cls += ` ${p}-end`;
       else                            cls += ` ${p}-mid`;
