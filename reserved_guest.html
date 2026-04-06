@@ -358,8 +358,13 @@ let SEL_CHECKIN  = null;  // 'YYYY-MM-DD'
 let SEL_CHECKOUT = null;  // 'YYYY-MM-DD'
 let SEL_STEP     = 0;     // 0=미선택 1=체크인선택 2=완료
 
-// 예약된 날짜 집합 (체크인~체크아웃-1 일 포함, checkout 당일 제외)
-let BOOKED_DATES = new Set();
+// 예약된 날짜 집합
+let BOOKED_DATES = new Set(); // 전체(체크인~체크아웃-1) - 충돌 체크용
+let BOOKED_MID   = new Set(); // 체크인+1~체크아웃-1 (중간박만) - 캘린더 클릭 제한용
+let CHECKIN_SET  = new Set(); // 타 예약의 체크인 당일 집합
+
+// 직전 신청 예약 (다시 신청하기에 사용)
+let LAST_RSV = null;
 
 // ── INIT ──
 async function init() {
@@ -442,21 +447,27 @@ function addDays(s, n) {
 }
 
 // ── 예약된 날짜 집합 빌드 ──
-// 체크인 당일 ~ 체크아웃 전날까지 (체크아웃 당일은 새 체크인 가능)
 function buildBookedSet() {
   BOOKED_DATES = new Set();
+  BOOKED_MID   = new Set();
+  CHECKIN_SET  = new Set();
+
   RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
     if (!r.checkin || !r.checkout) return;
+    CHECKIN_SET.add(r.checkin);          // 체크인 당일 별도 관리
     let cur = parseDate(r.checkin);
     const end = parseDate(r.checkout);
     while (cur < end) {
-      BOOKED_DATES.add(cur.toISOString().slice(0,10));
+      const ds = cur.toISOString().slice(0,10);
+      BOOKED_DATES.add(ds);
+      if (ds !== r.checkin) BOOKED_MID.add(ds); // 체크인 다음날부터 mid로 분류
       cur.setDate(cur.getDate()+1);
     }
   });
 }
 
-// 범위 내에 예약된 날이 있는지 확인 (체크인~체크아웃-1)
+// 범위 내 충돌 확인 (체크인~체크아웃-1 사이에 예약된 날 있으면 true)
+// 단, 체크아웃 = 타 예약 체크인 당일이면 충돌 아님 (이미 체크인~체크아웃-1 로 체크)
 function hasConflict(cin, cout) {
   let cur = parseDate(cin);
   const end = parseDate(cout);
@@ -534,8 +545,6 @@ function renderCalendar() {
     const info    = dateMap[ds];
     const isToday = ds === todayS;
     const isPast  = ds < todayS;
-    const isBooked = BOOKED_DATES.has(ds);
-
     // ── 클래스 결정 ──
     let cls = 'cal-cell';
     if (isToday) cls += ' today';
@@ -549,8 +558,8 @@ function renderCalendar() {
       else                            cls += ` ${p}-mid`;
     }
 
-    // 선택 범위 표시 (기존 예약 위에 덮지 않음)
-    if (!isBooked && selSet.size > 0) {
+    // 선택 범위 표시 (중간박이 아닌 경우만)
+    if (!BOOKED_MID.has(ds) && selSet.size > 0) {
       if (selSet.has(ds)) {
         if (SEL_CHECKIN && SEL_CHECKOUT) {
           if (ds === SEL_CHECKIN && ds === SEL_CHECKOUT) cls += ' sel-single';
@@ -563,13 +572,28 @@ function renderCalendar() {
       }
     }
 
-    // 클릭 가능 여부
+    // ── 클릭 가능 여부 ──
+    // step=1(체크아웃 선택 중): 타 예약 체크인 당일(CHECKIN_SET)도 체크아웃으로 허용
+    // 단, 중간박(BOOKED_MID)은 항상 불가
     let clickAttr = '';
-    if (!isPast && !isBooked) {
+    const isMid     = BOOKED_MID.has(ds);
+    const isCheckin = CHECKIN_SET.has(ds);
+
+    if (isPast || isMid) {
+      if (isPast) cls += ' past';
+      // isMid: 클릭 불가, 기존 예약 표시 유지
+    } else if (isCheckin) {
+      // 타 예약의 체크인 당일
+      if (SEL_STEP === 1) {
+        // 체크아웃 선택 중이면 클릭 허용 (체크아웃으로만 사용)
+        cls += ' free';
+        clickAttr = `onclick="selectDate('${ds}')"`;
+      }
+      // step 0,2: 불가 (이미 누군가 체크인하는 날)
+    } else {
+      // 완전히 빈 날
       cls += ' free';
       clickAttr = `onclick="selectDate('${ds}')"`;
-    } else if (isPast) {
-      cls += ' past';
     }
 
     html += `<div class="${cls}" ${clickAttr}><div class="cal-num">${d}</div></div>`;
@@ -592,6 +616,12 @@ function selectDate(ds) {
       SEL_CHECKOUT = null;
       SEL_STEP     = 1;
     } else {
+      // 1주일(7박) 초과 불가
+      const n = nightsBetween(SEL_CHECKIN, ds);
+      if (n > 7) {
+        showToast('⚠️ 최대 7박까지만 예약 신청 가능합니다.');
+        return; // 선택 상태 유지 (체크인은 그대로)
+      }
       // 범위 내 예약 충돌 확인
       if (hasConflict(SEL_CHECKIN, ds)) {
         showToast('⚠️ 선택한 기간에 이미 예약된 날짜가 포함되어 있습니다.');
@@ -696,25 +726,63 @@ async function saveRsv() {
     try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
     renderStats();
     renderCalendar();
-    showDone(rsv.id);
+    showDone(rsv);
   }
 }
 
+// ── GAS 삭제 ──
+async function deleteFromGAS(id) {
+  try {
+    const qs = new URLSearchParams({ action: 'rsv_delete', id });
+    await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+  } catch(e) { console.warn('GAS 삭제 실패:', e.message); }
+}
+
 // ── 완료 화면 ──
-function showDone(id) {
+function showDone(rsv) {
+  LAST_RSV = rsv;
   document.getElementById('formPanel').style.display = 'none';
-  document.getElementById('doneCode').textContent    = '예약코드: ' + id;
+  document.getElementById('doneCode').textContent    = '예약코드: ' + rsv.id;
   document.getElementById('doneCard').classList.add('show');
 }
 
-function resetForm() {
-  SEL_CHECKIN = SEL_CHECKOUT = null;
-  SEL_STEP = 0;
-  ['inGuestName','inPhone','inEmail','inMemo'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('inGuests').value = 2;
-  document.getElementById('rsvErr').classList.remove('show');
+// ── 다시 신청하기 (직전 데이터 복원 + 구글 시트 삭제) ──
+async function resetForm() {
+  const prev = LAST_RSV;
+
+  // 직전 예약 GAS 삭제 + 로컬에서 제거
+  if (prev) {
+    showLoading('이전 신청 내역을 삭제하는 중...');
+    await deleteFromGAS(prev.id);
+    hideLoading();
+    RESERVATIONS = RESERVATIONS.filter(r => r.id !== prev.id);
+    buildBookedSet();
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+  }
+
+  // 폼 전환
   document.getElementById('doneCard').classList.remove('show');
   document.getElementById('formPanel').style.display = '';
+  document.getElementById('rsvErr').classList.remove('show');
+
+  // 직전 값 복원
+  if (prev) {
+    document.getElementById('inGuestName').value = prev.guestName || '';
+    document.getElementById('inPhone').value     = prev.phone     || '';
+    document.getElementById('inEmail').value     = prev.email     || '';
+    document.getElementById('inGuests').value    = prev.guests    || 2;
+    document.getElementById('inMemo').value      = prev.memo      || '';
+    SEL_CHECKIN  = prev.checkin  || null;
+    SEL_CHECKOUT = prev.checkout || null;
+    SEL_STEP     = (SEL_CHECKIN && SEL_CHECKOUT) ? 2 : (SEL_CHECKIN ? 1 : 0);
+  } else {
+    ['inGuestName','inPhone','inEmail','inMemo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('inGuests').value = 2;
+    SEL_CHECKIN = SEL_CHECKOUT = null;
+    SEL_STEP = 0;
+  }
+
+  renderStats();
   renderCalendar();
   updateDateUI();
 }

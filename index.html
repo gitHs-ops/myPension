@@ -441,7 +441,7 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
   window.__EMBED_EXTRAS__ = [];
 </script>
 </head>
-<body class="host-mode">
+<body>
 
 <!-- HEADER -->
 <header class="header">
@@ -1183,8 +1183,11 @@ const SLOT_KEY  = 'idx_slots';
 const EXTRA_KEY = 'idx_extra';
 let editingSlot = null, editingExtraIdx = null;
 
+// 페이지 로드 시 sessionStorage 확인 → 호스트 모드 복원
+if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
+
 function checkHostAuth() {
-  if (localStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
   document.getElementById('authOverlay').classList.add('open');
   document.getElementById('authErr').textContent = '';
   document.getElementById('authField').value = '';
@@ -1194,14 +1197,14 @@ function closeAuth() { document.getElementById('authOverlay').classList.remove('
 function closeAuthOutside(e) { if (e.target === document.getElementById('authOverlay')) closeAuth(); }
 function confirmAuth() {
   if (document.getElementById('authField').value === HOST_PWD) {
-    localStorage.setItem(HOST_KEY, '1'); closeAuth(); activateHost();
+    sessionStorage.setItem(HOST_KEY, '1'); closeAuth(); activateHost();
   } else {
     document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
     document.getElementById('authField').value = ''; document.getElementById('authField').focus();
   }
 }
 function activateHost() { document.body.classList.add('host-mode'); }
-function exitHostMode() { localStorage.removeItem(HOST_KEY); document.body.classList.remove('host-mode'); }
+function exitHostMode() { sessionStorage.removeItem(HOST_KEY); document.body.classList.remove('host-mode'); }
 
 function compressImage(file, callback) {
   const reader = new FileReader();
