@@ -1183,9 +1183,6 @@ const SLOT_KEY  = 'idx_slots';
 const EXTRA_KEY = 'idx_extra';
 let editingSlot = null, editingExtraIdx = null;
 
-// 페이지 로드 시 sessionStorage 확인 → 호스트 모드 복원
-if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
-
 function checkHostAuth() {
   if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
   const pwd = prompt('🔐 호스트 인증 암호를 입력하세요.');
@@ -1327,7 +1324,9 @@ function exportEmbeddedHTML() {
 
 // ── 초기화 ──
 (function initHost() {
-  if (localStorage.getItem(HOST_KEY) === '1') activateHost();
+  // localStorage 구버전 키 정리 후 sessionStorage 기준으로 통일
+  localStorage.removeItem(HOST_KEY);
+  if (sessionStorage.getItem(HOST_KEY) === '1') activateHost();
   // embedded 우선, 없으면 localStorage
   const slotData  = (window.__EMBED_SLOTS__  && Object.keys(window.__EMBED_SLOTS__).length)
                     ? window.__EMBED_SLOTS__
