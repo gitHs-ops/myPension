@@ -395,11 +395,11 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <div class="form-row-2">
       <div>
         <label class="form-lbl">체크인 *</label>
-        <input class="form-input" id="inCheckin" type="date" oninput="previewNights()">
+        <input class="form-input" id="inCheckin" type="date" oninput="previewNights()" onkeydown="return false" style="cursor:pointer">
       </div>
       <div>
         <label class="form-lbl">체크아웃 *</label>
-        <input class="form-input" id="inCheckout" type="date" oninput="previewNights()">
+        <input class="form-input" id="inCheckout" type="date" oninput="previewNights()" onkeydown="return false" style="cursor:pointer">
       </div>
     </div>
     <div class="nights-preview" id="nightsPreview"></div>
