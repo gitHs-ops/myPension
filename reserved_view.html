@@ -503,6 +503,7 @@ let RESERVATIONS = [];
 let HOST_MODE = false;
 let FILTER = 'all';
 let SMS_CURRENT_STATUS = 'confirmed';
+let SMS_CURRENT_RSV    = null;
 let EDIT_ID = null;
 let CAL_MONTH = new Date();
 
@@ -782,6 +783,7 @@ function openSmsModal(r, status) {
   }
 
   SMS_CURRENT_STATUS = status;
+  SMS_CURRENT_RSV    = r;
   document.getElementById('smsPhone').value = r.phone || '';
   document.getElementById('smsEmail').value = r.email || '';
 
@@ -869,15 +871,19 @@ async function sendSmsApp() {
 
 async function sendEmailGET() {
   const toEmail = document.getElementById('smsEmail').value.trim();
-  const msg     = document.getElementById('smsMsg').value.trim();
+  let   msg     = document.getElementById('smsMsg').value.trim();
   if (!toEmail) { showToast('이메일 주소를 입력해주세요.'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) { showToast('올바른 이메일 형식이 아닙니다.'); return; }
 
-  const guestName = document.getElementById('smsSub').textContent
-    .replace('님께 확정 안내를 보내세요', '').replace('님께 취소 안내를 보내세요', '').trim();
+  const guestName = SMS_CURRENT_RSV ? SMS_CURRENT_RSV.guestName : '';
   const subject = SMS_CURRENT_STATUS === 'confirmed'
     ? '[영덕감성산장] 예약이 확정되었습니다'
     : '[영덕감성산장] 예약 취소 안내';
+
+  // 확정 이메일에 예약코드 추가
+  if (SMS_CURRENT_STATUS === 'confirmed' && SMS_CURRENT_RSV) {
+    msg += `\n\n예약코드: ${SMS_CURRENT_RSV.id}`;
+  }
 
   const btn = document.getElementById('smsEmailBtn');
   btn.disabled = true;
