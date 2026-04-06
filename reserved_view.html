@@ -197,6 +197,20 @@ textarea.form-input { resize:vertical; min-height:70px; }
 .sms-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:9px 20px; border-radius:20px; font-size:.82rem; font-weight:600; z-index:900; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
 .sms-toast.show { opacity:1; }
 
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:rgba(255,255,255,.75); justify-content:center; align-items:center; flex-direction:column; gap:14px;
+}
+.loading-overlay.show { display:flex; }
+.loading-spinner {
+  width:42px; height:42px; border-radius:50%;
+  border:4px solid var(--border); border-top-color:var(--primary);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-msg { font-size:.9rem; color:var(--sub); font-weight:600; }
+
 /* ── AUTH ── */
 .auth-bg { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
 .auth-bg.open { display:flex; }
@@ -466,6 +480,12 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 <!-- Toast -->
 <div class="sms-toast" id="smsToast"></div>
 
+<!-- 로딩 오버레이 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loadingMsg">처리 중...</div>
+</div>
+
 <!-- Host Badge -->
 <div class="host-badge">
   <span>✏️ 호스트 모드</span>
@@ -497,8 +517,18 @@ async function init() {
   renderList();
 }
 
+// ── 로딩 표시 ──
+function showLoading(msg) {
+  document.getElementById('loadingMsg').textContent = msg || '처리 중...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
 // ── GAS 연동 헬퍼 ──
 async function loadFromGAS() {
+  showLoading('예약 현황을 불러오는 중...');
   try {
     const res  = await fetch(`${GAS_URL}?action=rsv_load`, { redirect: 'follow' });
     const data = await res.json();
@@ -509,11 +539,15 @@ async function loadFromGAS() {
   } catch(e) {
     // GAS 실패 시 로컬 캐시 사용
     try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
+    showToast('⚠️ 서버 연결 실패 — 로컬 캐시로 표시합니다');
     console.warn('GAS 로드 실패 — 로컬 캐시 사용:', e.message);
+  } finally {
+    hideLoading();
   }
 }
 
 async function upsertToGAS(rsv) {
+  showLoading('예약을 저장하는 중...');
   try {
     const qs = new URLSearchParams({
       action:     'rsv_upsert',
@@ -532,22 +566,30 @@ async function upsertToGAS(rsv) {
     });
     const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
     const data = await res.json();
-    if (!data.success) console.warn('GAS upsert 실패:', data.message);
-  } catch(e) { console.warn('GAS upsert 실패:', e.message); }
+    if (!data.success) showToast('⚠️ 시트 저장 실패: ' + data.message);
+  } catch(e) {
+    showToast('⚠️ 시트 저장 실패: ' + e.message);
+  } finally {
+    hideLoading();
+  }
 }
 
 async function deleteFromGAS(id) {
+  showLoading('예약을 삭제하는 중...');
   try {
     const qs = new URLSearchParams({ action: 'rsv_delete', id });
     await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
-  } catch(e) { console.warn('GAS 삭제 실패:', e.message); }
+  } catch(e) { showToast('⚠️ 시트 삭제 실패: ' + e.message); }
+  finally { hideLoading(); }
 }
 
 async function updateStatusGAS(id, status) {
+  showLoading('상태를 변경하는 중...');
   try {
     const qs = new URLSearchParams({ action: 'rsv_status', id, status });
     await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
-  } catch(e) { console.warn('GAS 상태 업데이트 실패:', e.message); }
+  } catch(e) { showToast('⚠️ 상태 변경 실패: ' + e.message); }
+  finally { hideLoading(); }
 }
 
 // ── PERSIST (로컬 캐시) ──
