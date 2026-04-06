@@ -204,14 +204,11 @@ body.host-mode .card-body .btn-edit-video { display:flex; }
 .host-badge { display:none; position:fixed; bottom:24px; left:24px; z-index:400; background:var(--primary); color:#fff; padding:9px 16px; border-radius:999px; font-size:.78rem; font-weight:700; box-shadow:0 3px 16px rgba(0,0,0,.2); align-items:center; gap:8px; }
 body.host-mode .host-badge { display:flex; }
 .btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
-.btn-host-export { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-host-save { background:rgba(255,220,100,.25); border:1px solid rgba(255,220,100,.6); border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-host-save:hover { background:rgba(255,220,100,.45); }
+.btn-host-save:disabled { opacity:.6; cursor:default; }
 .btn-edit-video { display:none; position:absolute; bottom:8px; right:8px; z-index:10; background:var(--primary); border:none; border-radius:6px; color:#fff; padding:4px 10px; font-family:var(--sans); font-size:.72rem; font-weight:700; cursor:pointer; align-items:center; gap:4px; }
 body.host-mode .card-body .btn-edit-video { display:flex; }
-.export-toast { display:none; position:fixed; bottom:80px; left:24px; z-index:500; background:#222; color:#fff; padding:10px 18px; border-radius:10px; font-size:.82rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.25); }
-.export-toast.show { display:block; }
-.btn-host-export { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
-.export-toast { display:none; position:fixed; bottom:80px; left:24px; z-index:500; background:#222; color:#fff; padding:10px 18px; border-radius:10px; font-size:.82rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.25); }
-.export-toast.show { display:block; }
 
 /* ── VIDEO ADD MODAL ── */
 .vm-overlay { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:20px; }
@@ -475,10 +472,9 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 <div class="host-badge">
   🎬 호스트 모드
   <span style="opacity:.35">|</span>
-  <button class="btn-host-export" onclick="exportEmbeddedHTML()">💾 HTML 내보내기</button>
+  <button class="btn-host-save" onclick="saveToSheet()">💾 저장</button>
   <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
 </div>
-<div class="export-toast" id="exportToast">✅ pic_video.html 다운로드 완료! GitHub에 올려주세요.</div>
 
 <!-- FOOTER -->
 <footer>
@@ -496,9 +492,13 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 </footer>
 
 <script>
-const VID_KEY  = 'pv_videos';
 const HOST_KEY = 'pension_host';
 const HOST_PWD = '1dl34';
+
+// ▼ Apps Script 웹 앱 URL — 배포 후 여기에 붙여넣기
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+// ▼ 호스트 저장용 토큰 (Apps Script 속성의 AUTH_TOKEN 과 동일하게)
+const AUTH_TOKEN = '1dl34';
 const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
 
 let videos = [];
@@ -507,30 +507,86 @@ let currentFilter = 'all';
 let currentPlayerIdx = 0;
 let editingId = null;
 
+let _pendingAfterAuth = null;
+
 // ── 초기화 ──
 function hostCheckThenAdd() {
-  if (localStorage.getItem(HOST_KEY) === '1') { openVideoModal(null); return; }
+  if (sessionStorage.getItem(HOST_KEY) === '1') { openVideoModal(null); return; }
   document.getElementById('authOverlay').classList.add('open');
   document.getElementById('authErr').textContent = '';
   document.getElementById('authField').value = '';
   setTimeout(() => document.getElementById('authField').focus(), 80);
   _pendingAfterAuth = () => openVideoModal(null);
 }
-let _pendingAfterAuth = null;
 
-function init() {
-  if (window.__EMBED_VID__ && window.__EMBED_VID__.length) {
-    videos = window.__EMBED_VID__;
-  } else {
-    const saved = localStorage.getItem(VID_KEY);
-    videos = saved ? JSON.parse(saved) : [];
-  }
-  if (localStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
+async function init() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
+  await loadFromSheet();
   applyFilter();
 }
 
-function saveVideos() {
-  try { localStorage.setItem(VID_KEY, JSON.stringify(videos)); } catch(e) {}
+async function loadFromSheet() {
+  // 시트 URL 미설정 시 embed 데이터로 폴백
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
+    return;
+  }
+  try {
+    const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_video`);
+    const json = await res.json();
+    if (json.ok && json.data.length) {
+      videos = json.data.map(r => ({
+        id:        Number(r.id),
+        cat:       r.cat,
+        category:  CAT_LABELS[r.cat] || r.cat,
+        title:     r.title,
+        desc:      r.desc,
+        duration:  r.duration,
+        youtubeUrl:r.youtube_url,
+        youtubeId: r.youtube_id || null,
+        createdAt: Number(r.created_at) || 0,
+      }));
+    } else {
+      // 시트가 비어있으면 embed 데이터 사용
+      videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
+    }
+  } catch(err) {
+    console.warn('시트 로드 실패, embed 데이터 사용:', err);
+    videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
+  }
+}
+
+function saveVideos() { /* 시트에 저장은 saveToSheet() 사용 */ }
+
+async function saveToSheet() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    alert('APPS_SCRIPT_URL 을 설정해 주세요.');
+    return;
+  }
+  const btn = document.querySelector('.btn-host-save');
+  btn.textContent = '저장 중…'; btn.disabled = true;
+  try {
+    const payload = videos.map(v => ({
+      id:          v.id,
+      cat:         v.cat,
+      title:       v.title,
+      desc:        v.desc,
+      duration:    v.duration || '',
+      youtube_url: v.youtubeUrl || '',
+      youtube_id:  v.youtubeId || '',
+      created_at:  v.createdAt || Date.now(),
+    }));
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ token: AUTH_TOKEN, sheet: 'pic_video', action: 'save', data: payload }),
+    });
+    btn.textContent = '✅ 저장 완료!';
+    setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
+  } catch(err) {
+    alert('저장 실패: ' + err.message);
+    btn.textContent = '💾 저장'; btn.disabled = false;
+  }
 }
 
 // ── 필터 ──
@@ -686,7 +742,7 @@ function deleteVideo(id) {
 
 // ── HOST AUTH ──
 function checkHostAuth() {
-  if (localStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
   document.getElementById('authOverlay').classList.add('open');
   document.getElementById('authErr').textContent = '';
   document.getElementById('authField').value = '';
@@ -695,7 +751,7 @@ function checkHostAuth() {
 function closeAuth() { document.getElementById('authOverlay').classList.remove('open'); }
 function confirmAuth() {
   if (document.getElementById('authField').value === HOST_PWD) {
-    localStorage.setItem(HOST_KEY, '1');
+    sessionStorage.setItem(HOST_KEY, '1');
     closeAuth();
     document.body.classList.add('host-mode');
     if (_pendingAfterAuth) { _pendingAfterAuth(); _pendingAfterAuth = null; }
@@ -706,21 +762,10 @@ function confirmAuth() {
   }
 }
 function exitHostMode() {
-  localStorage.removeItem(HOST_KEY);
+  sessionStorage.removeItem(HOST_KEY);
   document.body.classList.remove('host-mode');
 }
 
-// ── HTML 내보내기 ──
-function exportEmbeddedHTML() {
-  // videoGrid의 현재 DOM을 비우고, 데이터를 <script> 상수로 주입
-  let html = document.documentElement.outerHTML;
-
-  // ① 렌더된 videoGrid 내용 제거 (빈 상태로)
-  html = html.replace(
-    /<div class="video-grid" id="videoGrid">[\s\S]*?<\/div>/,
-    '<div class="video-grid" id="videoGrid"><!-- JS 렌더링 --><\/div>'
-  );
-
-  // ② 기존 embed 스크립트 제거
-  html = html.replace(/
+init();
+</script>
 </body></html>
