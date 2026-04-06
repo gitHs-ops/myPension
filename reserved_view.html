@@ -48,7 +48,6 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
 .hero p { font-size:.92rem; opacity:.75; }
 .btn-add-rsv { background:#fff; color:var(--primary); border:none; padding:12px 26px; border-radius:999px; font-family:var(--sans); font-size:.9rem; font-weight:700; cursor:pointer; transition:transform .15s; display:block; white-space:nowrap; }
-body.host-mode .btn-add-rsv { display:none; }
 .btn-add-rsv:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.2); }
 
 /* ── STATS ── */
@@ -57,8 +56,7 @@ body.host-mode .btn-add-rsv { display:none; }
 .stat-label { font-size:.75rem; color:var(--muted); font-weight:600; margin-bottom:6px; }
 .stat-val { font-size:1.6rem; font-weight:900; color:var(--primary); }
 .stat-sub { font-size:.72rem; color:var(--muted); margin-top:3px; }
-.stat-revenue { filter:blur(6px); pointer-events:none; transition:filter .2s; }
-body.host-mode .stat-revenue { filter:none; pointer-events:auto; }
+.stat-revenue { transition:filter .2s; }
 
 /* ── MAIN LAYOUT ── */
 .main-wrap { max-width:960px; margin:24px auto 80px; padding:0 24px; display:grid; grid-template-columns:1fr 340px; gap:28px; align-items:start; }
@@ -98,8 +96,7 @@ body.host-mode .stat-revenue { filter:none; pointer-events:auto; }
 .legend-dot { width:10px; height:10px; border-radius:50%; }
 
 /* ── LIST SECTION ── */
-.list-section { display:none; flex-direction:column; gap:14px; }
-body.host-mode .list-section { display:flex; }
+.list-section { display:flex; flex-direction:column; gap:14px; }
 .list-header { display:flex; align-items:center; justify-content:space-between; }
 .list-title { font-size:.95rem; font-weight:900; }
 .filter-tabs { display:flex; gap:4px; }
@@ -124,8 +121,7 @@ body.host-mode .list-section { display:flex; }
 .rsv-price { font-size:.8rem; color:var(--muted); }
 .rsv-price b { color:var(--primary); font-size:.88rem; }
 .rsv-memo { font-size:.76rem; color:var(--muted); margin-top:5px; font-style:italic; }
-.rsv-actions { display:none; gap:6px; margin-top:10px; }
-body.host-mode .rsv-actions { display:flex; }
+.rsv-actions { display:flex; gap:6px; margin-top:10px; }
 .btn-rsv { font-size:.75rem; padding:5px 12px; border-radius:14px; border:1px solid var(--border); background:var(--surface); cursor:pointer; color:var(--text); transition:background .12s; }
 .btn-rsv:hover { background:var(--bg); }
 .btn-rsv.del { border-color:#e53935; color:#e53935; }
@@ -133,9 +129,8 @@ body.host-mode .rsv-actions { display:flex; }
 .empty-list { text-align:center; padding:48px 20px; color:var(--muted); }
 .empty-list .ei { font-size:2.5rem; margin-bottom:10px; }
 
-/* ── GUEST VIEW NOTICE ── */
-.list-section-inner { display:none; }
-body.host-mode .list-section-inner { display:contents; }
+/* ── LIST INNER ── */
+.list-section-inner { display:contents; }
 
 /* ── MODAL ── */
 .modal-bg { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
@@ -210,25 +205,6 @@ textarea.form-input { resize:vertical; min-height:70px; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .loading-msg { font-size:.9rem; color:var(--sub); font-weight:600; }
 
-/* ── AUTH ── */
-.auth-bg { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
-.auth-bg.open { display:flex; }
-.auth-box { background:#fff; border-radius:16px; padding:30px 32px; width:320px; text-align:center; }
-.auth-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
-.auth-sub { font-size:.82rem; color:var(--muted); margin-bottom:18px; }
-.auth-input { width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:9px; text-align:center; font-size:1rem; letter-spacing:3px; font-family:var(--sans); margin-bottom:10px; }
-.auth-input:focus { outline:none; border-color:var(--primary); }
-.auth-err { color:#e53935; font-size:.8rem; margin-bottom:10px; display:none; }
-.auth-err.show { display:block; }
-.auth-ok { width:100%; background:var(--primary); color:#fff; border:none; padding:12px; border-radius:9px; font-family:var(--sans); font-size:.92rem; font-weight:700; cursor:pointer; }
-.auth-cancel { margin-top:8px; width:100%; background:transparent; border:none; color:var(--muted); font-size:.8rem; cursor:pointer; }
-
-/* ── HOST BADGE ── */
-.host-badge { display:none; position:fixed; bottom:28px; left:28px; z-index:300; background:var(--primary); color:#fff; border:none; padding:10px 18px; border-radius:999px; font-family:var(--sans); font-size:.78rem; font-weight:700; cursor:pointer; box-shadow:0 3px 16px rgba(0,0,0,.2); gap:8px; align-items:center; }
-body.host-mode .host-badge { display:flex; }
-.host-badge a { color:#fff; text-decoration:none; opacity:.8; transition:opacity .15s; }
-.host-badge a:hover { opacity:1; }
-.host-badge-sep { opacity:.35; }
 
 /* ── FOOTER ── */
 footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center; justify-content:space-between; }
@@ -268,7 +244,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <a href="pic_view.html">갤러리</a>
     <a href="review.html">게스트 후기</a>
     <a href="reserved_view.html">예약현황</a>
-    <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
 </header>
 
@@ -360,7 +335,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <a href="review.html">게스트 후기</a>
     <a href="pic_view.html">사진 모두보기</a>
     <a href="reserved_view.html">예약 현황</a>
-    <a href="#" onclick="checkHostAuth();return false;">호스트모드</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
 </footer>
@@ -426,19 +400,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   </div>
 </div>
 
-<!-- Auth -->
-<div class="auth-bg" id="authBg">
-  <div class="auth-box">
-    <div class="auth-title">🔐 호스트 인증</div>
-    <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <input class="auth-input" id="authInput" type="password" placeholder="암호 입력"
-           onkeydown="if(event.key==='Enter')confirmAuth()">
-    <div class="auth-err" id="authErr">암호가 올바르지 않습니다.</div>
-    <button class="auth-ok" onclick="confirmAuth()">확인</button>
-    <button class="auth-cancel" onclick="closeAuthModal()">취소</button>
-  </div>
-</div>
-
 <!-- SMS 발송 모달 -->
 <div class="sms-bg" id="smsBg" onclick="closeSmsModal(event)">
   <div class="sms-box">
@@ -479,21 +440,11 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   <div class="loading-msg" id="loadingMsg">처리 중...</div>
 </div>
 
-<!-- Host Badge -->
-<div class="host-badge">
-  <span>✏️ 호스트 모드</span>
-  <span class="host-badge-sep">|</span>
-  <a href="pension_reservation.html">예약 문의 확인</a>
-  <span class="host-badge-sep">|</span>
-  <span style="cursor:pointer;opacity:.75" onclick="exitHostMode()">종료</span>
-</div>
-
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
 
 // ── STATE ──
 let RESERVATIONS = [];
-let HOST_MODE = false;
 let FILTER = 'all';
 let SMS_CURRENT_STATUS = 'confirmed';
 let SMS_CURRENT_RSV    = null;
@@ -502,17 +453,11 @@ let CAL_MONTH = new Date();
 
 // ── INIT ──
 async function init() {
-  HOST_MODE = sessionStorage.getItem('pension_host') === '1';
-  if (HOST_MODE) document.body.classList.add('host-mode');
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   await loadFromGAS();
   renderStats();
   renderCalendar();
   renderList();
-  // ?book=1 파라미터 감지 → 게스트 모드일 때 예약 하기 모달 자동 오픈
-  if (!HOST_MODE && new URLSearchParams(location.search).get('book') === '1') {
-    openRsvModal();
-  }
 }
 
 // ── 로딩 표시 ──
@@ -687,7 +632,6 @@ function renderCalendar() {
 }
 
 function scrollToRsv(id) {
-  if (!HOST_MODE) return;
   const el = document.getElementById('rc_' + id);
   if (el) { el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.outline='2px solid var(--primary)'; setTimeout(()=>el.style.outline='',1500); }
 }
@@ -1015,49 +959,14 @@ function saveRsv() {
 
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
 
-// ── HOST AUTH ──
-function checkHostAuth() {
-  if (HOST_MODE) return;
-  document.getElementById('authInput').value = '';
-  document.getElementById('authErr').classList.remove('show');
-  document.getElementById('authBg').classList.add('open');
-  setTimeout(() => document.getElementById('authInput').focus(), 80);
-}
-function closeAuthModal() { document.getElementById('authBg').classList.remove('open'); }
-function confirmAuth() {
-  if (document.getElementById('authInput').value === '1dl34') {
-    activateHost();
-  } else {
-    document.getElementById('authErr').classList.add('show');
-    document.getElementById('authInput').value = '';
-    document.getElementById('authInput').focus();
-  }
-}
-function activateHost() {
-  HOST_MODE = true;
-  sessionStorage.setItem('pension_host', '1');
-  document.body.classList.add('host-mode');
-  closeAuthModal();
-  renderList();
-}
-function exitHostMode() {
-  HOST_MODE = false;
-  sessionStorage.removeItem('pension_host');
-  document.body.classList.remove('host-mode');
-  renderList();
-}
-
 // ── KEYBOARD ──
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['rsvModal','authBg','smsBg'].forEach(id => document.getElementById(id).classList.remove('open'));
+    ['rsvModal','smsBg'].forEach(id => document.getElementById(id).classList.remove('open'));
   }
 });
 document.getElementById('rsvModal').addEventListener('click', e => {
   if (e.target === document.getElementById('rsvModal')) closeRsvModal();
-});
-document.getElementById('authBg').addEventListener('click', e => {
-  if (e.target === document.getElementById('authBg')) closeAuthModal();
 });
 
 init();
