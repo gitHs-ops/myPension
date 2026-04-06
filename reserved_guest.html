@@ -344,7 +344,6 @@ async function init() {
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   await loadFromGAS();
   buildBookedSet();
-  renderStats();
   renderCalendar();
   updateDateUI();
 }
@@ -452,20 +451,6 @@ function hasConflict(cin, cout) {
   return false;
 }
 
-// ── STATS ──
-function renderStats() {
-  const confirmed = RESERVATIONS.filter(r => r.status === 'confirmed');
-  const now = new Date();
-  const thisMonth = confirmed.filter(r => {
-    const d = parseDate(r.checkin);
-    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
-  const totalNights = confirmed.reduce((s,r) => s + (r.nights||0), 0);
-  document.getElementById('statTotal').textContent  = confirmed.length;
-  document.getElementById('statMonth').textContent  = thisMonth.length;
-  document.getElementById('statMonthLabel').textContent = `${now.getMonth()+1}월 기준`;
-  document.getElementById('statNights').textContent = totalNights;
-}
 
 // ── CALENDAR ──
 function navMonth(dir) {
@@ -698,7 +683,6 @@ async function saveRsv() {
     RESERVATIONS.push(rsv);
     buildBookedSet();
     try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
-    renderStats();
     renderCalendar();
     showDone(rsv);
   }
@@ -756,7 +740,6 @@ async function resetForm() {
     SEL_STEP = 0;
   }
 
-  renderStats();
   renderCalendar();
   updateDateUI();
 }
