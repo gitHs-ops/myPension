@@ -956,6 +956,7 @@ function renderMonth(first) {
 // 이벤트 위임 — DOM 재생성 없이 클릭/hover 처리
 (function setupCalEvents() {
   const container = document.getElementById('calMonths');
+  if (!container) return; // 예약 위젯 제거된 경우 스킵
 
   container.addEventListener('click', e => {
     const day = e.target.closest('[data-date]');
