@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예약 하기 — 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222;
+  --sub: #555;
+  --muted: #888;
+  --border: #ddd;
+  --surface: #fff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.1);
+  --sans: 'Noto Sans KR', sans-serif;
+  --confirmed: #6b3a1f;
+  --pending: #d97706;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header { padding:10px 22px; border-radius:999px; background:#3d2010; color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── HERO ── */
+.hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; }
+.hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
+.hero p { font-size:.92rem; opacity:.75; }
+
+/* ── STATS ── */
+.stats-wrap { max-width:960px; margin:28px auto 0; padding:0 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.stat-card { background:var(--surface); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); }
+.stat-label { font-size:.75rem; color:var(--muted); font-weight:600; margin-bottom:6px; }
+.stat-val { font-size:1.6rem; font-weight:900; color:var(--primary); }
+.stat-sub { font-size:.72rem; color:var(--muted); margin-top:3px; }
+
+/* ── MAIN LAYOUT ── */
+.main-wrap { max-width:960px; margin:24px auto 80px; padding:0 24px; display:grid; grid-template-columns:1fr 340px; gap:28px; align-items:start; }
+
+/* ── CALENDAR ── */
+.cal-section { background:var(--surface); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.cal-title { font-size:1rem; font-weight:900; }
+.cal-nav { display:flex; gap:6px; }
+.cal-nav button { background:none; border:1px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1rem; transition:background .12s; }
+.cal-nav button:hover { background:var(--bg); }
+.cal-wd-row { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.cal-wd { text-align:center; font-size:.72rem; color:var(--muted); font-weight:600; padding:4px 0; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-cell { height:48px; display:flex; align-items:center; justify-content:center; position:relative; }
+.cal-num { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:.85rem; position:relative; z-index:1; transition:background .1s; }
+.cal-cell.other-month .cal-num { color:#ccc; }
+.cal-cell.today .cal-num { font-weight:900; color:var(--primary); border:1.5px solid var(--primary); }
+/* range band */
+.cal-cell::before { content:''; position:absolute; top:50%; transform:translateY(-50%); height:34px; left:0; right:0; }
+.cal-cell.rsv-mid::before { background:rgba(107,58,31,.12); }
+.cal-cell.rsv-start::before { background:linear-gradient(to right, transparent 50%, rgba(107,58,31,.12) 50%); }
+.cal-cell.rsv-end::before   { background:linear-gradient(to left,  transparent 50%, rgba(107,58,31,.12) 50%); }
+.cal-cell.rsv-start .cal-num,
+.cal-cell.rsv-end   .cal-num { background:var(--primary); color:#fff; }
+.cal-cell.rsv-single .cal-num { background:var(--primary); color:#fff; }
+/* pending */
+.cal-cell.rsv-pend-mid::before    { background:rgba(217,119,6,.12); }
+.cal-cell.rsv-pend-start::before  { background:linear-gradient(to right, transparent 50%, rgba(217,119,6,.12) 50%); }
+.cal-cell.rsv-pend-end::before    { background:linear-gradient(to left,  transparent 50%, rgba(217,119,6,.12) 50%); }
+.cal-cell.rsv-pend-start .cal-num,
+.cal-cell.rsv-pend-end   .cal-num { background:var(--pending); color:#fff; }
+/* legend */
+.cal-legend { display:flex; gap:16px; margin-top:14px; padding-top:14px; border-top:1px solid var(--bg); }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--muted); }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+
+/* ── INLINE FORM PANEL ── */
+.form-panel { background:var(--surface); border-radius:var(--radius); padding:24px 22px; box-shadow:var(--shadow); }
+.form-panel-title { font-size:1rem; font-weight:900; color:var(--primary); margin-bottom:20px; }
+.form-row { margin-bottom:14px; }
+.form-lbl { display:block; font-size:.78rem; color:var(--muted); margin-bottom:5px; font-weight:600; }
+.form-input { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.9rem; background:#faf8f5; transition:border-color .15s; }
+.form-input:focus { outline:none; border-color:var(--primary); }
+textarea.form-input { resize:vertical; min-height:70px; }
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.nights-preview { font-size:.78rem; color:var(--primary); margin-top:4px; font-weight:600; min-height:16px; }
+.form-err { color:#e53935; font-size:.78rem; margin-top:8px; display:none; }
+.form-err.show { display:block; }
+.btn-submit { width:100%; background:var(--primary); color:#fff; border:none; padding:13px; border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.95rem; cursor:pointer; margin-top:18px; transition:background .15s; }
+.btn-submit:hover { background:var(--primary-dark); }
+.btn-submit:disabled { opacity:.6; cursor:default; }
+
+/* ── 완료 카드 ── */
+.done-card { display:none; background:var(--surface); border-radius:var(--radius); padding:32px 22px; box-shadow:var(--shadow); text-align:center; }
+.done-card.show { display:block; }
+.done-icon { font-size:2.8rem; margin-bottom:12px; }
+.done-title { font-size:1.1rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
+.done-sub { font-size:.85rem; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+.done-code { display:inline-block; background:#fdf1e8; color:var(--primary); border-radius:8px; padding:6px 18px; font-size:.85rem; font-weight:700; margin-bottom:20px; letter-spacing:1px; }
+.btn-again { background:#f0ebe4; color:var(--text); border:none; padding:11px 24px; border-radius:9px; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:rgba(255,255,255,.75); justify-content:center; align-items:center; flex-direction:column; gap:14px;
+}
+.loading-overlay.show { display:flex; }
+.loading-spinner { width:42px; height:42px; border-radius:50%; border:4px solid var(--border); border-top-color:var(--primary); animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-msg { font-size:.9rem; color:var(--sub); font-weight:600; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:9px 20px; border-radius:20px; font-size:.82rem; font-weight:600; z-index:900; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+
+/* ── FOOTER ── */
+footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center; justify-content:space-between; }
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; text-decoration:none; }
+.footer-logo-icon { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:.85rem; }
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:860px) {
+  .stats-wrap { grid-template-columns:1fr 1fr 1fr; }
+  .main-wrap { grid-template-columns:1fr; }
+  .hero { padding:32px 20px 26px; }
+  header.header { padding:0 16px; }
+  footer { flex-direction:column; gap:14px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:12px; }
+}
+@media(max-width:560px) {
+  .stats-wrap { grid-template-columns:1fr 1fr; }
+  .form-row-2 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <div class="logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about">공간 소개</a>
+    <a href="index.html#amenities">편의시설</a>
+    <a href="surroundings.html">주변 환경</a>
+    <a href="pic_view.html">갤러리</a>
+    <a href="review.html">게스트 후기</a>
+    <a href="reserved_view.html">예약 현황</a>
+  </nav>
+  <button class="btn-reserve-header" onclick="scrollToForm()">예약 신청</button>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <h1>예약 하기</h1>
+  <p>영덕감성산장 예약 신청 &amp; 일정을 확인하세요</p>
+</section>
+
+<!-- ── STATS ── -->
+<div class="stats-wrap">
+  <div class="stat-card">
+    <div class="stat-label">전체 예약</div>
+    <div class="stat-val" id="statTotal">0</div>
+    <div class="stat-sub">확정 기준</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">이번 달</div>
+    <div class="stat-val" id="statMonth">0</div>
+    <div class="stat-sub" id="statMonthLabel">건</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">총 박수</div>
+    <div class="stat-val" id="statNights">0</div>
+    <div class="stat-sub">확정 기준</div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main-wrap">
+
+  <!-- 달력 -->
+  <div class="cal-section">
+    <div class="cal-header">
+      <span class="cal-title" id="calTitle"></span>
+      <div class="cal-nav">
+        <button onclick="navMonth(-1)">‹</button>
+        <button onclick="navMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="cal-wd-row">
+      <div class="cal-wd">일</div><div class="cal-wd">월</div><div class="cal-wd">화</div>
+      <div class="cal-wd">수</div><div class="cal-wd">목</div><div class="cal-wd">금</div>
+      <div class="cal-wd">토</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--confirmed)"></div>확정</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pending)"></div>대기중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>가능</div>
+    </div>
+  </div>
+
+  <!-- 인라인 예약 폼 -->
+  <div id="formPanel" class="form-panel">
+    <div class="form-panel-title">＋ 예약 하기</div>
+
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">투숙객 이름 *</label>
+        <input class="form-input" id="inGuestName" type="text" placeholder="홍길동" maxlength="20">
+      </div>
+      <div>
+        <label class="form-lbl">연락처</label>
+        <input class="form-input" id="inPhone" type="tel" placeholder="010-0000-0000">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-lbl">이메일</label>
+      <input class="form-input" id="inEmail" type="email" placeholder="example@email.com">
+    </div>
+
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">체크인 *</label>
+        <input class="form-input" id="inCheckin" type="date" oninput="previewNights()" onkeydown="return false" style="cursor:pointer">
+      </div>
+      <div>
+        <label class="form-lbl">체크아웃 *</label>
+        <input class="form-input" id="inCheckout" type="date" oninput="previewNights()" onkeydown="return false" style="cursor:pointer">
+      </div>
+    </div>
+    <div class="nights-preview" id="nightsPreview"></div>
+
+    <div class="form-row">
+      <label class="form-lbl">인원</label>
+      <input class="form-input" id="inGuests" type="number" min="1" max="10" value="2">
+    </div>
+
+    <div class="form-row">
+      <label class="form-lbl">요청사항 / 메모</label>
+      <textarea class="form-input" id="inMemo" placeholder="늦은 체크인, 특이사항 등"></textarea>
+    </div>
+
+    <div class="form-err" id="rsvErr"></div>
+    <button class="btn-submit" id="submitBtn" onclick="saveRsv()">예약 신청하기</button>
+  </div>
+
+  <!-- 완료 카드 (폼 제출 후 교체) -->
+  <div id="doneCard" class="done-card">
+    <div class="done-icon">🎉</div>
+    <div class="done-title">예약 신청이 완료되었습니다!</div>
+    <div class="done-sub">
+      호스트가 확인 후 연락드리겠습니다.<br>
+      문의: <b>010-2698-9056</b>
+    </div>
+    <div class="done-code" id="doneCode"></div>
+    <br>
+    <button class="btn-again" onclick="resetForm()">다시 신청하기</button>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a class="footer-logo" href="index.html">
+    <div class="footer-logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="footer-nav">
+    <a href="index.html">홈</a>
+    <a href="review.html">게스트 후기</a>
+    <a href="pic_view.html">사진 모두보기</a>
+    <a href="reserved_view.html">예약 현황</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 로딩 오버레이 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loadingMsg">처리 중...</div>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+
+let RESERVATIONS = [];
+let CAL_MONTH    = new Date();
+
+// ── INIT ──
+async function init() {
+  CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  await loadFromGAS();
+  renderStats();
+  renderCalendar();
+}
+
+// ── 로딩 ──
+function showLoading(msg) {
+  document.getElementById('loadingMsg').textContent = msg || '처리 중...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ── GAS 로드 ──
+async function loadFromGAS() {
+  showLoading('예약 일정을 불러오는 중...');
+  try {
+    const res  = await fetch(`${GAS_URL}?action=rsv_load`, { redirect: 'follow' });
+    const data = await res.json();
+    if (data.success) {
+      RESERVATIONS = data.reservations || [];
+      try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+    } else throw new Error(data.message);
+  } catch(e) {
+    try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
+    console.warn('GAS 로드 실패 — 로컬 캐시 사용:', e.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function upsertToGAS(rsv) {
+  showLoading('예약을 저장하는 중...');
+  try {
+    const qs = new URLSearchParams({
+      action:     'rsv_upsert',
+      id:         rsv.id         || '',
+      guestName:  rsv.guestName  || '',
+      phone:      rsv.phone      || '',
+      email:      rsv.email      || '',
+      checkin:    rsv.checkin    || '',
+      checkout:   rsv.checkout   || '',
+      nights:     rsv.nights     || 0,
+      guests:     rsv.guests     || 1,
+      totalPrice: rsv.totalPrice || 0,
+      status:     rsv.status     || 'pending',
+      memo:       rsv.memo       || '',
+      createdAt:  rsv.createdAt  || ''
+    });
+    const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+    const data = await res.json();
+    if (!data.success) showToast('⚠️ 저장 실패: ' + data.message);
+    return data.success;
+  } catch(e) {
+    showToast('⚠️ 저장 실패: ' + e.message);
+    return false;
+  } finally {
+    hideLoading();
+  }
+}
+
+// ── DATES ──
+function parseDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
+function fmtDate(s) {
+  if (!s) return '';
+  const d = parseDate(s);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+function nightsBetween(cin, cout) {
+  if (!cin || !cout) return 0;
+  return Math.max(0, Math.round((parseDate(cout) - parseDate(cin)) / (1000*60*60*24)));
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+// ── STATS ──
+function renderStats() {
+  const confirmed = RESERVATIONS.filter(r => r.status === 'confirmed');
+  const now = new Date();
+  const thisMonth = confirmed.filter(r => {
+    const d = parseDate(r.checkin);
+    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  const totalNights = confirmed.reduce((s,r) => s + (r.nights||0), 0);
+  document.getElementById('statTotal').textContent  = confirmed.length;
+  document.getElementById('statMonth').textContent  = thisMonth.length;
+  document.getElementById('statMonthLabel').textContent = `${now.getMonth()+1}월 기준`;
+  document.getElementById('statNights').textContent = totalNights;
+}
+
+// ── CALENDAR ──
+function navMonth(dir) {
+  CAL_MONTH = new Date(CAL_MONTH.getFullYear(), CAL_MONTH.getMonth() + dir, 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const y = CAL_MONTH.getFullYear(), m = CAL_MONTH.getMonth();
+  document.getElementById('calTitle').textContent = `${y}년 ${m+1}월`;
+  const startDow   = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayS = todayStr();
+
+  const dateMap = {};
+  RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
+    if (!r.checkin || !r.checkout) return;
+    const cin  = parseDate(r.checkin);
+    const cout = parseDate(r.checkout);
+    const cur  = new Date(cin);
+    while (cur < cout) {
+      const ds = cur.toISOString().slice(0,10);
+      if (!dateMap[ds] || r.status === 'confirmed') dateMap[ds] = { status:r.status, isStart: ds===r.checkin, isEnd: false };
+      cur.setDate(cur.getDate()+1);
+    }
+    const coutDs = r.checkout;
+    if (!dateMap[coutDs]) dateMap[coutDs] = { status:r.status, isStart:false, isEnd:true };
+    else dateMap[coutDs].isEnd = true;
+  });
+
+  let html = '';
+  for (let i=0; i<startDow; i++) html += `<div class="cal-cell other-month"><div class="cal-num"></div></div>`;
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const info = dateMap[ds];
+    const isToday = ds === todayS;
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (info) {
+      const p = info.status === 'pending' ? 'rsv-pend' : 'rsv';
+      if (info.isStart && info.isEnd) cls += ` rsv-single`;
+      else if (info.isStart)          cls += ` ${p}-start`;
+      else if (info.isEnd)            cls += ` ${p}-end`;
+      else                            cls += ` ${p}-mid`;
+    }
+    html += `<div class="${cls}"><div class="cal-num">${d}</div></div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+// ── 날짜 미리보기 ──
+function previewNights() {
+  const cin  = document.getElementById('inCheckin').value;
+  const cout = document.getElementById('inCheckout').value;
+  const n    = nightsBetween(cin, cout);
+  const el   = document.getElementById('nightsPreview');
+  if (cin && cout && n > 0) {
+    el.textContent = `${n}박 (${fmtDate(cin)} ~ ${fmtDate(cout)})`;
+  } else {
+    el.textContent = cin && cout && n <= 0 ? '체크아웃은 체크인 이후 날짜로 선택해주세요.' : '';
+  }
+}
+
+// ── 예약 저장 ──
+async function saveRsv() {
+  const errEl = document.getElementById('rsvErr');
+  errEl.classList.remove('show');
+
+  const name   = document.getElementById('inGuestName').value.trim();
+  const cin    = document.getElementById('inCheckin').value;
+  const cout   = document.getElementById('inCheckout').value;
+  const guests = parseInt(document.getElementById('inGuests').value) || 1;
+  const memo   = document.getElementById('inMemo').value.trim();
+  const phone  = document.getElementById('inPhone').value.trim();
+  const email  = document.getElementById('inEmail').value.trim();
+
+  if (!name) { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
+  if (!cin)  { showErr(errEl, '체크인 날짜를 선택해주세요.'); return; }
+  if (!cout) { showErr(errEl, '체크아웃 날짜를 선택해주세요.'); return; }
+  if (nightsBetween(cin, cout) <= 0) { showErr(errEl, '체크아웃은 체크인 이후여야 합니다.'); return; }
+
+  // 중복 체크
+  const conflict = RESERVATIONS.find(r =>
+    r.status !== 'cancelled' &&
+    cin  < r.checkout &&
+    cout > r.checkin
+  );
+  if (conflict) {
+    showErr(errEl,
+      `⚠️ 예약 불가 — ${fmtDate(conflict.checkin)} ~ ${fmtDate(conflict.checkout)} 기간에 이미 예약이 있습니다.`
+    );
+    return;
+  }
+
+  const nights = nightsBetween(cin, cout);
+  const rsv = {
+    id:         'rsv_' + Date.now(),
+    guestName:  name,
+    phone,
+    email,
+    checkin:    cin,
+    checkout:   cout,
+    nights,
+    guests,
+    totalPrice: 0,
+    status:     'pending',
+    memo,
+    createdAt:  todayStr()
+  };
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '신청 중...';
+
+  const ok = await upsertToGAS(rsv);
+
+  btn.disabled = false;
+  btn.textContent = '예약 신청하기';
+
+  if (ok !== false) {
+    RESERVATIONS.push(rsv);
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+    renderStats();
+    renderCalendar();
+    showDone(rsv.id);
+  }
+}
+
+// ── 완료 화면 ──
+function showDone(id) {
+  document.getElementById('formPanel').style.display = 'none';
+  document.getElementById('doneCode').textContent   = '예약코드: ' + id;
+  document.getElementById('doneCard').classList.add('show');
+}
+
+function resetForm() {
+  ['inGuestName','inPhone','inEmail','inCheckin','inCheckout','inMemo'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inGuests').value = 2;
+  document.getElementById('nightsPreview').textContent = '';
+  document.getElementById('rsvErr').classList.remove('show');
+  document.getElementById('doneCard').classList.remove('show');
+  document.getElementById('formPanel').style.display = '';
+}
+
+function scrollToForm() {
+  document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+init();
+</script>
+</body>
+</html>
