@@ -98,7 +98,8 @@ body.host-mode .stat-revenue { filter:none; pointer-events:auto; }
 .legend-dot { width:10px; height:10px; border-radius:50%; }
 
 /* ── LIST SECTION ── */
-.list-section { display:flex; flex-direction:column; gap:14px; }
+.list-section { display:none; flex-direction:column; gap:14px; }
+body.host-mode .list-section { display:flex; }
 .list-header { display:flex; align-items:center; justify-content:space-between; }
 .list-title { font-size:.95rem; font-weight:900; }
 .filter-tabs { display:flex; gap:4px; }
@@ -133,8 +134,6 @@ body.host-mode .rsv-actions { display:flex; }
 .empty-list .ei { font-size:2.5rem; margin-bottom:10px; }
 
 /* ── GUEST VIEW NOTICE ── */
-.guest-notice { background:var(--surface); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); font-size:.85rem; color:var(--muted); line-height:1.7; text-align:center; }
-body.host-mode .guest-notice { display:none; }
 .list-section-inner { display:none; }
 body.host-mode .list-section-inner { display:contents; }
 
@@ -343,12 +342,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
       </div>
     </div>
 
-    <!-- 비호스트 안내 -->
-    <div class="guest-notice">
-      🔒 예약 상세 정보는 호스트만 확인할 수 있습니다.<br>
-      예약을 원하시면 <a href="#" onclick="openRsvModal();return false;" style="color:var(--primary);font-weight:700">예약 신청</a>을 이용해주세요.
-    </div>
-
     <!-- 호스트 전용 목록 -->
     <div class="list-section-inner">
       <div id="rsvList"></div>
@@ -509,7 +502,7 @@ let CAL_MONTH = new Date();
 
 // ── INIT ──
 async function init() {
-  HOST_MODE = localStorage.getItem('pension_host') === '1';
+  HOST_MODE = sessionStorage.getItem('pension_host') === '1';
   if (HOST_MODE) document.body.classList.add('host-mode');
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   await loadFromGAS();
@@ -1042,14 +1035,14 @@ function confirmAuth() {
 }
 function activateHost() {
   HOST_MODE = true;
-  localStorage.setItem('pension_host', '1');
+  sessionStorage.setItem('pension_host', '1');
   document.body.classList.add('host-mode');
   closeAuthModal();
   renderList();
 }
 function exitHostMode() {
   HOST_MODE = false;
-  localStorage.removeItem('pension_host');
+  sessionStorage.removeItem('pension_host');
   document.body.classList.remove('host-mode');
   renderList();
 }
