@@ -374,6 +374,43 @@ body.host-mode .price-edit-btn { display:inline; }
 .rsv-req-err { color:#e53935; font-size:.78rem; margin-top:6px; display:none; }
 .rsv-req-err.show { display:block; }
 
+/* ── PAGE LOAD BAR ── */
+#pageLoadBar {
+  position:fixed; top:0; left:0; height:3px; z-index:9999;
+  width:0%; background:linear-gradient(90deg,#6b3a1f,#c4895a,#e8a060);
+  background-size:300% 100%; animation:none;
+  transition:width .5s cubic-bezier(.4,0,.2,1), opacity .4s ease;
+  opacity:0; pointer-events:none; border-radius:0 2px 2px 0;
+}
+#pageLoadBar.loading {
+  opacity:1; width:70%;
+  animation:barShimmer 1.4s infinite linear;
+}
+#pageLoadBar.done { width:100%; opacity:0; }
+@keyframes barShimmer {
+  0%   { background-position:100% 0; }
+  100% { background-position:0%   0; }
+}
+
+/* ── PHOTO SKELETON ── */
+@keyframes skeletonWave {
+  0%   { transform:translateX(-100%); }
+  100% { transform:translateX(100%); }
+}
+.photo-skeleton { position:relative; overflow:hidden; }
+.photo-skeleton .photo-placeholder { opacity:.08; transition:opacity .3s; }
+.photo-skeleton::after {
+  content:''; position:absolute; inset:0; z-index:3;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0)   0%,
+    rgba(255,255,255,.28) 50%,
+    rgba(255,255,255,0)   100%);
+  animation:skeletonWave 1.6s infinite linear;
+  pointer-events:none;
+}
+.slot-img { opacity:0; transition:opacity .5s ease; }
+.slot-img.loaded { opacity:1; }
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px) {
   .header { padding:0 20px; }
@@ -458,6 +495,9 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 </style>
 </head>
 <body>
+
+<!-- 페이지 상단 로딩 진행 바 -->
+<div id="pageLoadBar"></div>
 
 <!-- HEADER -->
 <header class="header">
@@ -1303,6 +1343,8 @@ function applySlotPhoto(slot, src) {
     img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;';
     el.prepend(img);
   }
+  img.onload  = () => img.classList.add('loaded');
+  img.onerror = () => img.classList.add('loaded');
   img.src = src;
 }
 
@@ -1359,9 +1401,25 @@ function postSheet(sheet, data) {
   });
 }
 
+// ── 로딩 바 제어 ──
+function startLoadBar() {
+  const bar = document.getElementById('pageLoadBar');
+  bar.classList.remove('done');
+  bar.classList.add('loading');
+  document.querySelectorAll('[data-slot]').forEach(el => el.classList.add('photo-skeleton'));
+}
+function finishLoadBar() {
+  const bar = document.getElementById('pageLoadBar');
+  bar.classList.remove('loading');
+  bar.classList.add('done');
+  document.querySelectorAll('[data-slot]').forEach(el => el.classList.remove('photo-skeleton'));
+  setTimeout(() => bar.classList.remove('done'), 500);
+}
+
 // ── 시트에서 데이터 로드 ──
 async function loadFromSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+  startLoadBar();
   try {
     const [slotsRes, extrasRes] = await Promise.all([
       fetch(`${APPS_SCRIPT_URL}?sheet=index_slots`),
@@ -1382,6 +1440,8 @@ async function loadFromSheet() {
     }
   } catch(err) {
     console.warn('시트 로드 실패:', err);
+  } finally {
+    finishLoadBar();
   }
 }
 

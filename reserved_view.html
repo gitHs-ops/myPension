@@ -153,42 +153,7 @@ textarea.form-input { resize:vertical; min-height:70px; }
 .form-err { color:#e53935; font-size:.78rem; margin-top:8px; display:none; }
 .form-err.show { display:block; }
 
-/* ── SMS MODAL ── */
-.sms-bg { display:none; position:fixed; inset:0; z-index:800; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
-.sms-bg.open { display:flex; }
-.sms-box { position:relative; background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:440px; box-shadow:0 12px 48px rgba(0,0,0,.25); }
-.sms-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
-.sms-icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
-.sms-icon.confirmed { background:#fdf1e8; }
-.sms-icon.cancelled { background:#f3f4f6; }
-.sms-title { font-size:1rem; font-weight:900; color:var(--primary); }
-.sms-sub { font-size:.78rem; color:var(--muted); margin-top:1px; }
-.sms-to { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-.sms-to-label { font-size:.75rem; color:var(--muted); font-weight:700; white-space:nowrap; }
-.sms-phone-input { flex:1; padding:8px 11px; border:1px solid var(--border); border-radius:8px; font-family:var(--sans); font-size:.88rem; }
-.sms-phone-input:focus { outline:none; border-color:var(--primary); }
-.sms-msg-wrap { position:relative; }
-.sms-msg { width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.85rem; line-height:1.7; resize:vertical; min-height:130px; background:#faf8f5; }
-.sms-msg:focus { outline:none; border-color:var(--primary); }
-.sms-char { text-align:right; font-size:.72rem; color:var(--muted); margin-top:4px; }
-.sms-actions { display:flex; gap:8px; margin-top:16px; }
-.sms-btn-copy { flex:1; background:#f0ebe4; color:var(--text); border:none; padding:11px; border-radius:9px; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .12s; }
-.sms-btn-copy:hover { background:#e8dfd6; }
-.sms-btn-send { flex:1; background:var(--primary); color:#fff; border:none; padding:11px; border-radius:9px; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .12s; }
-.sms-btn-send:hover { background:var(--primary-dark); }
-.sms-btn-skip { background:none; border:none; padding:11px 14px; font-family:var(--sans); font-size:.82rem; color:var(--muted); cursor:pointer; }
-.sms-divider { display:flex; align-items:center; gap:10px; margin:14px 0 10px; color:var(--muted); font-size:.75rem; }
-.sms-divider::before, .sms-divider::after { content:''; flex:1; border-top:1px solid var(--border); }
-.sms-btn-email { width:100%; background:#f0f6ff; color:#2a5bd7; border:1.5px solid #c5d8f8; padding:11px; border-radius:9px; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .12s; margin-bottom:2px; }
-.sms-btn-email:hover { background:#deeaff; }
-.sms-btn-email:disabled { opacity:.6; cursor:default; }
-.sms-close-btn {
-  position:absolute; top:14px; right:16px;
-  background:none; border:none; font-size:1.3rem; color:var(--muted);
-  cursor:pointer; line-height:1; padding:2px 6px; border-radius:50%;
-  transition:background .12s, color .12s;
-}
-.sms-close-btn:hover { background:var(--bg); color:var(--text); }
+/* ── TOAST ── */
 .sms-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:9px 20px; border-radius:20px; font-size:.82rem; font-weight:600; z-index:900; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
 .sms-toast.show { opacity:1; }
 
@@ -400,37 +365,6 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   </div>
 </div>
 
-<!-- SMS 발송 모달 -->
-<div class="sms-bg" id="smsBg" onclick="closeSmsModal(event)">
-  <div class="sms-box">
-    <button class="sms-close-btn" onclick="closeSmsModal()" title="닫기">✕</button>
-    <div class="sms-header">
-      <div class="sms-icon" id="smsIcon"></div>
-      <div>
-        <div class="sms-title" id="smsTitle"></div>
-        <div class="sms-sub" id="smsSub"></div>
-      </div>
-    </div>
-    <div class="sms-to">
-      <span class="sms-to-label">연락처</span>
-      <input class="sms-phone-input" id="smsPhone" type="tel" placeholder="010-0000-0000">
-    </div>
-    <div class="sms-to" style="margin-bottom:10px;">
-      <span class="sms-to-label">이메일</span>
-      <input class="sms-phone-input" id="smsEmail" type="email" placeholder="example@email.com">
-    </div>
-    <div class="sms-msg-wrap">
-      <textarea class="sms-msg" id="smsMsg" oninput="updateSmsChar()"></textarea>
-    </div>
-    <div class="sms-char"><span id="smsCharCount">0</span>자</div>
-    <div class="sms-actions">
-      <button class="sms-btn-send" id="smsSendBtn" onclick="sendSmsApp()">📱 문자 발송</button>
-    </div>
-    <div class="sms-divider">또는 이메일로 발송</div>
-    <button class="sms-btn-email" id="smsEmailBtn" onclick="sendEmailGET()">✉️ 이메일 발송 (GAS MailApp)</button>
-  </div>
-</div>
-
 <!-- Toast -->
 <div class="sms-toast" id="smsToast"></div>
 
@@ -446,8 +380,6 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6i
 // ── STATE ──
 let RESERVATIONS = [];
 let FILTER = 'all';
-let SMS_CURRENT_STATUS = 'confirmed';
-let SMS_CURRENT_RSV    = null;
 let EDIT_ID = null;
 let CAL_MONTH = new Date();
 
@@ -706,149 +638,6 @@ async function changeStatus(id, status) {
   renderCalendar();
   renderList();
   await updateStatusGAS(id, status);
-  if ((status === 'confirmed' || status === 'cancelled') && prev !== status) {
-    openSmsModal(r, status);
-  }
-}
-
-// ── SMS ──
-function openSmsModal(r, status) {
-  const nights = r.nights || nightsBetween(r.checkin, r.checkout);
-  const icon  = document.getElementById('smsIcon');
-  const title = document.getElementById('smsTitle');
-  const sub   = document.getElementById('smsSub');
-
-  icon.className = `sms-icon ${status}`;
-  if (status === 'confirmed') {
-    icon.textContent = '✅';
-    title.textContent = '예약 확정 문자 발송';
-    sub.textContent   = `${r.guestName}님께 확정 안내를 보내세요`;
-  } else {
-    icon.textContent = '❌';
-    title.textContent = '예약 취소 문자 발송';
-    sub.textContent   = `${r.guestName}님께 취소 안내를 보내세요`;
-  }
-
-  SMS_CURRENT_STATUS = status;
-  SMS_CURRENT_RSV    = r;
-  document.getElementById('smsPhone').value = r.phone || '';
-  document.getElementById('smsEmail').value = r.email || '';
-
-  const msg = status === 'confirmed'
-    ? buildConfirmMsg(r, nights)
-    : buildCancelMsg(r);
-  document.getElementById('smsMsg').value = msg;
-  updateSmsChar();
-  document.getElementById('smsBg').classList.add('open');
-}
-
-function buildConfirmMsg(r, nights) {
-  return `[영덕감성산장] ${r.guestName}님 예약확정
-체크인 ${fmtShort(r.checkin)} / 체크아웃 ${fmtShort(r.checkout)}
-${nights}박 ${r.guests || 1}명
-문의 010 2698 9056`;
-}
-
-function buildCancelMsg(r) {
-  return `[영덕감성산장] ${r.guestName}님, 아쉽게도 요청하신 예약이 취소되었습니다.
-
-불편을 드려 죄송합니다.
-다음에 또 방문해 주시면 더욱 잘 모시겠습니다.
-연락처: 010 2698 9056
-감사합니다.`;
-}
-
-function updateSmsChar() {
-  const len = document.getElementById('smsMsg').value.length;
-  document.getElementById('smsCharCount').textContent = len;
-}
-
-function closeSmsModal(e) {
-  if (!e || e.target === document.getElementById('smsBg')) {
-    document.getElementById('smsBg').classList.remove('open');
-  }
-}
-
-function copySmsMsg() {
-  const msg = document.getElementById('smsMsg').value;
-  navigator.clipboard.writeText(msg).then(() => {
-    showToast('메시지가 복사되었습니다!');
-  }).catch(() => {
-    // fallback for older browsers
-    const ta = document.createElement('textarea');
-    ta.value = msg; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('메시지가 복사되었습니다!');
-  });
-}
-
-// ── ALIGO SMS (via GAS 프록시) ──
-// ※ 아래 URL은 sms_proxy.gs 배포 후 발급받은 URL로 교체하세요
-const SMS_PROXY_URL = GAS_URL;
-
-async function sendSmsApp() {
-  const phone = document.getElementById('smsPhone').value.replace(/[^0-9]/g, '');
-  const msg   = document.getElementById('smsMsg').value.trim();
-  if (!phone) { showToast('연락처를 입력해주세요.'); return; }
-  if (phone.length < 10) { showToast('올바른 전화번호를 입력해주세요.'); return; }
-  if (!msg)   { showToast('메시지를 입력해주세요.'); return; }
-
-  const btn = document.getElementById('smsSendBtn');
-  btn.disabled = true;
-  btn.textContent = '발송 중...';
-
-  try {
-    // GAS 프록시 GET 방식 (CORS 우회)
-    const qs  = new URLSearchParams({ action: 'sms', receiver: phone, msg: msg });
-    const res = await fetch(`${SMS_PROXY_URL}?${qs.toString()}`, { redirect: 'follow' });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || '발송 실패');
-    document.getElementById('smsBg').classList.remove('open');
-    showToast(`문자가 성공적으로 발송되었습니다! (${data.msg_type || 'SMS'})`);
-  } catch (e) {
-    showToast('발송 실패: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📱 문자 발송';
-  }
-}
-
-
-async function sendEmailGET() {
-  const toEmail = document.getElementById('smsEmail').value.trim();
-  let   msg     = document.getElementById('smsMsg').value.trim();
-  if (!toEmail) { showToast('이메일 주소를 입력해주세요.'); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) { showToast('올바른 이메일 형식이 아닙니다.'); return; }
-
-  const guestName = SMS_CURRENT_RSV ? SMS_CURRENT_RSV.guestName : '';
-  const subject = SMS_CURRENT_STATUS === 'confirmed'
-    ? '[영덕감성산장] 예약이 확정되었습니다'
-    : '[영덕감성산장] 예약 취소 안내';
-
-  // 확정 이메일에 예약코드 추가
-  if (SMS_CURRENT_STATUS === 'confirmed' && SMS_CURRENT_RSV) {
-    msg += `\n\n예약코드: ${SMS_CURRENT_RSV.id}`;
-  }
-
-  const btn = document.getElementById('smsEmailBtn');
-  btn.disabled = true;
-  btn.textContent = '발송 중...';
-
-  try {
-    const qs  = new URLSearchParams({ action: 'email', to_email: toEmail, to_name: guestName, subject, message: msg });
-    const res = await fetch(`${GAS_URL}?${qs.toString()}`, { redirect: 'follow' });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || '발송 실패');
-    document.getElementById('smsBg').classList.remove('open');
-    showToast('이메일이 발송되었습니다! (GAS MailApp)');
-  } catch (e) {
-    showToast('발송 실패: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✉️ 이메일 발송 (GAS MailApp)';
-  }
 }
 
 function showToast(msg) {
@@ -968,7 +757,7 @@ function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
 // ── KEYBOARD ──
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['rsvModal','smsBg'].forEach(id => document.getElementById(id).classList.remove('open'));
+    document.getElementById('rsvModal').classList.remove('open');
   }
 });
 document.getElementById('rsvModal').addEventListener('click', e => {
