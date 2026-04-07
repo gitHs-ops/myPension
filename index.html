@@ -1675,13 +1675,15 @@ async function loadFromSheet() {
 
 
 <style>
-/* ── 모바일 헤더 아이콘 ── */
+/* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
 @media(max-width:600px){
-  .header-nav { gap:6px !important; }
-  .header-nav a { font-size:0 !important; line-height:1; }
-  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
-  .btn-reserve-header { font-size:0 !important; padding:8px 11px !important; }
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; align-items:center; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
   .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border,#ddd); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
 }
 </style>
 </body></html>
