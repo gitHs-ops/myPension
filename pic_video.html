@@ -285,7 +285,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 </style>
 <script id="__vid_emb__">window.__EMBED_VID__=[];</script>
 </head>
-<body class="host-mode" style="">
+<body>
 
 <!-- 콘텐츠 로딩 오버레이 -->
 <div id="pgLoader">
@@ -340,99 +340,8 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 
 <!-- GALLERY -->
 <div class="gallery-wrap">
-  <div class="video-grid" id="videoGrid"><!-- JS 렌더링 --></div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(6);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body" style="position:relative;">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">444444444444444</div>
-        
-        <button class="btn-edit-video" onclick="openVideoModal(6);event.stopPropagation()">✏️ 수정</button>
-      </div>
-    </div>
-    <div class="video-card" onclick="openPlayer(1)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/c8B0bHptIbY/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(5);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body" style="position:relative;">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">2222222222222222222</div>
-        
-        <button class="btn-edit-video" onclick="openVideoModal(5);event.stopPropagation()">✏️ 수정</button>
-      </div>
-    </div>
-    <div class="video-card" onclick="openPlayer(2)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/DTu5fl17hU0/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(4);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body" style="position:relative;">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">dddddddddddddddd</div>
-        <div class="card-desc">ttttt  12311111</div>
-        <button class="btn-edit-video" onclick="openVideoModal(4);event.stopPropagation()">✏️ 수정</button>
-      </div>
-    </div>
-    <div class="video-card" onclick="openPlayer(3)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/ENpCpAl-Ulw/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(3);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body" style="position:relative;">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">풍실이와 뽀노</div>
-        <div class="card-desc">풍실이와 뽀노</div>
-        <button class="btn-edit-video" onclick="openVideoModal(3);event.stopPropagation()">✏️ 수정</button>
-      </div>
-    </div>
-    <div class="video-card" onclick="openPlayer(4)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/uIZpewPx4Ps/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(2);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body" style="position:relative;">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">블루로드</div>
-        <div class="card-desc">블루로드</div>
-        <button class="btn-edit-video" onclick="openVideoModal(2);event.stopPropagation()">✏️ 수정</button>
-      </div>
-    </div>
-    <div class="video-card" onclick="openPlayer(5)">
-      <div class="video-thumb" style="position:relative;">
-        <img src="https://img.youtube.com/vi/c8B0bHptIbY/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-        <div class="play-overlay">
-          <div class="play-btn">▶</div>
-        </div>
-        
-        <button class="btn-del-video" onclick="deleteVideo(1);event.stopPropagation()">✕</button>
-      </div>
-      <div class="card-body" style="position:relative;">
-        <span class="card-category">외관 · 전경</span>
-        <div class="card-title">qqq</div>
-        <div class="card-desc">qqqqqqqqqqq111111111111</div>
-        <button class="btn-edit-video" onclick="openVideoModal(1);event.stopPropagation()">✏️ 수정</button>
-      </div>
-    </div></div>
-  <div class="empty-msg" id="emptyMsg" style="display: none;">
+  <div class="video-grid" id="videoGrid"></div>
+  <div class="empty-msg" id="emptyMsg" style="display:none;">
     <div class="empty-icon">🎬</div>
     <div>아직 등록된 동영상이 없습니다.</div>
     <div style="margin-top:6px;font-size:.82rem;">호스트 모드에서 동영상을 추가할 수 있습니다.</div>
