@@ -543,6 +543,7 @@ function rcClear(){ sessionStorage.removeItem(RC_KEY); }
 // ── STATE ──
 let REVIEWS = [];
 let CODES = { valid:[], used:[] };
+let RESERVATIONS = [];
 let HOST_MODE = false;
 let SORT = 'newest';
 let PENDING_CODE = '';
@@ -601,12 +602,14 @@ async function loadFromSheet() {
     const res2  = await fetch(`${APPS_SCRIPT_URL}?action=rsv_load`);
     const json2 = await res2.json();
     if (json2.success && json2.reservations) {
+      RESERVATIONS = json2.reservations;
       const usedCodes = new Set(REVIEWS.map(r => r.verifyCode).filter(c => c && c !== 'HOST'));
       CODES = {
-        valid: json2.reservations.map(r => r.id).filter(id => !usedCodes.has(id)),
-        used:  json2.reservations.map(r => r.id).filter(id =>  usedCodes.has(id)),
+        valid: RESERVATIONS.map(r => r.id).filter(id => !usedCodes.has(id)),
+        used:  RESERVATIONS.map(r => r.id).filter(id =>  usedCodes.has(id)),
       };
     } else {
+      RESERVATIONS = [];
       CODES = { valid:[], used:[] };
     }
   } catch(err) {
@@ -855,7 +858,20 @@ function submitVerify() {
   PENDING_CODE = isHostBypass ? 'HOST' : code;
   document.getElementById('stepVerify').style.display = 'none';
   document.getElementById('stepWrite').style.display = '';
-  document.getElementById('inName').value = '';
+  // 예약 시트에서 이름 자동 입력
+  const rsv = RESERVATIONS.find(r => r.id === code);
+  const nameEl = document.getElementById('inName');
+  if (rsv && rsv.guestName) {
+    nameEl.value = rsv.guestName;
+    nameEl.readOnly = true;
+    nameEl.style.background = '#f5f5f5';
+    nameEl.style.color = '#888';
+  } else {
+    nameEl.value = '';
+    nameEl.readOnly = false;
+    nameEl.style.background = '';
+    nameEl.style.color = '';
+  }
   document.getElementById('inText').value = '';
   document.getElementById('writeErr').classList.remove('show');
   resetRatings();
