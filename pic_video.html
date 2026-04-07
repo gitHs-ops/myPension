@@ -360,7 +360,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <div class="player-inner" id="playerInner"></div>
     <div class="player-info">
       <div class="player-info-cat" id="playerCat">외관 · 전경</div>
-      <div class="player-info-title" id="playerTitle">qqq</div>
+      <div class="player-info-title" id="playerTitle"></div>
     </div>
   </div>
 </div>
@@ -369,9 +369,9 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 <div class="vm-overlay" id="vmOverlay" onclick="closeVmOutside(event)">
   <div class="vm-box">
     <div class="vm-title" id="vmTitle">동영상 추가</div>
-    <label class="vm-label">YouTube URL</label>
-    <input class="vm-input" id="vmYoutubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
-    <div class="vm-hint">YouTube 공유 링크 또는 일반 URL을 붙여넣으세요.</div>
+    <label class="vm-label">동영상 URL (YouTube 또는 Google Drive)</label>
+    <input class="vm-input" id="vmYoutubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=... 또는 Drive 링크">
+    <div class="vm-hint">YouTube 링크 또는 Google Drive 공유 링크를 붙여넣으세요.<br>Drive는 <b>링크가 있는 모든 사용자</b> 공유 설정이 필요합니다.</div>
     <label class="vm-label">카테고리</label>
     <select class="vm-select" id="vmCat">
       <option value="exterior">외관 · 전경</option>
@@ -506,7 +506,8 @@ function parseSheetVideos(data) {
     desc:      r.desc,
     duration:  r.duration,
     youtubeUrl:r.youtube_url,
-    youtubeId: r.youtube_id || null,
+    youtubeId: r.youtube_id || extractYoutubeId(r.youtube_url) || null,
+    driveId:   extractDriveId(r.youtube_url) || null,
     createdAt: Number(r.created_at) || 0,
   }));
 }
@@ -592,7 +593,9 @@ function renderGrid() {
   grid.innerHTML = filtered.map((v, i) => {
     const thumbHtml = v.youtubeId
       ? `<img src="https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
-      : `<div class="video-thumb-placeholder"><span class="thumb-icon">🎬</span><span>${v.title || ''}</span></div>`;
+      : v.driveId
+        ? `<div class="video-thumb-placeholder" style="background:linear-gradient(135deg,#e8f4fd,#c8e3f8);"><span class="thumb-icon">📁</span><span style="color:#1a6fa8;">Drive 동영상</span></div>`
+        : `<div class="video-thumb-placeholder"><span class="thumb-icon">🎬</span><span>${v.title || ''}</span></div>`;
 
     return `
     <div class="video-card" onclick="openPlayer(${i})">
@@ -628,6 +631,8 @@ function renderPlayer() {
 
   if (v.youtubeId) {
     inner.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0&enablejsapi=1" allow="autoplay; fullscreen; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  } else if (v.driveId) {
+    inner.innerHTML = `<iframe src="https://drive.google.com/file/d/${v.driveId}/preview" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   } else {
     inner.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;opacity:.3;">🎬</div>`;
   }
@@ -655,10 +660,15 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape')     closePlayer();
 });
 
-// ── YouTube ID 추출 ──
+// ── YouTube / Google Drive ID 추출 ──
 function extractYoutubeId(url) {
   if (!url) return null;
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function extractDriveId(url) {
+  if (!url) return null;
+  const m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
   return m ? m[1] : null;
 }
 
@@ -684,21 +694,22 @@ function saveVideo() {
   const desc       = document.getElementById('vmVideoDesc').value.trim();
   const duration   = document.getElementById('vmDuration').value.trim();
 
-  if (!youtubeUrl && !editingId) { alert('YouTube URL을 입력하세요.'); return; }
+  if (!youtubeUrl && !editingId) { alert('동영상 URL을 입력하세요.'); return; }
 
   const youtubeId = extractYoutubeId(youtubeUrl);
+  const driveId   = extractDriveId(youtubeUrl);
 
   if (editingId) {
     const v = videos.find(v => v.id === editingId);
     if (v) {
       Object.assign(v, { cat, category:CAT_LABELS[cat], title, desc, duration });
-      if (youtubeUrl) { v.youtubeUrl = youtubeUrl; v.youtubeId = youtubeId; }
+      if (youtubeUrl) { v.youtubeUrl = youtubeUrl; v.youtubeId = youtubeId; v.driveId = driveId; }
     }
   } else {
     const newId = videos.length ? Math.max(...videos.map(v => v.id)) + 1 : 1;
     videos.push({
       id: newId, cat, category: CAT_LABELS[cat], title, desc, duration,
-      youtubeUrl, youtubeId: youtubeId || null,
+      youtubeUrl, youtubeId: youtubeId || null, driveId: driveId || null,
       createdAt: Date.now(),
     });
   }
