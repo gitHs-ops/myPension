@@ -476,19 +476,8 @@ footer {
 <!-- Manage Codes -->
 <div class="modal-bg" id="codesModal">
   <div class="modal" style="max-width:440px">
-    <div class="modal-title">🔑 예약 코드 관리</div>
-    <div class="form-row">
-      <label class="form-lbl">새 코드 추가 (예약 1건 = 코드 1개)</label>
-      <div class="code-add-row">
-        <input class="form-input" id="newCodeInput" type="text"
-               placeholder="영문+숫자 최대 10자" maxlength="10"
-               oninput="this.value=this.value.toUpperCase()"
-               onkeydown="if(event.key==='Enter')addCode()">
-        <button class="btn-sec btn-gen" onclick="generateCode()">랜덤</button>
-        <button class="btn-pri" style="flex:none;padding:10px 18px" onclick="addCode()">추가</button>
-      </div>
-    </div>
-    <div class="form-lbl" style="margin-bottom:8px">코드 목록</div>
+    <div class="modal-title">🔑 예약 ID 현황</div>
+    <div class="form-lbl" style="margin-bottom:8px">예약 ID를 게스트에게 전달하면 후기 작성 코드로 사용됩니다.</div>
     <div class="code-list" id="codeList"></div>
     <div class="modal-btns" style="margin-top:12px">
       <button class="btn-pri" onclick="closeCodesModal()">닫기</button>
@@ -532,6 +521,9 @@ footer {
 
 <script>
 // ── CONFIG ──
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+const AUTH_TOKEN = '1dl34';
+const HOST_KEY = 'pension_host';
 const CATS = [
   { key:'clean',    label:'청결도' },
   { key:'kind',     label:'친절도' },
@@ -542,6 +534,12 @@ const CATS = [
 const MAX_PHOTOS = 3;
 const COMPRESS_MAX = 800;
 const COMPRESS_QUALITY = 0.65;
+
+// ── SESSION CACHE ──
+const RC_KEY = 'rv_sheet_reviews';
+function rcGet()  { try { return JSON.parse(sessionStorage.getItem(RC_KEY));  } catch(e) { return null; } }
+function rcSet(v) { try { sessionStorage.setItem(RC_KEY,  JSON.stringify(v)); } catch(e) {} }
+function rcClear(){ sessionStorage.removeItem(RC_KEY); }
 
 // ── STATE ──
 let REVIEWS = [];
@@ -555,12 +553,14 @@ let LB_PHOTOS = [];
 let LB_IDX = 0;
 
 // ── INIT ──
-function init() {
-  try { REVIEWS = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) { REVIEWS = []; }
-  try { CODES = JSON.parse(localStorage.getItem('rv_codes') || '{"valid":[],"used":[]}'); } catch(e) { CODES = {valid:[],used:[]}; }
-  HOST_MODE = localStorage.getItem('pension_host') === '1';
-  if (HOST_MODE) document.body.classList.add('host-mode');
+async function init() {
+  HOST_MODE = localStorage.getItem(HOST_KEY) === '1';
+  if (HOST_MODE) {
+    document.body.classList.add('host-mode');
+    rcClear();   // 호스트는 항상 최신 데이터
+  }
   buildCatsGrid();
+  await loadFromSheet();
   renderOverview();
   renderList();
   // default stay month
@@ -569,8 +569,111 @@ function init() {
     `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 
+// ── SHEET LOAD ──
+async function loadFromSheet() {
+  if (!APPS_SCRIPT_URL) {
+    // GAS 미설정 → localStorage 폴백
+    try { REVIEWS = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) { REVIEWS = []; }
+    try { CODES   = JSON.parse(localStorage.getItem('rv_codes')   || '{"valid":[],"used":[]}'); } catch(e) { CODES = {valid:[],used:[]}; }
+    return;
+  }
+  // ── 리뷰 로드 ──
+  const cachedRv = rcGet();
+  if (cachedRv) {
+    REVIEWS = mergePhotos(cachedRv);
+  } else {
+    try {
+      const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=reviews`);
+      const json = await res.json();
+      if (json.ok && json.data && json.data.length) {
+        const parsed = parseSheetReviews(json.data);
+        rcSet(parsed);
+        REVIEWS = mergePhotos(parsed);
+      } else {
+        REVIEWS = [];
+      }
+    } catch(err) {
+      console.warn('리뷰 로드 실패:', err);
+      try { REVIEWS = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) { REVIEWS = []; }
+    }
+  }
+  // ── 예약 목록으로 유효 코드 도출 ──
+  try {
+    const res2  = await fetch(`${APPS_SCRIPT_URL}?action=rsv_load`);
+    const json2 = await res2.json();
+    if (json2.success && json2.reservations) {
+      const usedCodes = new Set(REVIEWS.map(r => r.verifyCode).filter(c => c && c !== 'HOST'));
+      CODES = {
+        valid: json2.reservations.map(r => r.id).filter(id => !usedCodes.has(id)),
+        used:  json2.reservations.map(r => r.id).filter(id =>  usedCodes.has(id)),
+      };
+    } else {
+      CODES = { valid:[], used:[] };
+    }
+  } catch(err) {
+    console.warn('예약 로드 실패:', err);
+    CODES = { valid:[], used:[] };
+  }
+}
+
+function parseSheetReviews(rows) {
+  return rows.map(r => ({
+    id:            r.id            || '',
+    guestName:     r.guestName     || '',
+    stayDate:      r.stayDate      || '',
+    verifyCode:    r.verifyCode    || '',
+    ratings:       (() => { try { return JSON.parse(r.ratings || '{}'); } catch(e) { return {}; } })(),
+    avg:           parseFloat(r.avg) || 0,
+    text:          r.text          || '',
+    photos:        [],   // 사진은 Sheets 저장 안함 → mergePhotos()로 복원
+    hostReply:     r.hostReply     || '',
+    hostReplyDate: r.hostReplyDate || '',
+    createdAt:     r.createdAt     || '',
+  })).filter(r => r.id);
+}
+
+function mergePhotos(reviews) {
+  let photoMap = {};
+  try { photoMap = JSON.parse(localStorage.getItem('rv_photos') || '{}'); } catch(e) {}
+  return reviews.map(r => ({ ...r, photos: photoMap[r.id] || [] }));
+}
+
 // ── PERSIST ──
-function saveReviews() {
+async function saveReviews() {
+  // 사진은 localStorage에 별도 보관 (base64 → Sheets에 넣기엔 너무 큼)
+  let photoMap = {};
+  try { photoMap = JSON.parse(localStorage.getItem('rv_photos') || '{}'); } catch(e) {}
+  REVIEWS.forEach(r => {
+    if (r.photos && r.photos.length) photoMap[r.id] = r.photos;
+    else delete photoMap[r.id];
+  });
+  try { localStorage.setItem('rv_photos', JSON.stringify(photoMap)); } catch(e) {}
+
+  // GAS 저장 (사진 제외)
+  if (APPS_SCRIPT_URL) {
+    const data = REVIEWS.map(r => ({
+      id:            r.id,
+      guestName:     r.guestName,
+      stayDate:      r.stayDate,
+      verifyCode:    r.verifyCode,
+      ratings:       JSON.stringify(r.ratings),
+      avg:           r.avg,
+      text:          r.text,
+      hostReply:     r.hostReply     || '',
+      hostReplyDate: r.hostReplyDate || '',
+      createdAt:     r.createdAt,
+    }));
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ sheet:'reviews', action:'save', token:AUTH_TOKEN, data }),
+      });
+      rcClear(); // 다음 로드 시 최신 데이터 반영
+    } catch(err) { console.warn('리뷰 GAS 저장 실패:', err); }
+  }
+
+  // localStorage 백업 (사진 포함)
   try {
     localStorage.setItem('rv_reviews', JSON.stringify(REVIEWS));
     return 'ok';
@@ -578,9 +681,7 @@ function saveReviews() {
     return e.name === 'QuotaExceededError' ? 'quota' : 'err';
   }
 }
-function saveCodes() {
-  try { localStorage.setItem('rv_codes', JSON.stringify(CODES)); } catch(e) {}
-}
+
 
 // ── OVERVIEW ──
 function renderOverview() {
@@ -809,7 +910,7 @@ function onPhotoFiles(input) {
 }
 
 // ── SUBMIT REVIEW ──
-function submitReview() {
+async function submitReview() {
   const errEl = document.getElementById('writeErr');
   errEl.classList.remove('show');
 
@@ -841,13 +942,13 @@ function submitReview() {
   };
 
   REVIEWS.unshift(review);
-  let result = saveReviews();
+  let result = await saveReviews();
 
   if (result === 'quota') {
     // retry without photos
     review.photos = [];
     REVIEWS[0] = review;
-    result = saveReviews();
+    result = await saveReviews();
     if (result === 'quota') {
       REVIEWS.shift();
       showErr(errEl, '저장 공간이 부족합니다. 기존 후기 데이터를 정리한 후 다시 시도해주세요.');
@@ -856,11 +957,10 @@ function submitReview() {
     alert('저장 공간이 부족해 사진 없이 후기가 등록되었어요.');
   }
 
-  // mark code as used (skip for host bypass)
+  // 세션 내 중복 사용 방지 (다음 로드 시 예약 시트에서 자동 재계산)
   if (PENDING_CODE !== 'HOST') {
     CODES.used.push(PENDING_CODE);
     CODES.valid = CODES.valid.filter(c => c !== PENDING_CODE);
-    saveCodes();
   }
 
   closeWriteModal();
@@ -889,7 +989,7 @@ function closeReplyModal() {
   document.getElementById('replyModal').classList.remove('open');
   REPLY_ID = null;
 }
-function submitReply() {
+async function submitReply() {
   const text = document.getElementById('replyText').value.trim();
   const err = document.getElementById('replyErr');
   if (!text) { showErr(err, '답변 내용을 입력해주세요.'); return; }
@@ -897,17 +997,17 @@ function submitReply() {
   if (!r) { closeReplyModal(); return; }
   r.hostReply = text;
   r.hostReplyDate = new Date().toISOString().slice(0,10);
-  saveReviews();
+  await saveReviews();
   closeReplyModal();
   renderList();
 }
 
 // ── DELETE REVIEW ──
-function deleteReview(id) {
+async function deleteReview(id) {
   if (!HOST_MODE) return;
   if (!confirm('이 후기를 삭제하시겠어요?')) return;
   REVIEWS = REVIEWS.filter(r => r.id !== id);
-  saveReviews();
+  await saveReviews();
   renderOverview();
   renderList();
 }
@@ -925,41 +1025,17 @@ function renderCodeList() {
   const el = document.getElementById('codeList');
   const items = [
     ...CODES.valid.map(c => ({code:c, status:'ok'})),
-    ...CODES.used.map(c => ({code:c, status:'used'})),
+    ...CODES.used.map(c =>  ({code:c, status:'used'})),
   ];
   if (!items.length) {
-    el.innerHTML = '<div style="color:#bbb;padding:14px 0;text-align:center;font-size:.85rem">등록된 코드 없음</div>';
+    el.innerHTML = '<div style="color:#bbb;padding:14px 0;text-align:center;font-size:.85rem">예약 데이터 없음</div>';
     return;
   }
   el.innerHTML = items.map(({code, status}) => `
     <div class="code-row">
       <span class="code-mono">${code}</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="code-tag ${status}">${status==='ok'?'사용 가능':'사용됨'}</span>
-        ${status==='ok' ? `<button class="btn-sm del" onclick="removeCode('${code}')">삭제</button>` : ''}
-      </div>
+      <span class="code-tag ${status}">${status==='ok' ? '후기 미작성' : '후기 작성됨'}</span>
     </div>`).join('');
-}
-function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i=0; i<6; i++) code += chars[Math.floor(Math.random()*chars.length)];
-  document.getElementById('newCodeInput').value = code;
-}
-function addCode() {
-  const code = document.getElementById('newCodeInput').value.trim().toUpperCase();
-  if (!code) { alert('코드를 입력해주세요.'); return; }
-  if (!/^[A-Z0-9]+$/.test(code)) { alert('영문 대문자와 숫자만 사용 가능합니다.'); return; }
-  if (CODES.valid.includes(code)||CODES.used.includes(code)) { alert('이미 존재하는 코드입니다.'); return; }
-  CODES.valid.push(code);
-  saveCodes();
-  document.getElementById('newCodeInput').value = '';
-  renderCodeList();
-}
-function removeCode(code) {
-  CODES.valid = CODES.valid.filter(c => c !== code);
-  saveCodes();
-  renderCodeList();
 }
 
 // ── LIGHTBOX ──
