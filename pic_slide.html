@@ -272,10 +272,9 @@ let filtered = [];
 let currentIdx = 0;
 let currentFilter = 'all';
 
-// ── 브라우저 캐시 헬퍼 (5분 TTL, pic_view와 공유 키) ──
+// ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화, pic_view와 공유 키) ──
 const LC_KEY = 'pension_cache_pic_view';
-const LC_TTL = 5 * 60 * 1000;
-function lcGet() { try { const r=JSON.parse(localStorage.getItem(LC_KEY)||'null'); return r&&(Date.now()-r.ts<LC_TTL)?r.data:null; } catch(e){return null;} }
+function lcGet() { try { return JSON.parse(sessionStorage.getItem(LC_KEY)||'null'); } catch(e){return null;} }
 
 async function loadFromSheet() {
   const cached = lcGet();
@@ -287,7 +286,7 @@ async function loadFromSheet() {
     const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_view`);
     const json = await res.json();
     if (json.ok && Array.isArray(json.data) && json.data.length) {
-      try { localStorage.setItem(LC_KEY, JSON.stringify({data: json.data, ts: Date.now()})); } catch(e){}
+      try { sessionStorage.setItem(LC_KEY, JSON.stringify(json.data)); } catch(e){}
       return json.data;
     }
   } catch(e) {}
@@ -327,10 +326,11 @@ function hidePgLoader() {
 }
 
 async function init() {
-  showPgLoader('슬라이드 사진을 불러오는 중입니다...');
-  allCards = await loadFromSheet();
   const isHost = sessionStorage.getItem(HOST_KEY) === '1';
   if (isHost) document.getElementById('btnUpload').style.display = 'flex';
+  const hasCached = !!lcGet();
+  if (!hasCached) showPgLoader('슬라이드 사진을 불러오는 중입니다...');
+  allCards = await loadFromSheet();
   const params = new URLSearchParams(location.search);
   const startIdx = parseInt(params.get('idx') || '0');
   const startFilter = params.get('cat') || 'all';

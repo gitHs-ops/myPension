@@ -1511,12 +1511,11 @@ function finishLoadBar() {
   hidePgLoader();
 }
 
-// ── 브라우저 캐시 헬퍼 (5분 TTL) ──
+// ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화) ──
 const LC_KEY = 'pension_cache_index';
-const LC_TTL = 5 * 60 * 1000;
-function lcGet() { try { const r=JSON.parse(localStorage.getItem(LC_KEY)||'null'); return r&&(Date.now()-r.ts<LC_TTL)?r.data:null; } catch(e){return null;} }
-function lcSet(d) { try { localStorage.setItem(LC_KEY,JSON.stringify({data:d,ts:Date.now()})); } catch(e){} }
-function lcClear() { try { localStorage.removeItem(LC_KEY); } catch(e){} }
+function lcGet() { try { return JSON.parse(sessionStorage.getItem(LC_KEY)||'null'); } catch(e){return null;} }
+function lcSet(d) { try { sessionStorage.setItem(LC_KEY, JSON.stringify(d)); } catch(e){} }
+function lcClear() { try { sessionStorage.removeItem(LC_KEY); } catch(e){} }
 
 function applyIndexCache(cached) {
   if (cached.slotData) {
@@ -1543,22 +1542,25 @@ async function fetchIndexFromSheet() {
   return { slotData: newSlotData, extraData: newExtraData };
 }
 
-// ── 시트에서 데이터 로드 (stale-while-revalidate) ──
+// ── 시트에서 데이터 로드 ──
 async function loadFromSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
 
   const cached = lcGet();
   if (cached) {
-    // 캐시 즉시 표시 → 로더 숨김 → 백그라운드 갱신
+    // 캐시 즉시 표시 → 로더 숨김
     applyIndexCache(cached);
     finishLoadBar();
-    fetchIndexFromSheet().then(fresh => {
-      if (!fresh) return;
-      if (JSON.stringify(fresh) !== JSON.stringify(cached)) {
-        applyIndexCache(fresh);
-        lcSet(fresh);
-      }
-    }).catch(() => {});
+    // 호스트 모드일 때만 백그라운드 갱신 (게스트는 변경 불가)
+    if (sessionStorage.getItem(HOST_KEY) === '1') {
+      fetchIndexFromSheet().then(fresh => {
+        if (!fresh) return;
+        if (JSON.stringify(fresh) !== JSON.stringify(cached)) {
+          applyIndexCache(fresh);
+          lcSet(fresh);
+        }
+      }).catch(() => {});
+    }
     return;
   }
 

@@ -572,18 +572,18 @@ function hidePgLoader() {
 
 async function init() {
   if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
-  showPgLoader('동영상 목록을 불러오는 중입니다...');
+  const hasCached = !!vlcGet();
+  if (!hasCached) showPgLoader('동영상 목록을 불러오는 중입니다...');
   await loadFromSheet();
   applyFilter();
   hidePgLoader();
 }
 
-// ── 브라우저 캐시 헬퍼 (5분 TTL) ──
+// ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화) ──
 const VLC_KEY = 'pension_cache_pic_video';
-const VLC_TTL = 5 * 60 * 1000;
-function vlcGet() { try { const r=JSON.parse(localStorage.getItem(VLC_KEY)||'null'); return r&&(Date.now()-r.ts<VLC_TTL)?r.data:null; } catch(e){return null;} }
-function vlcSet(d) { try { localStorage.setItem(VLC_KEY,JSON.stringify({data:d,ts:Date.now()})); } catch(e){} }
-function vlcClear() { try { localStorage.removeItem(VLC_KEY); } catch(e){} }
+function vlcGet() { try { return JSON.parse(sessionStorage.getItem(VLC_KEY)||'null'); } catch(e){return null;} }
+function vlcSet(d) { try { sessionStorage.setItem(VLC_KEY, JSON.stringify(d)); } catch(e){} }
+function vlcClear() { try { sessionStorage.removeItem(VLC_KEY); } catch(e){} }
 
 function parseSheetVideos(data) {
   return data.map(r => ({
