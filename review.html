@@ -315,6 +315,24 @@ footer {
 .footer-nav a:hover { color:#fff; }
 .footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
 
+/* ── PAGE LOADER ── */
+#pgLoader {
+  position:fixed; left:0; right:0; top:64px; bottom:0; z-index:190;
+  background:rgba(247,245,241,.95); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .45s ease;
+}
+#pgLoader.pgHide { opacity:0; pointer-events:none; }
+.pgl-spinner { width:48px; height:48px; border-radius:50%; border:4px solid #e0d5cc; border-top-color:#6b3a1f; animation:pglSpin .85s linear infinite; }
+@keyframes pglSpin { to { transform:rotate(360deg); } }
+.pgl-icon    { font-size:2rem; }
+.pgl-title   { font-size:1.05rem; font-weight:900; color:#3d2010; }
+.pgl-msg     { font-size:.88rem; color:#888; }
+.pgl-sub     { font-size:.76rem; color:#bbb; }
+.pgl-elapsed { font-size:.72rem; color:#ccc; min-height:16px; }
+.pgl-retry   { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1.5px solid #ddd; background:#fff; font-family:var(--sans); font-size:.8rem; color:#666; cursor:pointer; }
+.pgl-retry:hover { background:#f5f5f5; }
+
 /* Responsive */
 @media (max-width:700px) {
   .header { padding:0 16px; }
@@ -333,6 +351,17 @@ footer {
 </head>
 <body>
 
+<!-- 콘텐츠 로딩 오버레이 -->
+<div id="pgLoader">
+  <div class="pgl-icon">💬</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">후기 데이터를 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
+
 <!-- ── HEADER ── -->
 <header class="header">
   <a class="logo" href="index.html" title="홈으로">
@@ -340,7 +369,7 @@ footer {
     영덕감성산장
   </a>
   <nav class="header-nav">
-    <a href="index.html#about">공간 소개</a>
+    <a href="index.html#about">숙소 소개</a>
     <a href="index.html#amenities">편의시설</a>
     <a href="surroundings.html">주변 환경</a>
     <a href="pic_view.html">갤러리</a>
@@ -534,6 +563,30 @@ const MAX_PHOTOS = 3;
 const COMPRESS_MAX = 800;
 const COMPRESS_QUALITY = 0.65;
 
+// ── PAGE LOADER ──
+let _pglTimer = null;
+function showPgLoader(msg) {
+  const el = document.getElementById('pgLoader'); if (!el) return;
+  el.classList.remove('pgHide');
+  if (msg) document.getElementById('pglMsg').textContent = msg;
+  _pglSec = 0;
+  document.getElementById('pglElapsed').textContent = '';
+  document.getElementById('pglRetry').style.display = 'none';
+  if (_pglTimer) clearInterval(_pglTimer);
+  _pglTimer = setInterval(() => {
+    _pglSec++;
+    const e = document.getElementById('pglElapsed');
+    if (_pglSec >= 3 && e) e.textContent = `${_pglSec}초째 로딩 중...`;
+    if (_pglSec >= 10) { const rb = document.getElementById('pglRetry'); if (rb) rb.style.display = 'inline-block'; }
+  }, 1000);
+}
+function hidePgLoader() {
+  if (_pglTimer) { clearInterval(_pglTimer); _pglTimer = null; }
+  const el = document.getElementById('pgLoader');
+  if (el) { el.classList.add('pgHide'); setTimeout(() => { if (el.parentNode) el.remove(); }, 500); }
+}
+let _pglSec = 0;
+
 // ── SESSION CACHE ──
 const RC_KEY = 'rv_sheet_reviews';
 function rcGet()  { try { return JSON.parse(sessionStorage.getItem(RC_KEY));  } catch(e) { return null; } }
@@ -560,7 +613,9 @@ async function init() {
     rcClear();   // 호스트는 항상 최신 데이터
   }
   buildCatsGrid();
+  showPgLoader('후기 데이터를 불러오는 중입니다...');
   await loadFromSheet();
+  hidePgLoader();
   renderOverview();
   renderList();
   // default stay month
