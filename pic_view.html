@@ -305,8 +305,10 @@ body.host-mode .fab-add { display:flex; }
 
 <!-- GALLERY GRID -->
 <div class="gallery-wrap">
-  <div class="gallery-grid" id="galleryGrid">
-  <!-- LIGHTBOX -->
+  <div class="gallery-grid" id="galleryGrid"></div>
+</div>
+
+<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
   <div class="lightbox-inner">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -390,13 +392,15 @@ async function init() {
 
 function saveCards() { /* 시트 저장은 saveToSheet() 사용 */ }
 
-// ── Google Drive URL 정규화 ──
+// ── Google Drive URL 정규화 (thumbnail 방식, uc?export=view 는 차단됨) ──
 function normalizeDriveUrl(url) {
   if (!url) return url;
-  const m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
-  if (m1) return `https://drive.google.com/uc?export=view&id=${m1[1]}`;
-  const m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
-  if (m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+  const m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?\s]+)/);
+  if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w1200`;
+  const m2 = url.match(/drive\.google\.com\/open\?id=([^&\s]+)/);
+  if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w1200`;
+  const m3 = url.match(/drive\.google\.com\/uc\?.*[?&]id=([^&\s]+)/);
+  if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w1200`;
   return url;
 }
 

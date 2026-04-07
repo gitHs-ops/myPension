@@ -1278,12 +1278,18 @@ function activateHost() { document.body.classList.add('host-mode'); }
 function exitHostMode() { sessionStorage.removeItem(HOST_KEY); document.body.classList.remove('host-mode'); }
 
 // ── Google Drive URL 정규화 ──
+// uc?export=view 는 차단됨 → thumbnail?sz=w1200 사용
 function normalizeDriveUrl(url) {
   if (!url) return url;
-  const m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
-  if (m1) return `https://drive.google.com/uc?export=view&id=${m1[1]}`;
-  const m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
-  if (m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+  // 형식 1: /file/d/FILE_ID/
+  const m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?\s]+)/);
+  if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w1200`;
+  // 형식 2: open?id=FILE_ID
+  const m2 = url.match(/drive\.google\.com\/open\?id=([^&\s]+)/);
+  if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w1200`;
+  // 형식 3: uc?export=view&id=FILE_ID (이미 변환됐지만 구형 데이터 대비)
+  const m3 = url.match(/drive\.google\.com\/uc\?.*[?&]id=([^&\s]+)/);
+  if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w1200`;
   return url;
 }
 
@@ -1304,13 +1310,29 @@ function closeUrlModal(e) {
 function previewUrlInput() {
   const raw = document.getElementById('urlModalInput').value.trim();
   const url = normalizeDriveUrl(raw);
-  const img = document.getElementById('urlPreviewImg');
-  const err = document.getElementById('urlPreviewErr');
-  if (!url) { img.style.display='none'; err.textContent=''; return; }
+  const img  = document.getElementById('urlPreviewImg');
+  const err  = document.getElementById('urlPreviewErr');
+  const cvWrap = document.getElementById('urlConvertedWrap');
+  const cvSpan = document.getElementById('urlConverted');
+
+  if (!url) {
+    img.style.display = 'none'; err.textContent = ''; cvWrap.style.display = 'none';
+    return;
+  }
+  // Drive URL이 변환된 경우 변환 결과 표시
+  if (url !== raw) {
+    cvSpan.textContent = url;
+    cvWrap.style.display = 'block';
+  } else {
+    cvWrap.style.display = 'none';
+  }
   img.style.display = 'block';
   img.src = url;
-  img.onerror = () => { img.style.display='none'; err.textContent = '⚠️ 이미지를 불러올 수 없습니다. URL을 확인하세요.'; };
-  img.onload  = () => { err.textContent = ''; };
+  img.onerror = () => {
+    img.style.display = 'none';
+    err.textContent = '⚠️ 이미지를 불러올 수 없습니다. Drive 파일 공유 설정(링크가 있는 모든 사용자)을 확인하세요.';
+  };
+  img.onload = () => { err.textContent = ''; };
 }
 function confirmUrlInput() {
   const raw = document.getElementById('urlModalInput').value.trim();
@@ -1430,12 +1452,12 @@ async function loadFromSheet() {
 
     if (slotsJson.ok) {
       slotData = {};
-      slotsJson.data.forEach(r => { if (r.url) slotData[r.slot_id] = r.url; });
+      slotsJson.data.forEach(r => { if (r.url) slotData[r.slot_id] = normalizeDriveUrl(r.url); });
       Object.entries(slotData).forEach(([slot, src]) => applySlotPhoto(slot, src));
     }
     if (extrasJson.ok) {
       extrasJson.data.sort((a, b) => Number(a.order) - Number(b.order));
-      extraData = extrasJson.data.filter(r => r.url).map(r => r.url);
+      extraData = extrasJson.data.filter(r => r.url).map(r => normalizeDriveUrl(r.url));
       renderExtras();
     }
   } catch(err) {
@@ -1477,8 +1499,11 @@ async function loadFromSheet() {
 <div class="url-modal-bg" id="urlModalBg" onclick="closeUrlModal(event)">
   <div class="url-modal-box">
     <div class="url-modal-title" id="urlModalTitle">사진 URL 입력</div>
-    <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 직접 URL을 붙여넣으세요.<br>Drive 링크는 자동으로 직접 링크로 변환됩니다.</div>
+    <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 직접 URL을 붙여넣으세요.<br>Drive 링크는 <b>thumbnail</b> 형식으로 자동 변환되어 적용됩니다.</div>
     <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
+    <div id="urlConvertedWrap" style="display:none;margin-top:6px;padding:6px 10px;background:#f5f5f0;border-radius:6px;font-size:.72rem;color:#666;word-break:break-all;">
+      변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;"></span>
+    </div>
     <div class="url-preview-wrap">
       <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
       <div class="url-preview-err" id="urlPreviewErr"></div>
