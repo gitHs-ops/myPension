@@ -347,6 +347,9 @@ body.host-mode .fab-add { display:flex; }
   <div class="gallery-grid" id="galleryGrid"></div>
 </div>
 
+<!-- 사진 추가 버튼 (호스트 모드 전용) -->
+<button class="fab-add" onclick="hostCheckThenAdd()">＋ 사진 추가</button>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
   <div class="lightbox-inner">
@@ -505,21 +508,21 @@ async function fetchSheetCards() {
 
 async function loadFromSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    cards = DEFAULT_CARDS.map(c => ({...c}));
+    cards = [];
     return;
   }
-  // ① 캐시 우선 표시 (stale-while-revalidate)
+  // ① 캐시 우선 표시
   const cached = lcGet();
   if (cached) {
     cards = cached;
-    return; // 캐시 표시 후 백그라운드에서 갱신
+    return;
   }
-  // ② 캐시 없으면 대기
+  // ② 캐시 없으면 GAS에서 로드
   try {
-    cards = await fetchSheetCards() || DEFAULT_CARDS.map(c => ({...c}));
+    cards = await fetchSheetCards() || [];
   } catch(err) {
     console.warn('시트 로드 실패:', err);
-    cards = DEFAULT_CARDS.map(c => ({...c}));
+    cards = [];
   }
 }
 
