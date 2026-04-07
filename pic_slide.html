@@ -327,7 +327,10 @@ function hidePgLoader() {
 
 async function init() {
   const isHost = sessionStorage.getItem(HOST_KEY) === '1';
-  if (isHost) document.getElementById('btnUpload').style.display = 'flex';
+  if (isHost) {
+    document.getElementById('btnUpload').style.display = 'flex';
+    lcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+  }
   const hasCached = !!lcGet();
   if (!hasCached) showPgLoader('슬라이드 사진을 불러오는 중입니다...');
   allCards = await loadFromSheet();

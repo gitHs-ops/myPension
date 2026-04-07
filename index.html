@@ -1581,7 +1581,10 @@ async function loadFromSheet() {
 
 // ── 초기화 ──
 (function initHost() {
-  if (sessionStorage.getItem(HOST_KEY) === '1') activateHost();
+  if (sessionStorage.getItem(HOST_KEY) === '1') {
+    activateHost();
+    lcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+  }
   loadFromSheet();
 })();
 </script>

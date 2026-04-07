@@ -446,14 +446,15 @@ function hidePgLoader() {
 }
 
 async function init() {
-  if (sessionStorage.getItem(HOST_KEY) === '1') activateHost();
+  if (sessionStorage.getItem(HOST_KEY) === '1') {
+    activateHost();
+    lcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+  }
   const hasCached = !!lcGet();
   if (!hasCached) showPgLoader('갤러리 사진을 불러오는 중입니다...');
   await loadFromSheet();
   renderGallery();
   hidePgLoader();
-  // 호스트 모드일 때만 백그라운드 갱신 (게스트는 변경 불가)
-  if (hasCached && sessionStorage.getItem(HOST_KEY) === '1') refreshInBackground();
 }
 
 function saveCards() { /* 시트 저장은 saveToSheet() 사용 */ }

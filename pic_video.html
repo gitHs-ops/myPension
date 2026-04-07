@@ -571,7 +571,10 @@ function hidePgLoader() {
 }
 
 async function init() {
-  if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
+  if (sessionStorage.getItem(HOST_KEY) === '1') {
+    document.body.classList.add('host-mode');
+    vlcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+  }
   const hasCached = !!vlcGet();
   if (!hasCached) showPgLoader('동영상 목록을 불러오는 중입니다...');
   await loadFromSheet();
