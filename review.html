@@ -405,7 +405,7 @@ footer {
   <div class="modal">
     <!-- Step 1: Verify -->
     <div id="stepVerify">
-      <div class="modal-title">후기 작성</div>
+      <div class="modal-title">후기 작성 <span style="font-size:.7rem;font-weight:400;color:#aaa;vertical-align:middle">v1.0</span></div>
       <div class="verify-center">
         <div class="verify-icon">🔑</div>
         <p class="verify-desc">
@@ -414,8 +414,7 @@ footer {
           <span class="verify-hint"><br>(예약 확인 문자 또는 체크아웃 안내문에서 확인하세요)</span>
         </p>
         <input class="form-input verify-input" id="verifyInput" type="text"
-               placeholder="예약 코드" maxlength="10" autocomplete="off"
-               oninput="this.value=this.value.toUpperCase()"
+               placeholder="예약 코드" maxlength="20" autocomplete="off"
                onkeydown="if(event.key==='Enter')submitVerify()">
         <div class="verify-err" id="verifyErr">유효하지 않은 코드이거나 이미 사용된 코드입니다.</div>
       </div>
@@ -845,9 +844,9 @@ function closeWriteModal() {
 
 // ── VERIFY ──
 function submitVerify() {
-  const code = document.getElementById('verifyInput').value.trim().toUpperCase();
+  const code = document.getElementById('verifyInput').value.trim();
   const err = document.getElementById('verifyErr');
-  const isHostBypass = document.getElementById('verifyInput').value.trim() === '1DL34';
+  const isHostBypass = code.toUpperCase() === '1DL34';
   if (!isHostBypass && (!code || !CODES.valid.includes(code) || CODES.used.includes(code))) {
     err.classList.add('show');
     return;
