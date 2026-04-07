@@ -576,19 +576,8 @@ function openUrlModal(target, title) {
   urlModalTarget = target;
   document.getElementById('urlModalTitle').textContent = title || '사진 URL 입력';
   document.getElementById('urlModalInput').value = '';
-  document.getElementById('urlPreviewImg').style.display = 'none';
-  document.getElementById('urlPreviewErr').textContent = '';
   document.getElementById('urlModalBg').classList.add('open');
   setTimeout(() => document.getElementById('urlModalInput').focus(), 80);
-}
-function previewUrlInput() {
-  const url = normalizeDriveUrl(document.getElementById('urlModalInput').value.trim());
-  const img = document.getElementById('urlPreviewImg');
-  const err = document.getElementById('urlPreviewErr');
-  if (!url) { img.style.display='none'; err.textContent=''; return; }
-  img.style.display = 'block'; img.src = url;
-  img.onerror = () => { img.style.display='none'; err.textContent='⚠️ 이미지를 불러올 수 없습니다.'; };
-  img.onload  = () => { err.textContent=''; };
 }
 function confirmUrlInput() {
   const url = normalizeDriveUrl(document.getElementById('urlModalInput').value.trim());
@@ -599,9 +588,7 @@ function confirmUrlInput() {
     if (c) { c.img_url = url; renderGallery(); }
   } else if (urlModalTarget === 'card-photo') {
     newPhotoUrl = url;
-    const preview = document.getElementById('cmPhotoPreview');
-    preview.src = url; preview.style.display = 'block';
-    document.getElementById('cmPhotoPlaceholder').style.display = 'none';
+    document.getElementById('cmPhotoPlaceholder').textContent = '✅ URL 선택됨 (클릭하여 변경)';
   }
 }
 
@@ -725,10 +712,8 @@ function openCardModal(id) {
   document.getElementById('cmCardDesc').value       = c ? c.desc     : '';
   document.getElementById('cmCardCat').value        = c ? c.cat      : 'exterior';
   document.getElementById('cmFeatured').checked     = c ? c.featured : false;
-  const preview = document.getElementById('cmPhotoPreview');
   const placeholder = document.getElementById('cmPhotoPlaceholder');
-  if (c && c.img_url) { preview.src = c.img_url; preview.style.display = 'block'; placeholder.style.display = 'none'; }
-  else { preview.style.display = 'none'; placeholder.style.display = 'flex'; }
+  placeholder.textContent = (c && c.img_url) ? '✅ URL 설정됨 (클릭하여 변경)' : '📷 클릭하여 사진 URL 입력';
   document.getElementById('cardModalOverlay').classList.add('open');
 }
 function closeCardModal() { document.getElementById('cardModalOverlay').classList.remove('open'); newPhotoUrl = null; }
@@ -770,9 +755,8 @@ init();
   <div class="card-modal">
     <div class="card-modal-title" id="cmTitle">사진 추가</div>
     <label class="cm-label">사진</label>
-    <img class="cm-photo-preview" id="cmPhotoPreview" alt="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid #eee;margin-bottom:6px;">
-    <div class="cm-photo-placeholder" id="cmPhotoPlaceholder" onclick="openUrlModal('card-photo','사진 URL 입력")">
-      📷 클릭하여 사진 선택
+    <div class="cm-photo-placeholder" id="cmPhotoPlaceholder" onclick="openUrlModal('card-photo','사진 URL 입력')">
+      📷 클릭하여 사진 URL 입력
     </div>
     <label class="cm-label">카테고리</label>
     <select class="cm-select" id="cmCardCat">
@@ -825,11 +809,7 @@ init();
       </a>
       <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
     </div>
-    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
-    <div class="url-preview-wrap">
-      <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
-      <div class="url-preview-err" id="urlPreviewErr"></div>
-    </div>
+    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." onkeydown="if(event.key==='Enter')confirmUrlInput()">
     <div class="url-modal-btns">
       <button class="url-btn-cancel" onclick="document.getElementById('urlModalBg').classList.remove('open')">취소</button>
       <button class="url-btn-ok" onclick="confirmUrlInput()">적용</button>
