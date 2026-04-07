@@ -374,6 +374,28 @@ body.host-mode .price-edit-btn { display:inline; }
 .rsv-req-err { color:#e53935; font-size:.78rem; margin-top:6px; display:none; }
 .rsv-req-err.show { display:block; }
 
+/* ── CONTENT LOADER OVERLAY ── */
+#pgLoader {
+  position:fixed; left:0; right:0; top:64px; bottom:0; z-index:190;
+  background:rgba(247,245,241,.95); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .45s ease; pointer-events:all;
+}
+#pgLoader.pgHide { opacity:0; pointer-events:none; }
+.pgl-spinner {
+  width:48px; height:48px; border-radius:50%;
+  border:4px solid #e0d5cc; border-top-color:#6b3a1f;
+  animation:pglSpin .85s linear infinite;
+}
+@keyframes pglSpin { to { transform:rotate(360deg); } }
+.pgl-icon  { font-size:2rem; line-height:1; }
+.pgl-title { font-size:1.05rem; font-weight:900; color:#3d2010; letter-spacing:-.3px; }
+.pgl-msg   { font-size:.88rem; color:#888; }
+.pgl-sub   { font-size:.76rem; color:#bbb; }
+.pgl-elapsed { font-size:.72rem; color:#ccc; min-height:16px; }
+.pgl-retry { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1.5px solid #ddd; background:#fff; font-family:var(--sans); font-size:.8rem; color:#666; cursor:pointer; }
+.pgl-retry:hover { background:#f5f5f5; }
+
 /* ── PAGE LOAD BAR ── */
 #pageLoadBar {
   position:fixed; top:0; left:0; height:3px; z-index:9999;
@@ -461,6 +483,16 @@ body.host-mode .host-badge { display:flex; }
 .url-preview-wrap { margin-top:10px; min-height:40px; }
 .url-preview-img { width:100%; max-height:180px; object-fit:cover; border-radius:8px; border:1px solid #eee; }
 .url-preview-err { font-size:.78rem; color:#c00; margin-top:4px; }
+.url-drive-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.url-btn-drive {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 14px; border-radius:8px;
+  border:1.5px solid #4285f4; background:#f0f6ff;
+  color:#4285f4; font-family:var(--sans); font-size:.82rem; font-weight:700;
+  cursor:pointer; white-space:nowrap; text-decoration:none;
+  transition:background .12s;
+}
+.url-btn-drive:hover { background:#deeaff; }
 .url-modal-btns { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
 .url-btn-cancel { padding:8px 18px; border:1.5px solid #ddd; border-radius:8px; background:#fff; font-family:var(--sans); font-size:.85rem; cursor:pointer; }
 .url-btn-ok { padding:8px 22px; border:none; border-radius:8px; background:#3d2010; color:#fff; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; }
@@ -498,6 +530,17 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 
 <!-- 페이지 상단 로딩 진행 바 -->
 <div id="pageLoadBar"></div>
+
+<!-- 콘텐츠 로딩 오버레이 -->
+<div id="pgLoader">
+  <div class="pgl-icon">🏠</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">사진 정보를 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
 
 <!-- HEADER -->
 <header class="header">
@@ -1423,12 +1466,40 @@ function postSheet(sheet, data) {
   });
 }
 
+// ── 로딩 오버레이 ──
+let _pglTimer = null, _pglSec = 0;
+function showPgLoader(msg) {
+  const el = document.getElementById('pgLoader');
+  if (!el) return;
+  el.classList.remove('pgHide');
+  if (msg) document.getElementById('pglMsg').textContent = msg;
+  _pglSec = 0;
+  document.getElementById('pglElapsed').textContent = '';
+  document.getElementById('pglRetry').style.display = 'none';
+  if (_pglTimer) clearInterval(_pglTimer);
+  _pglTimer = setInterval(() => {
+    _pglSec++;
+    const el = document.getElementById('pglElapsed');
+    if (_pglSec >= 3 && el) el.textContent = `${_pglSec}초째 로딩 중...`;
+    if (_pglSec >= 10) {
+      const rb = document.getElementById('pglRetry');
+      if (rb) rb.style.display = 'inline-block';
+    }
+  }, 1000);
+}
+function hidePgLoader() {
+  if (_pglTimer) { clearInterval(_pglTimer); _pglTimer = null; }
+  const el = document.getElementById('pgLoader');
+  if (el) { el.classList.add('pgHide'); setTimeout(() => { if(el.parentNode) el.remove(); }, 500); }
+}
+
 // ── 로딩 바 제어 ──
 function startLoadBar() {
   const bar = document.getElementById('pageLoadBar');
   bar.classList.remove('done');
   bar.classList.add('loading');
   document.querySelectorAll('[data-slot]').forEach(el => el.classList.add('photo-skeleton'));
+  showPgLoader('메인 사진을 불러오는 중입니다...');
 }
 function finishLoadBar() {
   const bar = document.getElementById('pageLoadBar');
@@ -1436,6 +1507,7 @@ function finishLoadBar() {
   bar.classList.add('done');
   document.querySelectorAll('[data-slot]').forEach(el => el.classList.remove('photo-skeleton'));
   setTimeout(() => bar.classList.remove('done'), 500);
+  hidePgLoader();
 }
 
 // ── 시트에서 데이터 로드 ──
@@ -1500,6 +1572,20 @@ async function loadFromSheet() {
   <div class="url-modal-box">
     <div class="url-modal-title" id="urlModalTitle">사진 URL 입력</div>
     <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 직접 URL을 붙여넣으세요.<br>Drive 링크는 <b>thumbnail</b> 형식으로 자동 변환되어 적용됩니다.</div>
+    <div class="url-drive-row">
+      <a class="url-btn-drive" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"/>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"/>
+          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"/>
+        </svg>
+        Drive에서 찾기
+      </a>
+      <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
+    </div>
     <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
     <div id="urlConvertedWrap" style="display:none;margin-top:6px;padding:6px 10px;background:#f5f5f0;border-radius:6px;font-size:.72rem;color:#666;word-break:break-all;">
       변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;"></span>

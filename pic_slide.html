@@ -157,9 +157,38 @@ body { font-family:var(--sans); color:var(--text); background:#0a0a0a; display:f
   .header-nav { display:none; }
   .filter-btn { padding:12px 10px; font-size:.8rem; }
 }
+
+/* ── CONTENT LOADER OVERLAY ── */
+#pgLoader {
+  position:fixed; left:0; right:0; top:64px; bottom:0; z-index:190;
+  background:rgba(8,8,8,.92); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .45s ease;
+}
+#pgLoader.pgHide { opacity:0; pointer-events:none; }
+.pgl-spinner { width:48px; height:48px; border-radius:50%; border:4px solid rgba(255,255,255,.15); border-top-color:#c4895a; animation:pglSpin .85s linear infinite; }
+@keyframes pglSpin { to { transform:rotate(360deg); } }
+.pgl-icon  { font-size:2rem; }
+.pgl-title { font-size:1.05rem; font-weight:900; color:#fff; }
+.pgl-msg   { font-size:.88rem; color:rgba(255,255,255,.55); }
+.pgl-sub   { font-size:.76rem; color:rgba(255,255,255,.3); }
+.pgl-elapsed { font-size:.72rem; color:rgba(255,255,255,.22); min-height:16px; }
+.pgl-retry { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); font-family:var(--sans); font-size:.8rem; color:rgba(255,255,255,.6); cursor:pointer; }
+.pgl-retry:hover { background:rgba(255,255,255,.15); }
 </style>
 </head>
 <body>
+
+<!-- 콘텐츠 로딩 오버레이 -->
+<div id="pgLoader">
+  <div class="pgl-icon">▶</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">슬라이드 사진을 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
 
 <!-- HEADER -->
 <header class="header">
@@ -262,7 +291,30 @@ async function saveToSheet(cards) {
   } catch(e) {}
 }
 
+let _pglTimer = null, _pglSec = 0;
+function showPgLoader(msg) {
+  const el = document.getElementById('pgLoader'); if (!el) return;
+  el.classList.remove('pgHide');
+  if (msg) document.getElementById('pglMsg').textContent = msg;
+  _pglSec = 0;
+  document.getElementById('pglElapsed').textContent = '';
+  document.getElementById('pglRetry').style.display = 'none';
+  if (_pglTimer) clearInterval(_pglTimer);
+  _pglTimer = setInterval(() => {
+    _pglSec++;
+    const e = document.getElementById('pglElapsed');
+    if (_pglSec >= 3 && e) e.textContent = `${_pglSec}초째 로딩 중...`;
+    if (_pglSec >= 10) { const rb = document.getElementById('pglRetry'); if (rb) rb.style.display = 'inline-block'; }
+  }, 1000);
+}
+function hidePgLoader() {
+  if (_pglTimer) { clearInterval(_pglTimer); _pglTimer = null; }
+  const el = document.getElementById('pgLoader');
+  if (el) { el.classList.add('pgHide'); setTimeout(() => { if (el.parentNode) el.remove(); }, 500); }
+}
+
 async function init() {
+  showPgLoader('슬라이드 사진을 불러오는 중입니다...');
   allCards = await loadFromSheet();
   const isHost = sessionStorage.getItem(HOST_KEY) === '1';
   if (isHost) document.getElementById('btnUpload').style.display = 'flex';
@@ -272,6 +324,7 @@ async function init() {
   setFilter(startFilter, document.querySelector(`.filter-btn[onclick*="'${startFilter}'"]`) || document.querySelector('.filter-btn'));
   currentIdx = Math.min(startIdx, Math.max(filtered.length - 1, 0));
   render();
+  hidePgLoader();
 }
 
 function setFilter(cat, btn) {
