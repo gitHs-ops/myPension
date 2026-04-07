@@ -576,8 +576,19 @@ function openUrlModal(target, title) {
   urlModalTarget = target;
   document.getElementById('urlModalTitle').textContent = title || '사진 URL 입력';
   document.getElementById('urlModalInput').value = '';
+  document.getElementById('urlPreviewImg').style.display = 'none';
+  document.getElementById('urlPreviewErr').textContent = '';
   document.getElementById('urlModalBg').classList.add('open');
   setTimeout(() => document.getElementById('urlModalInput').focus(), 80);
+}
+function previewUrlInput() {
+  const url = normalizeDriveUrl(document.getElementById('urlModalInput').value.trim());
+  const img = document.getElementById('urlPreviewImg');
+  const err = document.getElementById('urlPreviewErr');
+  if (!url) { img.style.display='none'; err.textContent=''; return; }
+  img.style.display = 'block'; img.src = url;
+  img.onerror = () => { img.style.display='none'; err.textContent='⚠️ 이미지를 불러올 수 없습니다. Drive 파일 공유 설정을 확인하세요.'; };
+  img.onload  = () => { err.textContent=''; };
 }
 function confirmUrlInput() {
   const url = normalizeDriveUrl(document.getElementById('urlModalInput').value.trim());
@@ -809,7 +820,11 @@ init();
       </a>
       <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
     </div>
-    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." onkeydown="if(event.key==='Enter')confirmUrlInput()">
+    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
+    <div class="url-preview-wrap">
+      <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
+      <div class="url-preview-err" id="urlPreviewErr"></div>
+    </div>
     <div class="url-modal-btns">
       <button class="url-btn-cancel" onclick="document.getElementById('urlModalBg').classList.remove('open')">취소</button>
       <button class="url-btn-ok" onclick="confirmUrlInput()">적용</button>
