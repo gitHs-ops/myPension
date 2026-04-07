@@ -175,6 +175,46 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 .footer-nav a:hover { color:#fff; }
 .footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
 
+/* ── 예약코드 조회 행 ── */
+.code-lookup-row {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--bg);
+}
+.code-lookup-lbl { font-size:.75rem; color:var(--muted); font-weight:700; white-space:nowrap; }
+.code-lookup-input {
+  flex:1; padding:8px 11px; border:1px solid var(--border); border-radius:8px;
+  font-family:var(--sans); font-size:.85rem; background:#faf8f5; min-width:0;
+}
+.code-lookup-input:focus { outline:none; border-color:var(--primary); }
+.btn-lookup {
+  background:var(--primary); color:#fff; border:none; border-radius:8px;
+  padding:8px 13px; cursor:pointer; font-size:.88rem; white-space:nowrap;
+  transition:background .15s; flex-shrink:0;
+}
+.btn-lookup:hover { background:var(--primary-dark); }
+.edit-badge {
+  display:none; font-size:.72rem; font-weight:700; color:var(--primary);
+  background:#fdf1e8; border-radius:999px; padding:2px 10px; margin-left:8px; vertical-align:middle;
+}
+.edit-badge.show { display:inline; }
+
+/* ── 수정/삭제 버튼 행 ── */
+.btn-edit-row { display:none; gap:10px; margin-top:18px; }
+.btn-edit-row.show { display:flex; }
+.btn-update {
+  flex:2; background:var(--primary); color:#fff; border:none; padding:13px;
+  border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.9rem;
+  cursor:pointer; transition:background .15s;
+}
+.btn-update:hover { background:var(--primary-dark); }
+.btn-update:disabled { opacity:.6; cursor:default; }
+.btn-delete {
+  flex:1; background:#fee2e2; color:#e53935; border:none; padding:13px;
+  border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.85rem;
+  cursor:pointer; transition:background .15s;
+}
+.btn-delete:hover { background:#fecaca; }
+
 /* ── RESPONSIVE ── */
 @media(max-width:860px) {
   .main-wrap  { grid-template-columns:1fr; }
@@ -241,7 +281,17 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 
   <!-- 인라인 예약 폼 -->
   <div id="formPanel" class="form-panel">
-    <div class="form-panel-title">＋ 예약 하기</div>
+    <div class="form-panel-title">
+      ＋ 예약 하기
+      <span class="edit-badge" id="editBadge">✏️ 수정 모드</span>
+    </div>
+    <!-- 예약코드 조회 -->
+    <div class="code-lookup-row">
+      <span class="code-lookup-lbl">예약코드</span>
+      <input class="code-lookup-input" id="lookupInput" type="text" placeholder="예약코드 입력"
+             onkeydown="if(event.key==='Enter')lookupRsv()">
+      <button class="btn-lookup" onclick="lookupRsv()">✏️ 수정/취소</button>
+    </div>
 
     <!-- 날짜 표시 -->
     <div class="date-display">
@@ -285,6 +335,11 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 
     <div class="form-err" id="rsvErr"></div>
     <button class="btn-submit" id="submitBtn" onclick="saveRsv()">예약 신청하기</button>
+    <!-- 수정 모드 버튼 -->
+    <div class="btn-edit-row" id="editBtnRow">
+      <button class="btn-delete" onclick="deleteRsv()">🗑 삭제하기</button>
+      <button class="btn-update" id="updateBtn" onclick="updateRsv()">✅ 수정 등록하기</button>
+    </div>
   </div>
 
   <!-- 완료 카드 -->
@@ -339,6 +394,10 @@ let CHECKIN_SET  = new Set(); // 타 예약의 체크인 당일 집합
 
 // 직전 신청 예약 (다시 신청하기에 사용)
 let LAST_RSV = null;
+
+// 수정 모드
+let EDIT_MODE   = false;
+let EDIT_RSV_ID = null;
 
 // ── INIT ──
 async function init() {
@@ -426,7 +485,7 @@ function buildBookedSet() {
   BOOKED_MID   = new Set();
   CHECKIN_SET  = new Set();
 
-  RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
+  RESERVATIONS.filter(r => r.status !== 'cancelled' && r.id !== EDIT_RSV_ID).forEach(r => {
     if (!r.checkin || !r.checkout) return;
     CHECKIN_SET.add(r.checkin);          // 체크인 당일 별도 관리
     let cur = parseDate(r.checkin);
@@ -468,7 +527,7 @@ function renderCalendar() {
 
   // 기존 예약 범위 맵 (체크아웃일은 제외 — 다음 예약의 체크인 가능)
   const dateMap = {};
-  RESERVATIONS.filter(r => r.status !== 'cancelled').forEach(r => {
+  RESERVATIONS.filter(r => r.status !== 'cancelled' && r.id !== EDIT_RSV_ID).forEach(r => {
     if (!r.checkin || !r.checkout) return;
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
@@ -743,6 +802,112 @@ async function resetForm() {
 
   renderCalendar();
   updateDateUI();
+}
+
+// ── 예약코드 조회 (수정 모드 진입) ──
+function lookupRsv() {
+  const code = document.getElementById('lookupInput').value.trim();
+  if (!code) { showToast('예약코드를 입력해주세요.'); return; }
+  const rsv = RESERVATIONS.find(r => r.id === code);
+  if (!rsv) { showToast('❌ 예약을 찾을 수 없습니다.'); return; }
+
+  // 폼에 기존 데이터 채우기
+  document.getElementById('inGuestName').value = rsv.guestName || '';
+  document.getElementById('inPhone').value     = rsv.phone     || '';
+  document.getElementById('inEmail').value     = rsv.email     || '';
+  document.getElementById('inGuests').value    = rsv.guests    || 2;
+  document.getElementById('inMemo').value      = rsv.memo      || '';
+  SEL_CHECKIN  = rsv.checkin  || null;
+  SEL_CHECKOUT = rsv.checkout || null;
+  SEL_STEP     = (SEL_CHECKIN && SEL_CHECKOUT) ? 2 : (SEL_CHECKIN ? 1 : 0);
+
+  EDIT_MODE   = true;
+  EDIT_RSV_ID = rsv.id;
+
+  // 해당 예약 날짜를 예약 불가에서 제외 → 날짜 재선택 가능
+  buildBookedSet();
+
+  // UI 전환
+  document.getElementById('editBadge').classList.add('show');
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('editBtnRow').classList.add('show');
+  document.getElementById('rsvErr').classList.remove('show');
+
+  renderCalendar();
+  updateDateUI();
+  showToast('✅ 예약 내용을 불러왔습니다. 수정 후 등록하세요.');
+  scrollToForm();
+}
+
+// ── 수정 등록 ──
+async function updateRsv() {
+  const errEl = document.getElementById('rsvErr');
+  errEl.classList.remove('show');
+
+  const name   = document.getElementById('inGuestName').value.trim();
+  const phone  = document.getElementById('inPhone').value.trim();
+  const email  = document.getElementById('inEmail').value.trim();
+  const guests = parseInt(document.getElementById('inGuests').value) || 1;
+  const memo   = document.getElementById('inMemo').value.trim();
+
+  if (!name)         { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
+  if (!SEL_CHECKIN)  { showErr(errEl, '캘린더에서 체크인 날짜를 선택해주세요.'); return; }
+  if (!SEL_CHECKOUT) { showErr(errEl, '캘린더에서 체크아웃 날짜를 선택해주세요.'); return; }
+
+  const original = RESERVATIONS.find(r => r.id === EDIT_RSV_ID);
+  const rsv = {
+    id:         EDIT_RSV_ID,
+    guestName:  name, phone, email,
+    checkin:    SEL_CHECKIN,
+    checkout:   SEL_CHECKOUT,
+    nights:     nightsBetween(SEL_CHECKIN, SEL_CHECKOUT),
+    guests,
+    totalPrice: original?.totalPrice || 0,
+    status:     'pending',   // 수정 시 호스트 재확인
+    memo,
+    createdAt:  original?.createdAt || todayStr(),
+  };
+
+  const btn = document.getElementById('updateBtn');
+  btn.disabled = true;
+  const ok = await upsertToGAS(rsv);
+  btn.disabled = false;
+
+  if (ok !== false) {
+    const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
+    if (idx >= 0) RESERVATIONS[idx] = rsv; else RESERVATIONS.push(rsv);
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+    clearEditMode();
+    buildBookedSet();
+    renderCalendar();
+    showDone(rsv);
+  }
+}
+
+// ── 예약 삭제 ──
+async function deleteRsv() {
+  if (!confirm('예약을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  showLoading('예약을 삭제하는 중...');
+  await deleteFromGAS(EDIT_RSV_ID);
+  hideLoading();
+
+  RESERVATIONS = RESERVATIONS.filter(r => r.id !== EDIT_RSV_ID);
+  try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+  clearEditMode();
+  buildBookedSet();
+  renderCalendar();
+  updateDateUI();
+  showToast('🗑 예약이 삭제되었습니다.');
+}
+
+// ── 수정 모드 해제 ──
+function clearEditMode() {
+  EDIT_MODE   = false;
+  EDIT_RSV_ID = null;
+  document.getElementById('editBadge').classList.remove('show');
+  document.getElementById('submitBtn').style.display = '';
+  document.getElementById('editBtnRow').classList.remove('show');
+  document.getElementById('lookupInput').value = '';
 }
 
 function scrollToForm() {
