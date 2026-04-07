@@ -169,13 +169,13 @@ footer {
     영덕감성산장
   </a>
   <nav class="header-nav">
-    <a href="index.html#about">숙소 소개</a>
-    <a href="index.html#amenities">편의시설</a>
-    <a href="surroundings.html">주변 환경</a>
-    <a href="pic_view.html">갤러리</a>
-    <a href="review.html">게스트 후기</a>
-    <a href="reserved_view.html">예약현황</a>
-    <a href="#" onclick="alert('호스트 전용 페이지입니다.');return false;">호스트모드</a>
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="reserved_view.html" data-icon="📅">예약현황</a>
+    <a href="#" onclick="alert('호스트 전용 페이지입니다.');return false;" data-icon="🔐">호스트모드</a>
   </nav>
 </header>
 
@@ -264,10 +264,10 @@ footer {
   </a>
   <nav class="footer-nav">
     <a href="index.html">홈</a>
-    <a href="review.html">게스트 후기</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
     <a href="pic_view.html">사진 모두보기</a>
-    <a href="reserved_view.html">예약 현황</a>
-    <a href="surroundings.html">주변 환경</a>
+    <a href="reserved_view.html" data-icon="📅">예약 현황</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
 </footer>
@@ -383,5 +383,15 @@ function catLabel(cat) {
 
 renderSpots();
 </script>
+<style>
+/* ── 모바일 헤더 아이콘 ── */
+@media(max-width:600px){
+  .header-nav { gap:6px !important; }
+  .header-nav a { font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+  .btn-reserve-header { font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+}
+</style>
 </body>
 </html>

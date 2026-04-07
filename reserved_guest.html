@@ -235,11 +235,11 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <div class="logo-icon">🏠</div>영덕감성산장
   </a>
   <nav class="header-nav">
-    <a href="index.html#about">숙소 소개</a>
-    <a href="index.html#amenities">편의시설</a>
-    <a href="surroundings.html">주변 환경</a>
-    <a href="pic_view.html">갤러리</a>
-    <a href="review.html">게스트 후기</a>
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
   </nav>
   <button class="btn-reserve-header" onclick="scrollToForm()">예약 신청</button>
 </header>
@@ -337,7 +337,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <button class="btn-submit" id="submitBtn" onclick="saveRsv()">예약 신청하기</button>
     <!-- 수정 모드 버튼 -->
     <div class="btn-edit-row" id="editBtnRow">
-      <button class="btn-delete" onclick="deleteRsv()">🗑 삭제하기</button>
+      <button class="btn-delete" onclick="cancelRsv()">📋 예약취소 신청</button>
       <button class="btn-update" id="updateBtn" onclick="updateRsv()">✅ 수정 등록하기</button>
     </div>
   </div>
@@ -364,7 +364,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
   </a>
   <nav class="footer-nav">
     <a href="index.html">홈</a>
-    <a href="review.html">게스트 후기</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
     <a href="pic_view.html">사진 모두보기</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
@@ -377,7 +377,9 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+const GAS_URL      = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+const ADMIN_PHONE  = '01026989056';
+const ADMIN_EMAIL  = 'ydgsj2025@gmail.com'; // ← 관리자 이메일로 변경
 
 let RESERVATIONS = [];
 let CAL_MONTH    = new Date();
@@ -442,7 +444,7 @@ async function upsertToGAS(rsv) {
       action:'rsv_upsert', id:rsv.id, guestName:rsv.guestName,
       phone:rsv.phone, email:rsv.email, checkin:rsv.checkin,
       checkout:rsv.checkout, nights:rsv.nights, guests:rsv.guests,
-      totalPrice:0, status:'pending', memo:rsv.memo, createdAt:rsv.createdAt
+      totalPrice:rsv.totalPrice||0, status:rsv.status||'대기', memo:rsv.memo, createdAt:rsv.createdAt
     });
     const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
     const data = await res.json();
@@ -455,6 +457,11 @@ async function upsertToGAS(rsv) {
     hideLoading();
   }
 }
+
+// ── STATUS 헬퍼 ──
+function isCancelled(r) { return r.status === 'cancelled' || r.status === '취소' || r.status === '취소 신청'; }
+function isPending(s)   { return s === 'pending' || s === '대기'; }
+function isConfirmed(r) { return r.status === 'confirmed' || r.status === '확정'; }
 
 // ── DATES ──
 function parseDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
@@ -485,7 +492,7 @@ function buildBookedSet() {
   BOOKED_MID   = new Set();
   CHECKIN_SET  = new Set();
 
-  RESERVATIONS.filter(r => r.status !== 'cancelled' && r.id !== EDIT_RSV_ID).forEach(r => {
+  RESERVATIONS.filter(r => !isCancelled(r) && r.id !== EDIT_RSV_ID).forEach(r => {
     if (!r.checkin || !r.checkout) return;
     CHECKIN_SET.add(r.checkin);          // 체크인 당일 별도 관리
     let cur = parseDate(r.checkin);
@@ -527,7 +534,7 @@ function renderCalendar() {
 
   // 기존 예약 범위 맵 (체크아웃일은 제외 — 다음 예약의 체크인 가능)
   const dateMap = {};
-  RESERVATIONS.filter(r => r.status !== 'cancelled' && r.id !== EDIT_RSV_ID).forEach(r => {
+  RESERVATIONS.filter(r => !isCancelled(r) && r.id !== EDIT_RSV_ID).forEach(r => {
     if (!r.checkin || !r.checkout) return;
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
@@ -536,7 +543,7 @@ function renderCalendar() {
     const cur  = new Date(cin);
     while (cur < cout) {
       const ds = dateStr(cur);
-      if (!dateMap[ds] || r.status === 'confirmed')
+      if (!dateMap[ds] || isConfirmed(r))
         dateMap[ds] = { status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
       cur.setDate(cur.getDate()+1);
     }
@@ -570,7 +577,7 @@ function renderCalendar() {
 
     // 기존 예약 표시
     if (info) {
-      const p = info.status === 'pending' ? 'rsv-pend' : 'rsv';
+      const p = isPending(info.status) ? 'rsv-pend' : 'rsv';
       if (info.isStart && info.isEnd) cls += ` ${p}-single`;
       else if (info.isStart)          cls += ` ${p}-start`;
       else if (info.isEnd)            cls += ` ${p}-end`;
@@ -855,6 +862,9 @@ async function updateRsv() {
   if (!SEL_CHECKOUT) { showErr(errEl, '캘린더에서 체크아웃 날짜를 선택해주세요.'); return; }
 
   const original = RESERVATIONS.find(r => r.id === EDIT_RSV_ID);
+  const dateChanged = original && (original.checkin !== SEL_CHECKIN || original.checkout !== SEL_CHECKOUT);
+  const newStatus = dateChanged ? '대기' : (original?.status || '대기');
+
   const rsv = {
     id:         EDIT_RSV_ID,
     guestName:  name, phone, email,
@@ -863,7 +873,7 @@ async function updateRsv() {
     nights:     nightsBetween(SEL_CHECKIN, SEL_CHECKOUT),
     guests,
     totalPrice: original?.totalPrice || 0,
-    status:     'pending',   // 수정 시 호스트 재확인
+    status:     newStatus,
     memo,
     createdAt:  original?.createdAt || todayStr(),
   };
@@ -877,6 +887,22 @@ async function updateRsv() {
     const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
     if (idx >= 0) RESERVATIONS[idx] = rsv; else RESERVATIONS.push(rsv);
     try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+
+    // 관리자 알림
+    const changeNote = dateChanged
+      ? `\n⚠️ 일정 변경됨 → 상태: 대기\n기존: ${original.checkin} ~ ${original.checkout}\n변경: ${rsv.checkin} ~ ${rsv.checkout}`
+      : `\n(일정 변경 없음, 상태 유지: ${newStatus})`;
+    const smsMsg  = `[영덕감성산장] 예약수정 신청\n예약자: ${rsv.guestName}\n기간: ${rsv.checkin} ~ ${rsv.checkout}\n연락처: ${rsv.phone || '미입력'}\n예약코드: ${rsv.id}${changeNote}`;
+    const emailMsg = `예약 수정 신청이 접수되었습니다.\n\n예약자: ${rsv.guestName}\n연락처: ${rsv.phone || '미입력'}\n체크인: ${rsv.checkin}\n체크아웃: ${rsv.checkout}\n인원: ${rsv.guests}명\n예약코드: ${rsv.id}\n메모: ${rsv.memo || '없음'}${changeNote}`;
+    try {
+      const smsQs   = new URLSearchParams({ action:'sms',   receiver:ADMIN_PHONE, msg:smsMsg });
+      const emailQs = new URLSearchParams({ action:'email', to_email:ADMIN_EMAIL, to_name:'관리자', subject:'[영덕감성산장] 예약수정 신청', message:emailMsg });
+      await Promise.all([
+        fetch(`${GAS_URL}?${smsQs}`,   { redirect:'follow' }),
+        fetch(`${GAS_URL}?${emailQs}`, { redirect:'follow' }),
+      ]);
+    } catch(e) { console.warn('알림 발송 실패:', e.message); }
+
     clearEditMode();
     buildBookedSet();
     renderCalendar();
@@ -884,20 +910,43 @@ async function updateRsv() {
   }
 }
 
-// ── 예약 삭제 ──
-async function deleteRsv() {
-  if (!confirm('예약을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
-  showLoading('예약을 삭제하는 중...');
-  await deleteFromGAS(EDIT_RSV_ID);
-  hideLoading();
+// ── 예약취소 신청 ──
+async function cancelRsv() {
+  const rsv = RESERVATIONS.find(r => r.id === EDIT_RSV_ID);
+  if (!rsv) { showToast('❌ 예약 정보를 찾을 수 없습니다.'); return; }
+  if (!confirm(`예약취소를 신청하시겠습니까?\n(${fmtDateFull(rsv.checkin)} ~ ${fmtDateFull(rsv.checkout)})\n\n관리자에게 취소 신청이 전달되며,\n최종 취소는 관리자 확인 후 처리됩니다.`)) return;
 
-  RESERVATIONS = RESERVATIONS.filter(r => r.id !== EDIT_RSV_ID);
-  try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
-  clearEditMode();
-  buildBookedSet();
-  renderCalendar();
-  updateDateUI();
-  showToast('🗑 예약이 삭제되었습니다.');
+  showLoading('취소 신청을 전송하는 중...');
+  try {
+    // 1. 구글 시트 상태 → '취소 신청'
+    const qs = new URLSearchParams({ action:'rsv_status', id:rsv.id, status:'취소 신청' });
+    await fetch(`${GAS_URL}?${qs}`, { redirect:'follow' });
+
+    // 2. 관리자 SMS 발송
+    const smsMsg = `[영덕감성산장] 예약취소 신청\n예약자: ${rsv.guestName}\n기간: ${rsv.checkin} ~ ${rsv.checkout}\n연락처: ${rsv.phone || '미입력'}\n예약코드: ${rsv.id}`;
+    const smsQs = new URLSearchParams({ action:'sms', receiver:ADMIN_PHONE, msg:smsMsg });
+    await fetch(`${GAS_URL}?${smsQs}`, { redirect:'follow' });
+
+    // 3. 관리자 이메일 발송
+    const emailMsg = `예약취소 신청이 접수되었습니다.\n\n예약자: ${rsv.guestName}\n연락처: ${rsv.phone || '미입력'}\n체크인: ${rsv.checkin}\n체크아웃: ${rsv.checkout}\n예약코드: ${rsv.id}\n메모: ${rsv.memo || '없음'}`;
+    const emailQs = new URLSearchParams({ action:'email', to_email:ADMIN_EMAIL, to_name:'관리자', subject:'[영덕감성산장] 예약취소 신청', message:emailMsg });
+    await fetch(`${GAS_URL}?${emailQs}`, { redirect:'follow' });
+
+    // 4. 로컬 상태 업데이트
+    const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
+    if (idx >= 0) RESERVATIONS[idx].status = '취소 신청';
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+
+    hideLoading();
+    clearEditMode();
+    buildBookedSet();
+    renderCalendar();
+    updateDateUI();
+    showToast('✅ 취소 신청이 완료되었습니다. 관리자 확인 후 처리됩니다.');
+  } catch(e) {
+    hideLoading();
+    showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message);
+  }
 }
 
 // ── 수정 모드 해제 ──
@@ -924,5 +973,15 @@ function showToast(msg) {
 
 init();
 </script>
+<style>
+/* ── 모바일 헤더 아이콘 ── */
+@media(max-width:600px){
+  .header-nav { gap:6px !important; }
+  .header-nav a { font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+  .btn-reserve-header { font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+}
+</style>
 </body>
 </html>
