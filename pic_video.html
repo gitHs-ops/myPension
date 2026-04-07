@@ -283,7 +283,7 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
 .pgl-retry { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1.5px solid #ddd; background:#fff; font-family:var(--sans); font-size:.8rem; color:#666; cursor:pointer; }
 .pgl-retry:hover { background:#f5f5f5; }
 </style>
-<script id="__vid_emb__">window.__EMBED_VID__=[{"id":1,"cat":"exterior","category":"외관 · 전경","title":"qqq","desc":"qqqqqqqqqqq111111111111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=c8B0bHptIbY&pp=0gcJCdkKAYcqIYzv","youtubeId":"c8B0bHptIbY","createdAt":1775097141500},{"id":2,"cat":"exterior","category":"외관 · 전경","title":"블루로드","desc":"블루로드","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=uIZpewPx4Ps","youtubeId":"uIZpewPx4Ps","createdAt":1775097186489},{"id":3,"cat":"exterior","category":"외관 · 전경","title":"풍실이와 뽀노","desc":"풍실이와 뽀노","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=ENpCpAl-Ulw&pp=0gcJCdkKAYcqIYzv","youtubeId":"ENpCpAl-Ulw","createdAt":1775097211526},{"id":4,"cat":"exterior","category":"외관 · 전경","title":"dddddddddddddddd","desc":"ttttt  12311111","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=DTu5fl17hU0&pp=0gcJCdkKAYcqIYzv","youtubeId":"DTu5fl17hU0","createdAt":1775098158638},{"id":5,"cat":"exterior","category":"외관 · 전경","title":"2222222222222222222","desc":"","duration":"","youtubeUrl":"https://youtu.be/c8B0bHptIbY","youtubeId":"c8B0bHptIbY","createdAt":1775100492547},{"id":6,"cat":"exterior","category":"외관 · 전경","title":"444444444444444","desc":"","duration":"","youtubeUrl":"https://www.youtube.com/watch?v=ENpCpAl-Ulw&pp=0gcJCdkKAYcqIYzv","youtubeId":"ENpCpAl-Ulw","createdAt":1775100504884}];</script>
+<script id="__vid_emb__">window.__EMBED_VID__=[];</script>
 </head>
 <body class="host-mode" style="">
 
@@ -571,22 +571,14 @@ function hidePgLoader() {
 }
 
 async function init() {
-  if (sessionStorage.getItem(HOST_KEY) === '1') {
-    document.body.classList.add('host-mode');
-    vlcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
-  }
-  const hasCached = !!vlcGet();
-  if (!hasCached) showPgLoader('동영상 목록을 불러오는 중입니다...');
+  if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
+  showPgLoader('동영상 목록을 불러오는 중입니다...');
   await loadFromSheet();
   applyFilter();
   hidePgLoader();
 }
 
-// ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화) ──
-const VLC_KEY = 'pension_cache_pic_video';
-function vlcGet() { try { return JSON.parse(sessionStorage.getItem(VLC_KEY)||'null'); } catch(e){return null;} }
-function vlcSet(d) { try { sessionStorage.setItem(VLC_KEY, JSON.stringify(d)); } catch(e){} }
-function vlcClear() { try { sessionStorage.removeItem(VLC_KEY); } catch(e){} }
+// ── 동영상은 캐시 없이 매번 GAS에서 직접 로드 (GAS 서버 캐시 5분이 충분) ──
 
 function parseSheetVideos(data) {
   return data.map(r => ({
@@ -604,28 +596,16 @@ function parseSheetVideos(data) {
 
 async function loadFromSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
+    videos = [];
     return;
   }
-  // ① 캐시 즉시 표시
-  const cached = vlcGet();
-  if (cached) {
-    videos = cached;
-    return; // 백그라운드 갱신은 init 에서 처리
-  }
-  // ② 캐시 없으면 대기
   try {
     const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_video`);
     const json = await res.json();
-    if (json.ok && json.data.length) {
-      videos = parseSheetVideos(json.data);
-      vlcSet(videos);
-    } else {
-      videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
-    }
+    videos = (json.ok && json.data.length) ? parseSheetVideos(json.data) : [];
   } catch(err) {
-    console.warn('시트 로드 실패, embed 데이터 사용:', err);
-    videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
+    console.warn('동영상 시트 로드 실패:', err);
+    videos = [];
   }
 }
 
