@@ -578,29 +578,46 @@ async function init() {
   hidePgLoader();
 }
 
+// ── 브라우저 캐시 헬퍼 (5분 TTL) ──
+const VLC_KEY = 'pension_cache_pic_video';
+const VLC_TTL = 5 * 60 * 1000;
+function vlcGet() { try { const r=JSON.parse(localStorage.getItem(VLC_KEY)||'null'); return r&&(Date.now()-r.ts<VLC_TTL)?r.data:null; } catch(e){return null;} }
+function vlcSet(d) { try { localStorage.setItem(VLC_KEY,JSON.stringify({data:d,ts:Date.now()})); } catch(e){} }
+function vlcClear() { try { localStorage.removeItem(VLC_KEY); } catch(e){} }
+
+function parseSheetVideos(data) {
+  return data.map(r => ({
+    id:        Number(r.id),
+    cat:       r.cat,
+    category:  CAT_LABELS[r.cat] || r.cat,
+    title:     r.title,
+    desc:      r.desc,
+    duration:  r.duration,
+    youtubeUrl:r.youtube_url,
+    youtubeId: r.youtube_id || null,
+    createdAt: Number(r.created_at) || 0,
+  }));
+}
+
 async function loadFromSheet() {
-  // 시트 URL 미설정 시 embed 데이터로 폴백
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
     videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
     return;
   }
+  // ① 캐시 즉시 표시
+  const cached = vlcGet();
+  if (cached) {
+    videos = cached;
+    return; // 백그라운드 갱신은 init 에서 처리
+  }
+  // ② 캐시 없으면 대기
   try {
     const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_video`);
     const json = await res.json();
     if (json.ok && json.data.length) {
-      videos = json.data.map(r => ({
-        id:        Number(r.id),
-        cat:       r.cat,
-        category:  CAT_LABELS[r.cat] || r.cat,
-        title:     r.title,
-        desc:      r.desc,
-        duration:  r.duration,
-        youtubeUrl:r.youtube_url,
-        youtubeId: r.youtube_id || null,
-        createdAt: Number(r.created_at) || 0,
-      }));
+      videos = parseSheetVideos(json.data);
+      vlcSet(videos);
     } else {
-      // 시트가 비어있으면 embed 데이터 사용
       videos = (window.__EMBED_VID__ && window.__EMBED_VID__.length) ? window.__EMBED_VID__ : [];
     }
   } catch(err) {

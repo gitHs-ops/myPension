@@ -447,10 +447,12 @@ function hidePgLoader() {
 
 async function init() {
   if (sessionStorage.getItem(HOST_KEY) === '1') activateHost();
-  showPgLoader('갤러리 사진을 불러오는 중입니다...');
+  const hasCached = !!lcGet();
+  if (!hasCached) showPgLoader('갤러리 사진을 불러오는 중입니다...');
   await loadFromSheet();
   renderGallery();
   hidePgLoader();
+  if (hasCached) refreshInBackground(); // 캐시 히트: 백그라운드 갱신
 }
 
 function saveCards() { /* 시트 저장은 saveToSheet() 사용 */ }
@@ -467,36 +469,70 @@ function normalizeDriveUrl(url) {
   return url;
 }
 
+// ── 브라우저 캐시 헬퍼 (5분 TTL) ──
+const LC_KEY = 'pension_cache_pic_view';
+const LC_TTL = 5 * 60 * 1000;
+function lcGet() { try { const r=JSON.parse(localStorage.getItem(LC_KEY)||'null'); return r&&(Date.now()-r.ts<LC_TTL)?r.data:null; } catch(e){return null;} }
+function lcSet(d) { try { localStorage.setItem(LC_KEY,JSON.stringify({data:d,ts:Date.now()})); } catch(e){} }
+function lcClear() { try { localStorage.removeItem(LC_KEY); } catch(e){} }
+
+function parseSheetCards(data) {
+  return data.map(r => ({
+    id:        Number(r.id),
+    cat:       r.cat,
+    category:  CAT_LABELS[r.cat] || r.cat,
+    title:     r.title,
+    desc:      r.desc,
+    img_url:   normalizeDriveUrl(r.img_url || ''),
+    featured:  r.featured === 'true' || r.featured === true,
+    bg:        'linear-gradient(135deg,#7a9e50,#527830)',
+    icon:      '🖼️',
+    createdAt: Number(r.created_at) || 0,
+  }));
+}
+
+async function fetchSheetCards() {
+  const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_view`);
+  const json = await res.json();
+  if (json.ok && json.data.length) {
+    const parsed = parseSheetCards(json.data);
+    lcSet(parsed);
+    return parsed;
+  }
+  return null;
+}
+
 async function loadFromSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    cards = (window.__EMBED_PV_CARDS__ && window.__EMBED_PV_CARDS__.length)
-      ? window.__EMBED_PV_CARDS__.map(c => ({...c, img_url: c.imgData || c.img_url || ''}))
-      : DEFAULT_CARDS.map(c => ({...c}));
+    cards = DEFAULT_CARDS.map(c => ({...c}));
     return;
   }
+  // ① 캐시 우선 표시 (stale-while-revalidate)
+  const cached = lcGet();
+  if (cached) {
+    cards = cached;
+    return; // 캐시 표시 후 백그라운드에서 갱신
+  }
+  // ② 캐시 없으면 대기
   try {
-    const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_view`);
-    const json = await res.json();
-    if (json.ok && json.data.length) {
-      cards = json.data.map(r => ({
-        id:        Number(r.id),
-        cat:       r.cat,
-        category:  CAT_LABELS[r.cat] || r.cat,
-        title:     r.title,
-        desc:      r.desc,
-        img_url:   r.img_url || '',
-        featured:  r.featured === 'true' || r.featured === true,
-        bg:        'linear-gradient(135deg,#7a9e50,#527830)',
-        icon:      '🖼️',
-        createdAt: Number(r.created_at) || 0,
-      }));
-    } else {
-      cards = DEFAULT_CARDS.map(c => ({...c}));
-    }
+    cards = await fetchSheetCards() || DEFAULT_CARDS.map(c => ({...c}));
   } catch(err) {
     console.warn('시트 로드 실패:', err);
     cards = DEFAULT_CARDS.map(c => ({...c}));
   }
+}
+
+// 백그라운드 갱신 (캐시 히트 후 조용히 최신화)
+function refreshInBackground() {
+  if (!APPS_SCRIPT_URL) return;
+  fetchSheetCards().then(fresh => {
+    if (!fresh) return;
+    // 데이터가 바뀐 경우에만 리렌더
+    if (JSON.stringify(fresh) !== JSON.stringify(cards)) {
+      cards = fresh;
+      renderGallery();
+    }
+  }).catch(() => {});
 }
 
 async function saveToSheet() {
@@ -521,6 +557,7 @@ async function saveToSheet() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ token: AUTH_TOKEN, sheet: 'pic_view', action: 'save', data: payload }),
     });
+    lcClear(); // 저장 후 로컬 캐시 무효화 → 다음 방문 시 최신 데이터 로드
     btn.textContent = '✅ 저장 완료!';
     setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
   } catch(err) {

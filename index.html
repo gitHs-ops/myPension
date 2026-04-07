@@ -1449,6 +1449,7 @@ async function saveToSheet() {
     await postSheet('index_slots',  slotsPayload);
     await postSheet('index_extras', extrasPayload);
 
+    lcClear(); // 저장 후 로컬 캐시 무효화
     btn.textContent = '✅ 저장 완료!';
     setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
   } catch(err) {
@@ -1510,27 +1511,64 @@ function finishLoadBar() {
   hidePgLoader();
 }
 
-// ── 시트에서 데이터 로드 ──
+// ── 브라우저 캐시 헬퍼 (5분 TTL) ──
+const LC_KEY = 'pension_cache_index';
+const LC_TTL = 5 * 60 * 1000;
+function lcGet() { try { const r=JSON.parse(localStorage.getItem(LC_KEY)||'null'); return r&&(Date.now()-r.ts<LC_TTL)?r.data:null; } catch(e){return null;} }
+function lcSet(d) { try { localStorage.setItem(LC_KEY,JSON.stringify({data:d,ts:Date.now()})); } catch(e){} }
+function lcClear() { try { localStorage.removeItem(LC_KEY); } catch(e){} }
+
+function applyIndexCache(cached) {
+  if (cached.slotData) {
+    slotData = cached.slotData;
+    Object.entries(slotData).forEach(([slot, src]) => applySlotPhoto(slot, src));
+  }
+  if (cached.extraData) {
+    extraData = cached.extraData;
+    renderExtras();
+  }
+}
+
+async function fetchIndexFromSheet() {
+  // 두 시트를 한 번의 요청으로 합산 (?sheets=)
+  const res  = await fetch(`${APPS_SCRIPT_URL}?sheets=index_slots,index_extras`);
+  const json = await res.json();
+  if (!json.ok) return null;
+  const slots  = json.data['index_slots']  || [];
+  const extras = json.data['index_extras'] || [];
+  const newSlotData  = {};
+  slots.forEach(r => { if (r.url) newSlotData[r.slot_id] = normalizeDriveUrl(r.url); });
+  extras.sort((a, b) => Number(a.order) - Number(b.order));
+  const newExtraData = extras.filter(r => r.url).map(r => normalizeDriveUrl(r.url));
+  return { slotData: newSlotData, extraData: newExtraData };
+}
+
+// ── 시트에서 데이터 로드 (stale-while-revalidate) ──
 async function loadFromSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+
+  const cached = lcGet();
+  if (cached) {
+    // 캐시 즉시 표시 → 로더 숨김 → 백그라운드 갱신
+    applyIndexCache(cached);
+    finishLoadBar();
+    fetchIndexFromSheet().then(fresh => {
+      if (!fresh) return;
+      if (JSON.stringify(fresh) !== JSON.stringify(cached)) {
+        applyIndexCache(fresh);
+        lcSet(fresh);
+      }
+    }).catch(() => {});
+    return;
+  }
+
+  // 캐시 없음: 대기 후 표시
   startLoadBar();
   try {
-    const [slotsRes, extrasRes] = await Promise.all([
-      fetch(`${APPS_SCRIPT_URL}?sheet=index_slots`),
-      fetch(`${APPS_SCRIPT_URL}?sheet=index_extras`),
-    ]);
-    const slotsJson  = await slotsRes.json();
-    const extrasJson = await extrasRes.json();
-
-    if (slotsJson.ok) {
-      slotData = {};
-      slotsJson.data.forEach(r => { if (r.url) slotData[r.slot_id] = normalizeDriveUrl(r.url); });
-      Object.entries(slotData).forEach(([slot, src]) => applySlotPhoto(slot, src));
-    }
-    if (extrasJson.ok) {
-      extrasJson.data.sort((a, b) => Number(a.order) - Number(b.order));
-      extraData = extrasJson.data.filter(r => r.url).map(r => normalizeDriveUrl(r.url));
-      renderExtras();
+    const fresh = await fetchIndexFromSheet();
+    if (fresh) {
+      applyIndexCache(fresh);
+      lcSet(fresh);
     }
   } catch(err) {
     console.warn('시트 로드 실패:', err);
