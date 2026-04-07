@@ -480,14 +480,22 @@ function hidePgLoader() {
 }
 
 async function init() {
-  if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
-  showPgLoader('동영상 목록을 불러오는 중입니다...');
+  if (sessionStorage.getItem(HOST_KEY) === '1') {
+    document.body.classList.add('host-mode');
+    vlcClear(); // 호스트는 항상 최신 데이터
+  }
+  const hasCached = !!vlcGet();
+  if (!hasCached) showPgLoader('동영상 목록을 불러오는 중입니다...');
   await loadFromSheet();
   applyFilter();
   hidePgLoader();
 }
 
-// ── 동영상은 캐시 없이 매번 GAS에서 직접 로드 (GAS 서버 캐시 5분이 충분) ──
+// ── 브라우저 캐시 헬퍼 (세션 단위) ──
+const VLC_KEY = 'pension_cache_pic_video';
+function vlcGet() { try { return JSON.parse(sessionStorage.getItem(VLC_KEY)||'null'); } catch(e){return null;} }
+function vlcSet(d) { try { sessionStorage.setItem(VLC_KEY, JSON.stringify(d)); } catch(e){} }
+function vlcClear() { try { sessionStorage.removeItem(VLC_KEY); } catch(e){} }
 
 function parseSheetVideos(data) {
   return data.map(r => ({
@@ -508,10 +516,13 @@ async function loadFromSheet() {
     videos = [];
     return;
   }
+  const cached = vlcGet();
+  if (cached) { videos = cached; return; }
   try {
     const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_video`);
     const json = await res.json();
     videos = (json.ok && json.data.length) ? parseSheetVideos(json.data) : [];
+    if (videos.length) vlcSet(videos);
   } catch(err) {
     console.warn('동영상 시트 로드 실패:', err);
     videos = [];
@@ -543,6 +554,7 @@ async function saveToSheet() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ token: AUTH_TOKEN, sheet: 'pic_video', action: 'save', data: payload }),
     });
+    vlcClear();
     btn.textContent = '✅ 저장 완료!';
     setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
   } catch(err) {
