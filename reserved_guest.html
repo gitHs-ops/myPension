@@ -152,7 +152,10 @@ textarea.form-input { resize:vertical; min-height:70px; }
 .done-icon { font-size:2.8rem; margin-bottom:12px; }
 .done-title { font-size:1.1rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
 .done-sub { font-size:.85rem; color:var(--muted); line-height:1.7; margin-bottom:20px; }
-.done-code { display:inline-block; background:#fdf1e8; color:var(--primary); border-radius:8px; padding:6px 18px; font-size:.85rem; font-weight:700; margin-bottom:20px; letter-spacing:1px; }
+.done-code { display:inline-flex; align-items:center; gap:8px; background:#fdf1e8; color:var(--primary); border-radius:8px; padding:6px 18px; font-size:.85rem; font-weight:700; margin-bottom:20px; letter-spacing:1px; }
+.copy-btn { background:none; border:none; cursor:pointer; font-size:1rem; padding:0; color:var(--primary); opacity:.7; transition:opacity .15s; }
+.copy-btn:hover { opacity:1; }
+.btn-again { background:#f0ebe4; color:var(--text); border:none; padding:11px 24px; border-radius:9px; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
 
 /* ── LOADING OVERLAY ── */
 .loading-overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(255,255,255,.75); justify-content:center; align-items:center; flex-direction:column; gap:14px; }
@@ -346,11 +349,16 @@ footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center
     <div class="done-icon">🎉</div>
     <div class="done-title">예약 신청이 완료되었습니다!</div>
     <div class="done-sub">
-      호스트가 확인 후 연락드리겠습니다.<br>
+      예약이 접수되었습니다. 관리자가 확인 후 연락드리겠습니다.<br>
       문의: <b>010-2698-9056</b>
     </div>
-    <div class="done-code" id="doneCode"></div>
+    <div class="done-code">
+      <span id="doneCode"></span>
+      <button class="copy-btn" id="copyCodeBtn" onclick="copyCode()" title="복사">📋</button>
+    </div>
+    <div class="done-sub" style="margin-top:12px;font-size:.82rem;">수정이 필요하시면 위 예약코드로 수정 신청하세요.</div>
     <br>
+    <button class="btn-again" onclick="resetForm()">다시 신청하기</button>
   </div>
 
 </div>
@@ -392,6 +400,8 @@ let BOOKED_DATES = new Set(); // 전체(체크인~체크아웃-1) - 충돌 체�
 let BOOKED_MID   = new Set(); // 체크인+1~체크아웃-1 (중간박만) - 캘린더 클릭 제한용
 let CHECKIN_SET  = new Set(); // 타 예약의 체크인 당일 집합
 
+// 직전 신청 예약 (다시 신청하기에 사용)
+let LAST_RSV = null;
 
 // 수정 모드
 let EDIT_MODE   = false;
@@ -444,10 +454,10 @@ async function upsertToGAS(rsv) {
     });
     const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
     const data = await res.json();
-    if (!data.success) showToast('⚠️ 저장 실패: ' + data.message, true);
+    if (!data.success) showToast('⚠️ 저장 실패: ' + data.message);
     return data.success;
   } catch(e) {
-    showToast('⚠️ 저장 실패: ' + e.message, true);
+    showToast('⚠️ 저장 실패: ' + e.message);
     return false;
   } finally {
     hideLoading();
@@ -773,9 +783,51 @@ async function deleteFromGAS(id) {
 
 // ── 완료 화면 ──
 function showDone(rsv) {
+  LAST_RSV = rsv;
   document.getElementById('formPanel').style.display = 'none';
-  document.getElementById('doneCode').textContent    = '예약코드: ' + rsv.id;
+  document.getElementById('doneCode').textContent = '예약코드: ' + rsv.id;
+  document.getElementById('copyCodeBtn').dataset.code = rsv.id;
   document.getElementById('doneCard').classList.add('show');
+}
+
+// ── 다시 신청하기 (직전 데이터 복원 + 구글 시트 삭제) ──
+async function resetForm() {
+  const prev = LAST_RSV;
+
+  // 직전 예약 GAS 삭제 + 로컬에서 제거
+  if (prev) {
+    showLoading('이전 신청 내역을 삭제하는 중...');
+    await deleteFromGAS(prev.id);
+    hideLoading();
+    RESERVATIONS = RESERVATIONS.filter(r => r.id !== prev.id);
+    buildBookedSet();
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+  }
+
+  // 폼 전환
+  document.getElementById('doneCard').classList.remove('show');
+  document.getElementById('formPanel').style.display = '';
+  document.getElementById('rsvErr').classList.remove('show');
+
+  // 직전 값 복원
+  if (prev) {
+    document.getElementById('inGuestName').value = prev.guestName || '';
+    document.getElementById('inPhone').value     = prev.phone     || '';
+    document.getElementById('inEmail').value     = prev.email     || '';
+    document.getElementById('inGuests').value    = prev.guests    || 2;
+    document.getElementById('inMemo').value      = prev.memo      || '';
+    SEL_CHECKIN  = prev.checkin  || null;
+    SEL_CHECKOUT = prev.checkout || null;
+    SEL_STEP     = (SEL_CHECKIN && SEL_CHECKOUT) ? 2 : (SEL_CHECKIN ? 1 : 0);
+  } else {
+    ['inGuestName','inPhone','inEmail','inMemo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('inGuests').value = 2;
+    SEL_CHECKIN = SEL_CHECKOUT = null;
+    SEL_STEP = 0;
+  }
+
+  renderCalendar();
+  updateDateUI();
 }
 
 // ── 예약코드 조회 (수정 모드 진입) ──
@@ -912,7 +964,7 @@ async function cancelRsv() {
     showToast('✅ 취소 신청이 완료되었습니다. 관리자 확인 후 처리됩니다.');
   } catch(e) {
     hideLoading();
-    showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message, true);
+    showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message);
   }
 }
 
@@ -931,21 +983,27 @@ function scrollToForm() {
 }
 
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
-function showToast(msg, isError) {
+// ── 예약코드 복사 ──
+function copyCode() {
+  const code = document.getElementById('copyCodeBtn').dataset.code || '';
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    showToast('예약코드가 복사되었습니다!');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = code; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('예약코드가 복사되었습니다!');
+  });
+}
+
+function showToast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  if (isError) {
-    // 에러 메시지: 사용자가 클릭할 때까지 유지
-    el.style.cursor = 'pointer';
-    el.style.background = '#c0392b';
-    el.onclick = () => { el.classList.remove('show'); el.onclick = null; el.style.cursor=''; el.style.background=''; };
-  } else {
-    el.style.cursor = '';
-    el.style.background = '';
-    el.onclick = null;
-    setTimeout(() => el.classList.remove('show'), 2500);
-  }
+  setTimeout(() => el.classList.remove('show'), 2500);
 }
 
 init();
