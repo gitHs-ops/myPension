@@ -1,0 +1,11 @@
+id,cat,title,desc,img_url,featured,created_at
+"1","exterior","산 중턱의 감성 별채 외관","울창한 나무숲 사이에 자리한 영덕감성산장의 전경입니다. 사계절 다른 풍경을 선사합니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_1.jpg","true",""
+"2","view","테라스에서 바라본 동해바다","탁 트인 동해바다가 한눈에 내려다보이는 프라이빗 테라스 전망입니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_2.jpg","false",""
+"3","view","동해 일출","이른 아침 테라스에서 맞이하는 동해 일출. 이 순간 하나만으로 충분한 이유가 됩니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_3.jpg","false",""
+"4","interior","화목난로가 있는 거실","장작 타는 소리와 함께 따뜻한 저녁을 보낼 수 있는 아늑한 거실 공간입니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_4.jpg","false",""
+"5","interior","킹사이즈 침대가 있는 침실","편안한 킹사이즈 침대와 자연 채광이 어우러진 침실. 숲 내음을 맡으며 깊은 잠에 빠져보세요.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_5.jpg","true",""
+"6","facility","풀옵션 주방","인덕션, 냉장고, 전자레인지 등 모든 조리도구가 구비된 풀옵션 주방입니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_6.jpg","false",""
+"9","exterior","프라이빗 야외 테라스","바다가 내려다보이는 넓은 야외 테라스. 아침 커피 한 잔의 완벽한 장소입니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_9.jpg","false",""
+"10","view","별이 쏟아지는 밤하늘","도심과 멀리 떨어진 덕분에 맑은 날 밤이면 쏟아지는 별빛을 감상할 수 있습니다.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_10.jpg","false",""
+"11","exterior","계절 꽃이 피는 소정원","봄이면 벚꽃, 여름이면 수국이 피어나는 작은 정원에서 계절의 변화를 즐겨보세요.","https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/card_11.jpg","false",""
+"12","interior","화목난로 클로즈업","장작 타는 소리와 은은한 온기, 겨울 시즌 영덕감성산장에서만 느낄 수 있는 특별함입니다.","","false",""

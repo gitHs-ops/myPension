@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사진 슬라이드 - 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f4f2ee;
+  --shadow: 0 2px 16px rgba(0,0,0,.10);
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:#0a0a0a; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+/* ── HEADER ── */
+.header {
+  position:relative; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
+}
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── PAGE HERO ── */
+.page-hero {
+  background:linear-gradient(135deg,#2a3a2a 0%,#3a5a30 50%,#2a4a28 100%);
+  padding:16px 48px 14px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.page-hero-left { display:flex; align-items:center; gap:20px; }
+.page-hero-sub { font-size:.7rem; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,.5); text-transform:uppercase; white-space:nowrap; }
+.page-hero-title { font-size:1rem; font-weight:900; color:#fff; }
+.page-hero-desc { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.6; }
+.hero-right { display:flex; align-items:center; gap:10px; }
+.slide-count-badge {
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+  border-radius:999px; padding:7px 16px;
+  font-size:.85rem; font-weight:700; color:#fff; white-space:nowrap;
+}
+.hero-link {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  border-radius:999px; padding:7px 16px;
+  font-size:.85rem; font-weight:700; color:#fff; text-decoration:none;
+  transition:background .15s;
+}
+.hero-link:hover { background:rgba(255,255,255,.25); }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  background:#111; border-bottom:1px solid rgba(255,255,255,.08);
+  padding:0 48px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-tabs { display:flex; align-items:center; gap:2px; }
+.filter-btn {
+  flex-shrink:0; padding:14px 16px;
+  border:none; border-bottom:2.5px solid transparent;
+  background:transparent; font-family:var(--sans);
+  font-size:.85rem; font-weight:600; color:rgba(255,255,255,.45);
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.filter-btn:hover { color:rgba(255,255,255,.8); }
+.filter-btn.active { color:#fff; border-bottom-color:#fff; }
+.btn-upload {
+  flex-shrink:0; display:flex; align-items:center; gap:6px;
+  padding:7px 16px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.85); font-family:var(--sans); font-size:.82rem; font-weight:700;
+  cursor:pointer; transition:background .15s; white-space:nowrap;
+}
+.btn-upload:hover { background:rgba(255,255,255,.18); }
+
+/* ── SLIDE AREA ── */
+.slide-area { flex:1; display:flex; flex-direction:column; overflow:hidden; background:#0a0a0a; }
+
+.slide-main {
+  flex:1; position:relative; display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.slide-img { width:100%; height:100%; object-fit:contain; user-select:none; }
+.slide-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:6rem; opacity:.3; }
+
+.nav-btn {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:50px; height:50px; border-radius:50%;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+  color:#fff; font-size:1.4rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s; z-index:5;
+}
+.nav-btn:hover { background:rgba(255,255,255,.28); }
+.nav-prev { left:20px; }
+.nav-next { right:20px; }
+
+/* ── INFO BAR ── */
+.info-bar {
+  padding:14px 24px 10px; flex-shrink:0;
+  background:linear-gradient(to top, rgba(0,0,0,.85), transparent);
+}
+.info-category { font-size:.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:3px; }
+.info-title { font-size:1rem; font-weight:800; color:#fff; margin-bottom:3px; }
+.info-desc { font-size:.82rem; color:rgba(255,255,255,.6); line-height:1.6; }
+
+/* ── THUMBNAIL STRIP ── */
+.thumb-strip {
+  display:flex; gap:6px; padding:7px 24px 10px; flex-shrink:0;
+  overflow-x:auto; -webkit-overflow-scrolling:touch; background:rgba(0,0,0,.7);
+}
+.thumb-strip::-webkit-scrollbar { height:3px; }
+.thumb-strip::-webkit-scrollbar-thumb { background:rgba(255,255,255,.25); border-radius:2px; }
+.thumb {
+  flex-shrink:0; width:56px; height:38px; border-radius:5px; overflow:hidden;
+  cursor:pointer; border:2px solid transparent; transition:border-color .15s, opacity .15s;
+  opacity:.5; display:flex; align-items:center; justify-content:center;
+}
+.thumb.active { border-color:#fff; opacity:1; }
+.thumb:hover { opacity:.82; }
+.thumb img { width:100%; height:100%; object-fit:cover; }
+.thumb-bg { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .header { padding:0 20px; }
+  .page-hero { padding:12px 16px 10px; flex-wrap:wrap; gap:8px; }
+  .filter-bar { padding:0 16px; }
+  .nav-prev { left:8px; }
+  .nav-next { right:8px; }
+}
+@media(max-width:600px) {
+  .filter-btn { padding:12px 10px; font-size:.8rem; }
+}
+
+/* ── CONTENT LOADER OVERLAY ── */
+#pgLoader {
+  position:fixed; left:0; right:0; top:64px; bottom:0; z-index:190;
+  background:rgba(8,8,8,.92); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .45s ease;
+}
+#pgLoader.pgHide { opacity:0; pointer-events:none; }
+.pgl-spinner { width:48px; height:48px; border-radius:50%; border:4px solid rgba(255,255,255,.15); border-top-color:#c4895a; animation:pglSpin .85s linear infinite; }
+@keyframes pglSpin { to { transform:rotate(360deg); } }
+.pgl-icon  { font-size:2rem; }
+.pgl-title { font-size:1.05rem; font-weight:900; color:#fff; }
+.pgl-msg   { font-size:.88rem; color:rgba(255,255,255,.55); }
+.pgl-sub   { font-size:.76rem; color:rgba(255,255,255,.3); }
+.pgl-elapsed { font-size:.72rem; color:rgba(255,255,255,.22); min-height:16px; }
+.pgl-retry { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); font-family:var(--sans); font-size:.8rem; color:rgba(255,255,255,.6); cursor:pointer; }
+.pgl-retry:hover { background:rgba(255,255,255,.15); }
+</style>
+</head>
+<body>
+
+<!-- 콘텐츠 로딩 오버레이 -->
+<div id="pgLoader">
+  <div class="pgl-icon">▶</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">슬라이드 사진을 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <span class="logo-icon">🏠</span>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+  </nav>
+</header>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-left">
+    <p class="page-hero-sub">// Photo Slideshow</p>
+    <h1 class="page-hero-title">사진 슬라이드보기</h1>
+    <p class="page-hero-desc">동해바다 전망과 자연 속 감성 공간을<br>슬라이드로 감상해보세요.</p>
+  </div>
+  <div class="hero-right">
+    <div class="slide-count-badge" id="slideCounter">1 / 12</div>
+    <a href="pic_view.html" class="hero-link">🖼 사진모두보기</a>
+    <a href="pic_video.html" class="hero-link">🎬 동영상</a>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
+    <button class="filter-btn" onclick="setFilter('exterior',this)">외관 · 전경</button>
+    <button class="filter-btn" onclick="setFilter('interior',this)">실내 공간</button>
+    <button class="filter-btn" onclick="setFilter('view',this)">전망 · 자연</button>
+    <button class="filter-btn" onclick="setFilter('facility',this)">편의시설</button>
+  </div>
+  <button class="btn-upload" id="btnUpload" onclick="hostCheckThenUpload()" style="display:none;">＋ 사진 추가</button>
+</div>
+
+<!-- SLIDE AREA -->
+<div class="slide-area">
+  <div class="slide-main" id="slideMain">
+    <button class="nav-btn nav-prev" onclick="move(-1)">‹</button>
+    <div id="slideContent" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
+    <button class="nav-btn nav-next" onclick="move(1)">›</button>
+  </div>
+  <div class="info-bar">
+    <div class="info-category" id="infoCategory"></div>
+    <div class="info-title" id="infoTitle"></div>
+    <div class="info-desc" id="infoDesc"></div>
+  </div>
+  <div class="thumb-strip" id="thumbStrip"></div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+const AUTH_TOKEN = '1dl34';
+const HOST_KEY = 'pension_host';
+const HOST_PWD = '1dl34';
+const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
+const DEFAULT_CARDS = [
+  { id:1,  cat:'exterior', featured:true,  bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🌿', img_url:'', category:'외관 · 전경', title:'산 중턱의 감성 별채 외관',     desc:'울창한 나무숲 사이에 자리한 영덕감성산장의 전경입니다. 사계절 다른 풍경을 선사합니다.' },
+  { id:2,  cat:'view',     featured:false, bg:'linear-gradient(135deg,#4a8ec4,#2a6090)', icon:'🌊', img_url:'', category:'전망 · 자연', title:'테라스에서 바라본 동해바다',   desc:'탁 트인 동해바다가 한눈에 내려다보이는 프라이빗 테라스 전망입니다.' },
+  { id:3,  cat:'view',     featured:false, bg:'linear-gradient(135deg,#e8a030,#c47020)', icon:'🌅', img_url:'', category:'전망 · 자연', title:'동해 일출',                     desc:'이른 아침 테라스에서 맞이하는 동해 일출. 이 순간 하나만으로 충분한 이유가 됩니다.' },
+  { id:4,  cat:'interior', featured:false, bg:'linear-gradient(135deg,#c4895a,#9a6030)', icon:'🛋️', img_url:'', category:'실내 공간', title:'화목난로가 있는 거실',          desc:'장작 타는 소리와 함께 따뜻한 저녁을 보낼 수 있는 아늑한 거실 공간입니다.' },
+  { id:5,  cat:'interior', featured:true,  bg:'linear-gradient(135deg,#d4b896,#b09060)', icon:'🛏️', img_url:'', category:'실내 공간', title:'킹사이즈 침대가 있는 침실',     desc:'편안한 킹사이즈 침대와 자연 채광이 어우러진 침실. 숲 내음을 맡으며 깊은 잠에 빠져보세요.' },
+  { id:6,  cat:'facility', featured:false, bg:'linear-gradient(135deg,#7a9e50,#507030)', icon:'🍳', img_url:'', category:'편의시설',   title:'풀옵션 주방',                   desc:'인덕션, 냉장고, 전자레인지 등 모든 조리도구가 구비된 풀옵션 주방입니다.' },
+  { id:7,  cat:'facility', featured:false, bg:'linear-gradient(135deg,#8ab8d8,#5890b8)', icon:'🛁', img_url:'', category:'편의시설',   title:'욕조가 있는 메인 욕실',         desc:'여유로운 욕조에 몸을 담그며 하루의 피로를 씻어낼 수 있는 메인 욕실입니다.' },
+  { id:8,  cat:'facility', featured:false, bg:'linear-gradient(135deg,#a8c8d8,#7098b0)', icon:'🚿', img_url:'', category:'편의시설',   title:'샤워 부스 욕실',                desc:'독립된 샤워 부스가 갖춰진 두 번째 욕실로 2인 동시 이용이 편리합니다.' },
+  { id:9,  cat:'exterior', featured:false, bg:'linear-gradient(135deg,#6a9040,#487020)', icon:'🏕️', img_url:'', category:'외관 · 전경', title:'프라이빗 야외 테라스',         desc:'바다가 내려다보이는 넓은 야외 테라스. 아침 커피 한 잔의 완벽한 장소입니다.' },
+  { id:10, cat:'view',     featured:false, bg:'linear-gradient(135deg,#1a2a4a,#0a1830)', icon:'🌃', img_url:'', category:'전망 · 자연', title:'별이 쏟아지는 밤하늘',          desc:'도심과 멀리 떨어진 덕분에 맑은 날 밤이면 쏟아지는 별빛을 감상할 수 있습니다.' },
+  { id:11, cat:'exterior', featured:false, bg:'linear-gradient(135deg,#88b848,#587828)', icon:'🌸', img_url:'', category:'외관 · 전경', title:'계절 꽃이 피는 소정원',         desc:'봄이면 벚꽃, 여름이면 수국이 피어나는 작은 정원에서 계절의 변화를 즐겨보세요.' },
+  { id:12, cat:'interior', featured:false, bg:'linear-gradient(135deg,#c85020,#902010)', icon:'🔥', img_url:'', category:'실내 공간', title:'화목난로 클로즈업',              desc:'장작 타는 소리와 은은한 온기, 겨울 시즌 영덕감성산장에서만 느낄 수 있는 특별함입니다.' },
+];
+
+let allCards = [];
+let filtered = [];
+let currentIdx = 0;
+let currentFilter = 'all';
+
+// ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화, pic_view와 공유 키) ──
+const LC_KEY = 'pension_cache_pic_view';
+function lcGet() { try { return JSON.parse(sessionStorage.getItem(LC_KEY)||'null'); } catch(e){return null;} }
+
+async function loadFromSheet() {
+  const cached = lcGet();
+  if (cached) {
+    // 캐시 즉시 반환, 백그라운드 갱신은 pic_view 진입 시 처리
+    return cached;
+  }
+  try {
+    const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_view`);
+    const json = await res.json();
+    if (json.ok && Array.isArray(json.data) && json.data.length) {
+      try { sessionStorage.setItem(LC_KEY, JSON.stringify(json.data)); } catch(e){}
+      return json.data;
+    }
+  } catch(e) {}
+  return DEFAULT_CARDS.map(c => ({...c}));
+}
+
+async function saveToSheet(cards) {
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ token: AUTH_TOKEN, sheet: 'pic_view', action: 'save', data: cards })
+    });
+  } catch(e) {}
+}
+
+let _pglTimer = null, _pglSec = 0;
+function showPgLoader(msg) {
+  const el = document.getElementById('pgLoader'); if (!el) return;
+  el.classList.remove('pgHide');
+  if (msg) document.getElementById('pglMsg').textContent = msg;
+  _pglSec = 0;
+  document.getElementById('pglElapsed').textContent = '';
+  document.getElementById('pglRetry').style.display = 'none';
+  if (_pglTimer) clearInterval(_pglTimer);
+  _pglTimer = setInterval(() => {
+    _pglSec++;
+    const e = document.getElementById('pglElapsed');
+    if (_pglSec >= 3 && e) e.textContent = `${_pglSec}초째 로딩 중...`;
+    if (_pglSec >= 10) { const rb = document.getElementById('pglRetry'); if (rb) rb.style.display = 'inline-block'; }
+  }, 1000);
+}
+function hidePgLoader() {
+  if (_pglTimer) { clearInterval(_pglTimer); _pglTimer = null; }
+  const el = document.getElementById('pgLoader');
+  if (el) { el.classList.add('pgHide'); setTimeout(() => { if (el.parentNode) el.remove(); }, 500); }
+}
+
+async function init() {
+  const isHost = sessionStorage.getItem(HOST_KEY) === '1';
+  if (isHost) {
+    document.getElementById('btnUpload').style.display = 'flex';
+    lcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+  }
+  const hasCached = !!lcGet();
+  if (!hasCached) showPgLoader('슬라이드 사진을 불러오는 중입니다...');
+  allCards = await loadFromSheet();
+  const params = new URLSearchParams(location.search);
+  const startIdx = parseInt(params.get('idx') || '0');
+  const startFilter = params.get('cat') || 'all';
+  setFilter(startFilter, document.querySelector(`.filter-btn[onclick*="'${startFilter}'"]`) || document.querySelector('.filter-btn'));
+  currentIdx = Math.min(startIdx, Math.max(filtered.length - 1, 0));
+  render();
+  hidePgLoader();
+}
+
+function setFilter(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  currentFilter = cat;
+  filtered = (cat === 'all' ? allCards : allCards.filter(c => c.cat === cat))
+    .slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  currentIdx = 0;
+  renderThumbs();
+  render();
+}
+
+function render() {
+  if (!filtered.length) return;
+  const d = filtered[currentIdx];
+  const content = document.getElementById('slideContent');
+  if (d.img_url) {
+    content.innerHTML = `<img class="slide-img" src="${d.img_url}" alt="${d.title || ''}">`;
+  } else {
+    content.innerHTML = `<div class="slide-placeholder" style="background:${d.bg};width:100%;height:100%;">${d.icon}</div>`;
+  }
+  document.getElementById('infoCategory').textContent = d.category || '';
+  document.getElementById('infoTitle').textContent    = d.title || '';
+  document.getElementById('infoDesc').textContent     = d.desc || '';
+  document.getElementById('slideCounter').textContent = `${currentIdx + 1} / ${filtered.length}`;
+  document.querySelectorAll('.thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === currentIdx);
+    if (i === currentIdx) t.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+  });
+}
+
+function renderThumbs() {
+  document.getElementById('thumbStrip').innerHTML = filtered.map((d, i) => {
+    const inner = d.img_url
+      ? `<img src="${d.img_url}" alt="">`
+      : `<div class="thumb-bg" style="background:${d.bg}">${d.icon}</div>`;
+    return `<div class="thumb${i === currentIdx ? ' active' : ''}" onclick="goTo(${i})">${inner}</div>`;
+  }).join('');
+}
+
+function goTo(idx) { currentIdx = idx; render(); }
+function move(dir) {
+  if (!filtered.length) return;
+  currentIdx = (currentIdx + dir + filtered.length) % filtered.length;
+  render();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  move(-1);
+  if (e.key === 'ArrowRight') move(1);
+  if (e.key === 'Escape')     location.href = 'pic_view.html';
+});
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) move(dx < 0 ? 1 : -1);
+});
+
+init();
+
+// ── 호스트 인증 & URL 업로드 ──
+let _pendingAuth = null;
+
+function hostCheckThenUpload() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') { openUploadModal(); return; }
+  document.getElementById('slideAuthOverlay').style.display = 'flex';
+  document.getElementById('slideAuthErr').textContent = '';
+  document.getElementById('slideAuthField').value = '';
+  setTimeout(() => document.getElementById('slideAuthField').focus(), 80);
+  _pendingAuth = openUploadModal;
+}
+function closeSlideAuth() { document.getElementById('slideAuthOverlay').style.display = 'none'; }
+function confirmSlideAuth() {
+  if (document.getElementById('slideAuthField').value === HOST_PWD) {
+    sessionStorage.setItem(HOST_KEY, '1');
+    document.getElementById('btnUpload').style.display = 'flex';
+    closeSlideAuth();
+    if (_pendingAuth) { _pendingAuth(); _pendingAuth = null; }
+  } else {
+    document.getElementById('slideAuthErr').textContent = '인증 암호가 올바르지 않습니다.';
+    document.getElementById('slideAuthField').value = '';
+    document.getElementById('slideAuthField').focus();
+  }
+}
+function openUploadModal() {
+  document.getElementById('slideUploadTitle').value = '';
+  document.getElementById('slideUploadCat').value = 'exterior';
+  document.getElementById('slideUploadDesc').value = '';
+  document.getElementById('slideUploadUrl').value = '';
+  document.getElementById('slideUploadPreview').style.display = 'none';
+  document.getElementById('slideUploadPlaceholder').style.display = 'flex';
+  document.getElementById('slideUploadOverlay').style.display = 'flex';
+}
+function closeUploadModal() { document.getElementById('slideUploadOverlay').style.display = 'none'; }
+
+function previewUrl() {
+  const url = document.getElementById('slideUploadUrl').value.trim();
+  if (!url) return;
+  const prev = document.getElementById('slideUploadPreview');
+  prev.src = url;
+  prev.style.display = 'block';
+  document.getElementById('slideUploadPlaceholder').style.display = 'none';
+}
+
+async function saveUpload() {
+  const title = document.getElementById('slideUploadTitle').value.trim();
+  const cat   = document.getElementById('slideUploadCat').value;
+  const desc  = document.getElementById('slideUploadDesc').value.trim();
+  const img_url = document.getElementById('slideUploadUrl').value.trim();
+  if (!img_url) { alert('이미지 URL을 입력하세요.'); return; }
+  const newId = allCards.length ? Math.max(...allCards.map(c => c.id)) + 1 : 1;
+  const newCard = { id:newId, cat, featured:false, bg:'linear-gradient(135deg,#7a9e50,#527830)', icon:'🖼️', img_url, category:CAT_LABELS[cat], title, desc, createdAt:Date.now() };
+  allCards.push(newCard);
+  await saveToSheet(allCards);
+  setFilter(currentFilter, document.querySelector('.filter-btn.active'));
+  closeUploadModal();
+  showSlideToast('사진이 추가되었습니다!');
+}
+function showSlideToast(msg) {
+  const t = document.getElementById('slideToast');
+  t.textContent = msg; t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2200);
+}
+</script>
+
+<!-- 업로드 모달 -->
+<div id="slideUploadOverlay" onclick="if(event.target===this)closeUploadModal()" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+    <div style="font-size:1.05rem;font-weight:900;margin-bottom:18px;color:#222;">📷 사진 추가</div>
+    <div id="slideUploadPlaceholder" style="height:100px;border:2px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:#aaa;margin-bottom:10px;">미리보기</div>
+    <img id="slideUploadPreview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px;" alt="">
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <input id="slideUploadUrl" type="url" placeholder="이미지 URL (GitHub raw / Google Drive)" style="flex:1;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.82rem;outline:none;">
+      <button onclick="previewUrl()" style="padding:10px 14px;border-radius:8px;background:#eee;color:#444;border:none;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;">미리보기</button>
+    </div>
+    <select id="slideUploadCat" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;margin-bottom:10px;outline:none;">
+      <option value="exterior">외관 · 전경</option>
+      <option value="interior">실내 공간</option>
+      <option value="view">전망 · 자연</option>
+      <option value="facility">편의시설</option>
+    </select>
+    <input id="slideUploadTitle" type="text" placeholder="사진 제목 (선택 입력)" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;margin-bottom:10px;outline:none;">
+    <textarea id="slideUploadDesc" placeholder="설명 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;resize:vertical;min-height:60px;outline:none;margin-bottom:16px;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeUploadModal()" style="flex:1;padding:12px;border-radius:8px;background:#f0f0f0;color:#555;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="saveUpload()" style="flex:1;padding:12px;border-radius:8px;background:#6b3a1f;color:#fff;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 호스트 인증 모달 -->
+<div id="slideAuthOverlay" onclick="if(event.target===this)closeSlideAuth()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+    <div style="font-size:1.05rem;font-weight:900;margin-bottom:6px;">🔐 호스트 인증</div>
+    <div style="font-size:.82rem;color:#888;margin-bottom:18px;">호스트 암호를 입력하세요.</div>
+    <input id="slideAuthField" type="password" placeholder="암호 입력" onkeydown="if(event.key==='Enter')confirmSlideAuth()" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:9px;font-family:inherit;font-size:.9rem;outline:none;margin-bottom:6px;">
+    <div id="slideAuthErr" style="font-size:.75rem;color:#e05252;height:16px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeSlideAuth()" style="flex:1;padding:11px;border-radius:8px;background:#f0f0f0;color:#555;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="confirmSlideAuth()" style="flex:1;padding:11px;border-radius:8px;background:#6b3a1f;color:#fff;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="slideToast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 22px;border-radius:20px;font-size:.84rem;font-weight:600;z-index:900;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;"></div>
+
+<style>
+/* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
+@media(max-width:600px){
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; align-items:center; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border,#ddd); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+}
+</style>
+</body>
+</html>

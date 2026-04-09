@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주변 환경 — 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222;
+  --sub: #555;
+  --muted: #888;
+  --border: #ddd;
+  --surface: #fff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.1);
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+
+/* ── HERO ── */
+.hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; display:flex; align-items:center; justify-content:space-between; }
+.hero-left { display:flex; flex-direction:row; align-items:center; gap:16px; }
+.hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:0; white-space:nowrap; }
+.hero p { font-size:.92rem; opacity:.75; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  background:#1a1a1a; padding:12px 40px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.filter-btn {
+  padding:6px 18px; border-radius:999px; border:1.5px solid rgba(255,255,255,.25);
+  background:transparent; color:rgba(255,255,255,.7); font-family:var(--sans);
+  font-size:.82rem; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.filter-btn.active, .filter-btn:hover {
+  background:#fff; color:#1a1a1a; border-color:#fff;
+}
+
+/* ── MAP SECTION ── */
+.map-section {
+  max-width:1100px; margin:40px auto 0; padding:0 40px;
+}
+.map-section h2 { font-size:1.05rem; font-weight:800; margin-bottom:14px; color:var(--text); }
+.map-wrap { border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
+
+/* ── SPOTS GRID ── */
+.spots-wrap { max-width:1100px; margin:40px auto 60px; padding:0 40px; }
+.spots-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:24px;
+}
+.spot-card {
+  background:var(--surface); border-radius:var(--radius); border:1px solid var(--border);
+  box-shadow:var(--shadow); overflow:hidden; transition:transform .18s, box-shadow .18s;
+  display:flex; flex-direction:column;
+}
+.spot-card:hover { transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,.13); }
+.spot-thumb {
+  height:180px; display:flex; align-items:center; justify-content:center;
+  font-size:3.2rem; position:relative; flex-shrink:0; overflow:hidden;
+}
+.spot-thumb img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; transition:transform .3s;
+}
+.spot-card:hover .spot-thumb img { transform:scale(1.05); }
+.spot-thumb .thumb-icon {
+  position:relative; z-index:1;
+  font-size:4rem;
+  text-shadow:0 2px 12px rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center;
+}
+.spot-badge {
+  position:absolute; top:10px; right:10px;
+  background:rgba(0,0,0,.45); color:#fff;
+  font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px;
+}
+.spot-badge.near { background:rgba(107,58,31,.85); }
+.spot-body { padding:18px 20px; flex:1; display:flex; flex-direction:column; gap:8px; }
+.spot-cat {
+  font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--muted);
+}
+.spot-name { font-size:1.05rem; font-weight:800; color:var(--text); }
+.spot-desc { font-size:.86rem; color:var(--sub); line-height:1.65; flex:1; }
+.spot-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 20px; border-top:1px solid var(--border);
+}
+.spot-dist { font-size:.8rem; color:var(--muted); font-weight:600; }
+.spot-dist span { color:var(--primary); }
+.btn-map {
+  font-size:.78rem; font-weight:700; color:var(--primary);
+  text-decoration:none; padding:5px 14px; border-radius:999px;
+  border:1.5px solid var(--primary); transition:all .15s;
+}
+.btn-map:hover { background:var(--primary); color:#fff; }
+
+/* ── COURSE SECTION ── */
+.course-section { background:#fff; border-top:1px solid var(--border); padding:48px 40px; }
+.course-inner { max-width:1100px; margin:0 auto; }
+.course-inner h2 { font-size:1.1rem; font-weight:800; margin-bottom:24px; }
+.course-list { display:flex; flex-direction:column; gap:16px; }
+.course-item {
+  display:flex; align-items:flex-start; gap:16px;
+  background:var(--bg); border-radius:var(--radius); padding:18px 22px;
+  border:1px solid var(--border);
+}
+.course-num {
+  width:32px; height:32px; border-radius:50%; background:var(--primary); color:#fff;
+  font-size:.85rem; font-weight:800; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.course-text h3 { font-size:.95rem; font-weight:700; margin-bottom:4px; }
+.course-text p { font-size:.84rem; color:var(--sub); line-height:1.6; }
+
+/* ── FOOTER ── */
+footer {
+  background:#1a1a1a; color:rgba(255,255,255,.7);
+  padding:32px 40px; display:flex; align-items:center; justify-content:space-between; gap:24px;
+}
+.footer-logo { display:flex; align-items:center; gap:8px; text-decoration:none; color:#fff; font-weight:800; font-size:.95rem; }
+.footer-logo-icon { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:.85rem; }
+.footer-nav { display:flex; gap:20px; }
+.footer-nav a { color:rgba(255,255,255,.6); text-decoration:none; font-size:.82rem; font-weight:600; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.75rem; color:rgba(255,255,255,.35); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px) {
+  .header { padding:0 16px; }
+  .header-nav { gap:14px; }
+  .header-nav a { font-size:.78rem; }
+  .hero { padding:32px 20px 28px; flex-direction:column; align-items:flex-start; gap:12px; }
+  .hero-left { flex-direction:column; align-items:flex-start; gap:6px; }
+  .filter-bar { padding:10px 16px; }
+  .map-section, .spots-wrap { padding:0 16px; }
+  .spots-grid { grid-template-columns:1fr; }
+  .course-section { padding:36px 16px; }
+  footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <div class="logo-icon">🏠</div>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="reserved_view.html" data-icon="📅">예약현황</a>
+    <a href="#" onclick="alert('호스트 전용 페이지입니다.');return false;" data-icon="🔐">호스트모드</a>
+  </nav>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-left" style="flex-direction:row;align-items:center;gap:16px;">
+    <h1 style="margin-bottom:0;">주변 환경</h1>
+    <p style="opacity:.75;font-size:.92rem;">영덕감성산장에서 만나는 동해안의 숨은 명소들</p>
+  </div>
+</section>
+
+<!-- ── FILTER BAR ── -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="setFilter('all', this)">전체</button>
+  <button class="filter-btn" onclick="setFilter('nature', this)">자연 · 해안</button>
+  <button class="filter-btn" onclick="setFilter('food', this)">먹거리</button>
+  <button class="filter-btn" onclick="setFilter('culture', this)">문화 · 역사</button>
+  <button class="filter-btn" onclick="setFilter('activity', this)">레저 · 체험</button>
+</div>
+
+<!-- ── MAP ── -->
+<div class="map-section">
+  <h2>영덕감성산장 위치</h2>
+  <div class="map-wrap">
+    <iframe
+      src="https://maps.google.com/maps?q=경북+영덕군+영덕대게로+767-48&z=13&output=embed"
+      width="100%" height="320" style="border:0;display:block;"
+      allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+  </div>
+</div>
+
+<!-- ── SPOTS ── -->
+<div class="spots-wrap">
+  <div class="spots-grid" id="spotsGrid"></div>
+</div>
+
+<!-- ── COURSE ── -->
+<div class="course-section">
+  <div class="course-inner">
+    <h2>추천 당일 코스</h2>
+    <div class="course-list">
+      <div class="course-item">
+        <div class="course-num">1</div>
+        <div class="course-text">
+          <h3>해맞이공원 · 창포말등대</h3>
+          <p>숙소에서 도보 5분. 이른 아침 일출을 감상하고 대게 집게 형상의 창포말등대에서 인생샷을 남기세요.</p>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-num">2</div>
+        <div class="course-text">
+          <h3>영덕 블루로드 (B코스 일부)</h3>
+          <p>해맞이공원에서 대게원조마을까지 이어지는 '푸른 대게의 길'. 옥빛 동해를 곁에 두고 걷는 블루로드의 백미 구간입니다.</p>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-num">3</div>
+        <div class="course-text">
+          <h3>강구항 영덕대게거리</h3>
+          <p>점심은 강구항 대게거리에서 싱싱한 영덕대게로 해결. 전국 최대 대게 집산지로 다양한 가격대의 식당이 즐비합니다.</p>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-num">4</div>
+        <div class="course-text">
+          <h3>삼사해상공원</h3>
+          <p>동해 해안 절경을 감상할 수 있는 공원. 어촌민속전시관과 산책로에서 여유로운 오후를 보내세요.</p>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-num">5</div>
+        <div class="course-text">
+          <h3>풍력발전단지 · 석양 감상</h3>
+          <p>하루를 마무리하며 거대한 풍력발전기 사이로 지는 노을을 감상하세요. 야간에는 별 관측 명소이기도 합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a class="footer-logo" href="index.html">
+    <div class="footer-logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="footer-nav">
+    <a href="index.html">홈</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="pic_view.html">사진 모두보기</a>
+    <a href="reserved_view.html" data-icon="📅">예약 현황</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<script>
+const SPOTS = [
+  {
+    cat: 'nature', icon: '🌅', bg: 'linear-gradient(135deg,#1a6b8a,#0d4d6b)',
+    img: null,
+    name: '영덕 해맞이공원 · 창포말등대', badge: '도보 5분', near: true,
+    desc: '일출 명소로 유명한 해맞이공원. 영덕 대게 집게발을 본뜬 창포말등대(24m)가 상징물이며, 1,500개 나무계단 산책로와 전망데크가 조성돼 있습니다. 수선화·해당화 등 야생화가 계절마다 피어납니다.',
+    dist: '도보 약 5분', mapq: '영덕+해맞이공원'
+  },
+  {
+    cat: 'activity', icon: '💨', bg: 'linear-gradient(135deg,#2d6a4f,#1b4332)',
+    img: 'https://github.com/user-attachments/assets/9a9b3fac-84d0-4a7c-a528-00b0617a831c',
+    name: '영덕 풍력발전단지', badge: '차로 5분', near: true,
+    desc: '날개 길이 41m, 높이 80m의 대형 풍력발전기 24기가 동해를 내려다보는 언덕에 자리합니다. 신재생에너지관, 바람개비공원, 야영장이 있으며 블루로드 A코스와 연결됩니다.',
+    dist: '차로 약 5분', mapq: '영덕+풍력발전단지'
+  },
+  {
+    cat: 'activity', icon: '🥾', bg: 'linear-gradient(135deg,#3a5a8a,#1e3a5a)',
+    img: 'https://github.com/user-attachments/assets/0d796d3c-384c-4a51-8122-3e12c58f0e67',
+    name: '영덕 블루로드', badge: '인근 출발', near: true,
+    desc: '대게공원부터 고래불해수욕장까지 64.6km 해안 트레킹 코스. A~D 4개 구간으로 나뉘며, B코스(푸른 대게의 길)가 백미입니다. 해안절벽·백사장·숲길을 넘나드는 영덕 대표 도보길.',
+    dist: '해맞이공원에서 바로 연결', mapq: '영덕+블루로드'
+  },
+  {
+    cat: 'food', icon: '🦀', bg: 'linear-gradient(135deg,#8b2500,#5c1a00)',
+    img: 'https://github.com/user-attachments/assets/e731b631-9095-4f9a-acf2-6838318087fa',
+    name: '강구항 · 영덕대게거리', badge: '차로 15분', near: false,
+    desc: '전국 최대 대게 집산지. 강구항 주변 3km에 100여 곳의 대게 식당이 밀집해 있습니다. 고려 태조 수라상에 올랐다는 전설의 영덕대게를 맛보세요.',
+    dist: '차로 약 15분', mapq: '강구항+영덕대게거리'
+  },
+  {
+    cat: 'nature', icon: '🌊', bg: 'linear-gradient(135deg,#1565a8,#0d3d6b)',
+    img: 'https://github.com/user-attachments/assets/4e2d3d79-7c4c-47a8-88b7-4ab577bde542',
+    name: '삼사해상공원', badge: '차로 20분', near: false,
+    desc: '동해 해안절경을 한눈에 조망할 수 있는 공원. 경북대종(높이 42m)이 랜드마크이며, 어촌민속전시관에서 영덕 어촌 문화를 체험할 수 있습니다.',
+    dist: '차로 약 20분', mapq: '삼사해상공원+영덕'
+  },
+  {
+    cat: 'nature', icon: '⛵', bg: 'linear-gradient(135deg,#0d5c6b,#083d47)',
+    img: 'https://github.com/user-attachments/assets/f2d9ac91-0fa6-47a3-8777-43fcaa798fa9',
+    name: '죽도산 전망대 · 축산항', badge: '차로 25분', near: false,
+    desc: '1924년 개항한 축산항은 대게 위판이 열리는 항구. 죽도산 전망대에서 동해 최고의 미항으로 손꼽히는 축산항 전경과 일출을 감상할 수 있습니다.',
+    dist: '차로 약 25분', mapq: '죽도산전망대+축산항'
+  },
+  {
+    cat: 'culture', icon: '🏘️', bg: 'linear-gradient(135deg,#5c4a1a,#3a2e0d)',
+    img: 'https://github.com/user-attachments/assets/8a5555a3-b193-46a9-8043-6554fa47c87c',
+    name: '괴시리 전통마을', badge: '차로 30분', near: false,
+    desc: '고려 말 대학자 목은 이색의 출생지이자 영양남씨 집성촌. 조선 후기 영남 사대부 마을의 옛 모습을 간직한 국가민속문화재 마을로, 고택과 돌담길이 인상적입니다.',
+    dist: '차로 약 30분', mapq: '괴시리+전통마을+영덕'
+  },
+  {
+    cat: 'nature', icon: '🏖️', bg: 'linear-gradient(135deg,#1a7a8a,#0d5060)',
+    img: null,
+    name: '고래불해수욕장', badge: '차로 30분', near: false,
+    desc: '영덕 북부를 대표하는 명사이십리 해수욕장. 수심이 얕아 가족 여행지로 인기가 높으며, 고래불 오토캠핑장과 연계하여 여름 피서를 즐기기에 최적의 장소입니다.',
+    dist: '차로 약 30분', mapq: '고래불해수욕장'
+  },
+  {
+    cat: 'activity', icon: '⚓', bg: 'linear-gradient(135deg,#1a4a8a,#0d2d5c)',
+    img: null,
+    name: '국립청소년해양센터', badge: '도보 10분', near: true,
+    desc: '창포리에 위치한 해양환경 체험센터. 해양 체험 프로그램과 청소년 수련 활동을 운영합니다. 숙소에서 가까워 가볍게 방문하기 좋습니다.',
+    dist: '도보 약 10분', mapq: '국립청소년해양센터+영덕'
+  },
+  {
+    cat: 'culture', icon: '🌲', bg: 'linear-gradient(135deg,#2d5a3a,#1a3a22)',
+    img: null,
+    name: '산림생태문화체험공원', badge: '차로 5분', near: true,
+    desc: '1997년 산불 피해지를 7년에 걸쳐 104ha 규모로 복원한 공원. 풍력발전기와 푸른 바다가 어우러지며, 정크&트릭아트전시관, 신재생에너지전시관을 갖추고 있습니다.',
+    dist: '차로 약 5분', mapq: '산림생태문화체험공원+영덕'
+  }
+];
+
+let currentFilter = 'all';
+
+function setFilter(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSpots();
+}
+
+function renderSpots() {
+  const list = currentFilter === 'all' ? SPOTS : SPOTS.filter(s => s.cat === currentFilter);
+  const grid = document.getElementById('spotsGrid');
+  grid.innerHTML = list.map(s => `
+    <div class="spot-card">
+      <div class="spot-thumb" style="background:${s.bg};">
+        <span class="thumb-icon">${s.icon}</span>
+        <span class="spot-badge${s.near ? ' near' : ''}">${s.badge}</span>
+      </div>
+      <div class="spot-body">
+        <div class="spot-cat">${catLabel(s.cat)}</div>
+        <div class="spot-name">${s.name}</div>
+        <div class="spot-desc">${s.desc}</div>
+      </div>
+      <div class="spot-footer">
+        <div class="spot-dist">거리 <span>${s.dist}</span></div>
+        <a class="btn-map" href="https://map.kakao.com/link/search/${encodeURIComponent(s.mapq)}" target="_blank" rel="noopener">지도 보기</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+function catLabel(cat) {
+  return { nature:'자연 · 해안', food:'먹거리', culture:'문화 · 역사', activity:'레저 · 체험' }[cat] || cat;
+}
+
+renderSpots();
+</script>
+<style>
+/* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
+@media(max-width:600px){
+  .hero { flex-direction:column; align-items:flex-start; gap:4px; }
+  .hero h1 { font-size:1.4rem; }
+  .hero p { font-size:.82rem; }
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; align-items:center; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border,#ddd); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+}
+</style>
+</body>
+</html>

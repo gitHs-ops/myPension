@@ -1,0 +1,13 @@
+.claude/
+.vscode/
+household-budget.csv
+pension_reservation.html
+
+*.mp4
+*.mov
+*.avi
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp

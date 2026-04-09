@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예약 하기 — 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --select: #2a7d4f;
+  --select-light: rgba(42,125,79,.13);
+  --text: #222;
+  --sub: #555;
+  --muted: #888;
+  --border: #ddd;
+  --surface: #fff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.1);
+  --sans: 'Noto Sans KR', sans-serif;
+  --confirmed: #6b3a1f;
+  --pending: #d97706;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header { padding:10px 22px; border-radius:999px; background:#3d2010; color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── HERO ── */
+.hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; display:flex; align-items:center; gap:16px; }
+.hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
+.hero p { font-size:.92rem; opacity:.75; }
+
+.stat-sub { font-size:.72rem; color:var(--muted); margin-top:3px; }
+
+/* ── MAIN LAYOUT ── */
+.main-wrap { max-width:960px; margin:24px auto 80px; padding:0 24px; display:grid; grid-template-columns:1fr 340px; gap:28px; align-items:start; }
+
+/* ── CALENDAR ── */
+.cal-section { background:var(--surface); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.cal-title { font-size:1rem; font-weight:900; }
+.cal-nav { display:flex; gap:6px; }
+.cal-nav button { background:none; border:1px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1rem; transition:background .12s; }
+.cal-nav button:hover { background:var(--bg); }
+.cal-wd-row { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.cal-wd { text-align:center; font-size:.72rem; color:var(--muted); font-weight:600; padding:4px 0; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+
+/* 공통 셀 */
+.cal-cell { height:48px; display:flex; align-items:center; justify-content:center; position:relative; }
+.cal-num  { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:.85rem; position:relative; z-index:1; transition:background .1s; }
+
+/* 기타 월, 오늘, 과거 */
+.cal-cell.other-month .cal-num { color:#ccc; }
+.cal-cell.today .cal-num { font-weight:900; color:var(--primary); border:1.5px solid var(--primary); }
+.cal-cell.past .cal-num { color:#ccc; cursor:default; }
+
+/* 클릭 가능한 빈 날짜 */
+.cal-cell.free { cursor:pointer; }
+.cal-cell.free:hover .cal-num { background:var(--select-light); color:var(--select); }
+
+/* ── 기존 예약 범위 (갈색) ── */
+.cal-cell::before { content:''; position:absolute; top:50%; transform:translateY(-50%); height:34px; left:0; right:0; z-index:0; }
+.cal-cell.rsv-mid::before    { background:rgba(107,58,31,.12); }
+.cal-cell.rsv-start::before  { background:linear-gradient(to right, transparent 50%, rgba(107,58,31,.12) 50%); }
+.cal-cell.rsv-end::before    { background:linear-gradient(to left,  transparent 50%, rgba(107,58,31,.12) 50%); }
+.cal-cell.rsv-start .cal-num,
+.cal-cell.rsv-end   .cal-num { background:var(--primary); color:#fff; cursor:default; }
+.cal-cell.rsv-mid   .cal-num { cursor:default; }
+.cal-cell.rsv-single .cal-num { background:var(--primary); color:#fff; cursor:default; }
+/* pending */
+.cal-cell.rsv-pend-mid::before    { background:rgba(217,119,6,.12); }
+.cal-cell.rsv-pend-start::before  { background:linear-gradient(to right, transparent 50%, rgba(217,119,6,.12) 50%); }
+.cal-cell.rsv-pend-end::before    { background:linear-gradient(to left,  transparent 50%, rgba(217,119,6,.12) 50%); }
+.cal-cell.rsv-pend-start .cal-num,
+.cal-cell.rsv-pend-end   .cal-num { background:var(--pending); color:#fff; cursor:default; }
+.cal-cell.rsv-pend-single .cal-num { background:var(--pending); color:#fff; cursor:default; }
+.cal-cell.rsv-pend-mid   .cal-num { cursor:default; }
+
+/* ── 선택 범위 (초록) ── */
+.cal-cell::after { content:''; position:absolute; top:50%; transform:translateY(-50%); height:34px; left:0; right:0; z-index:0; pointer-events:none; }
+.cal-cell.sel-mid::after    { background:var(--select-light); }
+.cal-cell.sel-start::after  { background:linear-gradient(to right, transparent 50%, var(--select-light) 50%); }
+.cal-cell.sel-end::after    { background:linear-gradient(to left,  transparent 50%, var(--select-light) 50%); }
+.cal-cell.sel-start .cal-num,
+.cal-cell.sel-end   .cal-num { background:var(--select) !important; color:#fff !important; }
+.cal-cell.sel-single .cal-num { background:var(--select) !important; color:#fff !important; }
+
+/* legend */
+.cal-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; padding-top:14px; border-top:1px solid var(--bg); }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--muted); }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+
+/* 캘린더 안내 문구 */
+.cal-hint { margin-top:14px; text-align:center; font-size:.82rem; font-weight:700; color:var(--select); min-height:20px; }
+
+/* ── INLINE FORM PANEL ── */
+.form-panel { background:var(--surface); border-radius:var(--radius); padding:24px 22px; box-shadow:var(--shadow); }
+.form-panel-title { font-size:1rem; font-weight:900; color:var(--primary); margin-bottom:20px; }
+.form-row { margin-bottom:14px; }
+.form-lbl { display:block; font-size:.78rem; color:var(--muted); margin-bottom:5px; font-weight:600; }
+.form-input { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.9rem; background:#faf8f5; transition:border-color .15s; }
+.form-input:focus { outline:none; border-color:var(--primary); }
+textarea.form-input { resize:vertical; min-height:70px; }
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.form-err { color:#e53935; font-size:.78rem; margin-top:8px; display:none; }
+.form-err.show { display:block; }
+.btn-submit { width:100%; background:var(--primary); color:#fff; border:none; padding:13px; border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.95rem; cursor:pointer; margin-top:18px; transition:background .15s; }
+.btn-submit:hover { background:var(--primary-dark); }
+.btn-submit:disabled { opacity:.6; cursor:default; }
+
+/* 날짜 선택 표시 박스 */
+.date-display {
+  display:flex; gap:8px; margin-bottom:14px;
+}
+.date-box {
+  flex:1; border:1.5px dashed var(--border); border-radius:9px; padding:10px 12px;
+  text-align:center; background:#faf8f5; transition:border-color .2s;
+}
+.date-box.filled { border-color:var(--select); border-style:solid; }
+.date-box-lbl { font-size:.7rem; color:var(--muted); font-weight:700; margin-bottom:3px; }
+.date-box-val { font-size:.88rem; font-weight:700; color:var(--muted); }
+.date-box.filled .date-box-val { color:var(--select); }
+.date-box-nights {
+  text-align:center; font-size:.82rem; font-weight:700; color:var(--select);
+  margin-bottom:14px; min-height:20px;
+}
+.cal-hint-form {
+  text-align:center; font-size:.8rem; color:var(--muted);
+  margin-bottom:10px; padding:8px; background:var(--bg); border-radius:8px;
+}
+
+/* ── 완료 카드 ── */
+.done-card { display:none; background:var(--surface); border-radius:var(--radius); padding:32px 22px; box-shadow:var(--shadow); text-align:center; }
+.done-card.show { display:block; }
+.done-icon { font-size:2.8rem; margin-bottom:12px; }
+.done-title { font-size:1.1rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
+.done-sub { font-size:.85rem; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+.done-code { display:inline-block; background:#fdf1e8; color:var(--primary); border-radius:8px; padding:6px 18px; font-size:.85rem; font-weight:700; margin-bottom:20px; letter-spacing:1px; }
+.btn-again { background:#f0ebe4; color:var(--text); border:none; padding:11px 24px; border-radius:9px; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(255,255,255,.75); justify-content:center; align-items:center; flex-direction:column; gap:14px; }
+.loading-overlay.show { display:flex; }
+.loading-spinner { width:42px; height:42px; border-radius:50%; border:4px solid var(--border); border-top-color:var(--primary); animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-msg { font-size:.9rem; color:var(--sub); font-weight:600; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:9px 20px; border-radius:20px; font-size:.82rem; font-weight:600; z-index:900; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+
+/* ── FOOTER ── */
+footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center; justify-content:space-between; }
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; text-decoration:none; }
+.footer-logo-icon { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:.85rem; }
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* ── 예약코드 조회 행 ── */
+.code-lookup-row {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--bg);
+}
+.code-lookup-lbl { font-size:.75rem; color:var(--muted); font-weight:700; white-space:nowrap; }
+.code-lookup-input {
+  flex:1; padding:8px 11px; border:1px solid var(--border); border-radius:8px;
+  font-family:var(--sans); font-size:.85rem; background:#faf8f5; min-width:0;
+}
+.code-lookup-input:focus { outline:none; border-color:var(--primary); }
+.btn-lookup {
+  background:var(--primary); color:#fff; border:none; border-radius:8px;
+  padding:8px 13px; cursor:pointer; font-size:.88rem; white-space:nowrap;
+  transition:background .15s; flex-shrink:0;
+}
+.btn-lookup:hover { background:var(--primary-dark); }
+.edit-badge {
+  display:none; font-size:.72rem; font-weight:700; color:var(--primary);
+  background:#fdf1e8; border-radius:999px; padding:2px 10px; margin-left:8px; vertical-align:middle;
+}
+.edit-badge.show { display:inline; }
+
+/* ── 수정/삭제 버튼 행 ── */
+.btn-edit-row { display:none; gap:10px; margin-top:18px; }
+.btn-edit-row.show { display:flex; }
+.btn-update {
+  flex:2; background:var(--primary); color:#fff; border:none; padding:13px;
+  border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.9rem;
+  cursor:pointer; transition:background .15s;
+}
+.btn-update:hover { background:var(--primary-dark); }
+.btn-update:disabled { opacity:.6; cursor:default; }
+.btn-delete {
+  flex:1; background:#fee2e2; color:#e53935; border:none; padding:13px;
+  border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.85rem;
+  cursor:pointer; transition:background .15s;
+}
+.btn-delete:hover { background:#fecaca; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:860px) {
+  .main-wrap  { grid-template-columns:1fr; }
+  .hero { padding:32px 20px 26px; }
+  header.header { padding:0 16px; }
+  footer { flex-direction:column; gap:14px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:12px; }
+}
+@media(max-width:560px) {
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <div class="logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+  </nav>
+  <button class="btn-reserve-header" onclick="scrollToForm()">예약 신청</button>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <h1 style="margin-bottom:0;">예약 하기</h1>
+  <p style="opacity:.75;font-size:.92rem;">캘린더에서 날짜를 선택하고 예약을 신청하세요</p>
+</section>
+
+
+<!-- ── MAIN ── -->
+<div class="main-wrap">
+
+  <!-- 달력 -->
+  <div class="cal-section">
+    <div class="cal-header">
+      <span class="cal-title" id="calTitle"></span>
+      <div class="cal-nav">
+        <button onclick="navMonth(-1)">‹</button>
+        <button onclick="navMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="cal-wd-row">
+      <div class="cal-wd">일</div><div class="cal-wd">월</div><div class="cal-wd">화</div>
+      <div class="cal-wd">수</div><div class="cal-wd">목</div><div class="cal-wd">금</div>
+      <div class="cal-wd">토</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--confirmed)"></div>확정됨</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pending)"></div>대기중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--select)"></div>선택중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>예약가능</div>
+    </div>
+    <!-- 캘린더 안내 -->
+    <div class="cal-hint" id="calHint">📅 체크인 날짜를 선택해주세요</div>
+  </div>
+
+  <!-- 인라인 예약 폼 -->
+  <div id="formPanel" class="form-panel">
+    <div class="form-panel-title">
+      ＋ 예약 하기
+      <span class="edit-badge" id="editBadge">✏️ 수정 모드</span>
+    </div>
+    <!-- 예약코드 조회 -->
+    <div class="code-lookup-row">
+      <span class="code-lookup-lbl">예약코드</span>
+      <input class="code-lookup-input" id="lookupInput" type="text" placeholder="예약코드 입력"
+             onkeydown="if(event.key==='Enter')lookupRsv()">
+      <button class="btn-lookup" onclick="lookupRsv()">✏️ 수정/취소</button>
+    </div>
+
+    <!-- 날짜 표시 -->
+    <div class="date-display">
+      <div class="date-box" id="boxCheckin">
+        <div class="date-box-lbl">체크인</div>
+        <div class="date-box-val" id="valCheckin">—</div>
+      </div>
+      <div class="date-box" id="boxCheckout">
+        <div class="date-box-lbl">체크아웃</div>
+        <div class="date-box-val" id="valCheckout">—</div>
+      </div>
+    </div>
+    <div class="date-box-nights" id="nightsDisplay"></div>
+    <div class="cal-hint-form" id="calHintForm">← 왼쪽 캘린더에서 체크인 날짜를 선택해주세요</div>
+
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">투숙객 이름 *</label>
+        <input class="form-input" id="inGuestName" type="text" placeholder="홍길동" maxlength="20">
+      </div>
+      <div>
+        <label class="form-lbl">연락처</label>
+        <input class="form-input" id="inPhone" type="tel" placeholder="010-0000-0000">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-lbl">이메일</label>
+      <input class="form-input" id="inEmail" type="email" placeholder="example@email.com">
+    </div>
+
+    <div class="form-row">
+      <label class="form-lbl">인원</label>
+      <input class="form-input" id="inGuests" type="number" min="1" max="10" value="2">
+    </div>
+
+    <div class="form-row">
+      <label class="form-lbl">요청사항 / 메모</label>
+      <textarea class="form-input" id="inMemo" placeholder="늦은 체크인, 특이사항 등"></textarea>
+    </div>
+
+    <div class="form-err" id="rsvErr"></div>
+    <button class="btn-submit" id="submitBtn" onclick="saveRsv()">예약 신청하기</button>
+    <!-- 수정 모드 버튼 -->
+    <div class="btn-edit-row" id="editBtnRow">
+      <button class="btn-delete" onclick="cancelRsv()">📋 예약취소 신청</button>
+      <button class="btn-update" id="updateBtn" onclick="updateRsv()">✅ 수정 등록하기</button>
+    </div>
+  </div>
+
+  <!-- 완료 카드 -->
+  <div id="doneCard" class="done-card">
+    <div class="done-icon">🎉</div>
+    <div class="done-title">예약 신청이 완료되었습니다!</div>
+    <div class="done-sub">
+      호스트가 확인 후 연락드리겠습니다.<br>
+      문의: <b>010-2698-9056</b>
+    </div>
+    <div class="done-code" id="doneCode"></div>
+    <br>
+    <button class="btn-again" onclick="resetForm()">다시 신청하기</button>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a class="footer-logo" href="index.html">
+    <div class="footer-logo-icon">🏠</div>영덕감성산장
+  </a>
+  <nav class="footer-nav">
+    <a href="index.html">홈</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="pic_view.html">사진 모두보기</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loadingMsg">처리 중...</div>
+</div>
+
+<script>
+const GAS_URL      = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+const ADMIN_PHONE  = '01026989056';
+const ADMIN_EMAIL  = 'khsq2011@gmail.com'; // ← 관리자 이메일로 변경
+
+let RESERVATIONS = [];
+let CAL_MONTH    = new Date();
+
+// ── 날짜 선택 상태 ──
+let SEL_CHECKIN  = null;  // 'YYYY-MM-DD'
+let SEL_CHECKOUT = null;  // 'YYYY-MM-DD'
+let SEL_STEP     = 0;     // 0=미선택 1=체크인선택 2=완료
+
+// 예약된 날짜 집합
+let BOOKED_DATES = new Set(); // 전체(체크인~체크아웃-1) - 충돌 체크용
+let BOOKED_MID   = new Set(); // 체크인+1~체크아웃-1 (중간박만) - 캘린더 클릭 제한용
+let CHECKIN_SET  = new Set(); // 타 예약의 체크인 당일 집합
+
+// 직전 신청 예약 (다시 신청하기에 사용)
+let LAST_RSV = null;
+
+// 수정 모드
+let EDIT_MODE   = false;
+let EDIT_RSV_ID = null;
+
+// ── INIT ──
+async function init() {
+  CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  await loadFromGAS();
+  buildBookedSet();
+  renderCalendar();
+  updateDateUI();
+}
+
+// ── 로딩 ──
+function showLoading(msg) {
+  document.getElementById('loadingMsg').textContent = msg || '처리 중...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ── GAS 로드 ──
+async function loadFromGAS() {
+  showLoading('예약 일정을 불러오는 중...');
+  try {
+    const res  = await fetch(`${GAS_URL}?action=rsv_load`, { redirect: 'follow' });
+    const data = await res.json();
+    if (data.success) {
+      RESERVATIONS = data.reservations || [];
+      try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+    } else throw new Error(data.message);
+  } catch(e) {
+    try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
+    console.warn('GAS 로드 실패 — 로컬 캐시 사용:', e.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function upsertToGAS(rsv) {
+  showLoading('예약을 저장하는 중...');
+  try {
+    const qs = new URLSearchParams({
+      action:'rsv_upsert', id:rsv.id, guestName:rsv.guestName,
+      phone:rsv.phone, email:rsv.email, checkin:rsv.checkin,
+      checkout:rsv.checkout, nights:rsv.nights, guests:rsv.guests,
+      totalPrice:rsv.totalPrice||0, status:rsv.status||'대기', memo:rsv.memo, createdAt:rsv.createdAt
+    });
+    const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+    const data = await res.json();
+    if (!data.success) showToast('⚠️ 저장 실패: ' + data.message);
+    return data.success;
+  } catch(e) {
+    showToast('⚠️ 저장 실패: ' + e.message);
+    return false;
+  } finally {
+    hideLoading();
+  }
+}
+
+// ── STATUS 헬퍼 ──
+function isCancelled(r) { return r.status === 'cancelled' || r.status === '취소' || r.status === '취소 신청'; }
+function isPending(s)   { return s === 'pending' || s === '대기'; }
+function isConfirmed(r) { return r.status === 'confirmed' || r.status === '확정'; }
+
+// ── DATES ──
+function parseDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
+function dateStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtDate(s) {
+  if (!s) return '';
+  const d = parseDate(s);
+  return `${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+function fmtDateFull(s) {
+  if (!s) return '';
+  const d = parseDate(s);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+function nightsBetween(cin, cout) {
+  if (!cin || !cout) return 0;
+  return Math.max(0, Math.round((parseDate(cout) - parseDate(cin)) / 86400000));
+}
+function todayStr() { return dateStr(new Date()); }
+function addDays(s, n) {
+  const d = parseDate(s); d.setDate(d.getDate()+n);
+  return dateStr(d);
+}
+
+// ── 예약된 날짜 집합 빌드 ──
+function buildBookedSet() {
+  BOOKED_DATES = new Set();
+  BOOKED_MID   = new Set();
+  CHECKIN_SET  = new Set();
+
+  RESERVATIONS.filter(r => !isCancelled(r) && r.id !== EDIT_RSV_ID).forEach(r => {
+    if (!r.checkin || !r.checkout) return;
+    CHECKIN_SET.add(r.checkin);          // 체크인 당일 별도 관리
+    let cur = parseDate(r.checkin);
+    const end = parseDate(r.checkout);
+    while (cur < end) {
+      const ds = dateStr(cur);
+      BOOKED_DATES.add(ds);
+      if (ds !== r.checkin) BOOKED_MID.add(ds); // 체크인 다음날부터 mid로 분류
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+}
+
+// 범위 내 충돌 확인 (체크인~체크아웃-1 사이에 예약된 날 있으면 true)
+// 단, 체크아웃 = 타 예약 체크인 당일이면 충돌 아님 (이미 체크인~체크아웃-1 로 체크)
+function hasConflict(cin, cout) {
+  let cur = parseDate(cin);
+  const end = parseDate(cout);
+  while (cur < end) {
+    if (BOOKED_DATES.has(dateStr(cur))) return true;
+    cur.setDate(cur.getDate()+1);
+  }
+  return false;
+}
+
+
+// ── CALENDAR ──
+function navMonth(dir) {
+  CAL_MONTH = new Date(CAL_MONTH.getFullYear(), CAL_MONTH.getMonth() + dir, 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const y = CAL_MONTH.getFullYear(), m = CAL_MONTH.getMonth();
+  document.getElementById('calTitle').textContent = `${y}년 ${m+1}월`;
+  const startDow    = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayS      = todayStr();
+
+  // 기존 예약 범위 맵 (체크아웃일은 제외 — 다음 예약의 체크인 가능)
+  const dateMap = {};
+  RESERVATIONS.filter(r => !isCancelled(r) && r.id !== EDIT_RSV_ID).forEach(r => {
+    if (!r.checkin || !r.checkout) return;
+    const cin  = parseDate(r.checkin);
+    const cout = parseDate(r.checkout);
+    const lastNight = new Date(cout); lastNight.setDate(lastNight.getDate() - 1);
+    const lastNightStr = dateStr(lastNight);
+    const cur  = new Date(cin);
+    while (cur < cout) {
+      const ds = dateStr(cur);
+      if (!dateMap[ds] || isConfirmed(r))
+        dateMap[ds] = { status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+
+  // 선택 범위 집합
+  const selSet = new Set();
+  if (SEL_CHECKIN && SEL_CHECKOUT) {
+    let cur = parseDate(SEL_CHECKIN);
+    const end = parseDate(SEL_CHECKOUT);
+    while (cur <= end) {
+      selSet.add(dateStr(cur));
+      cur.setDate(cur.getDate()+1);
+    }
+  } else if (SEL_CHECKIN) {
+    selSet.add(SEL_CHECKIN);
+  }
+
+  let html = '';
+  for (let i=0; i<startDow; i++)
+    html += `<div class="cal-cell other-month"><div class="cal-num"></div></div>`;
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds      = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const info    = dateMap[ds];
+    const isToday = ds === todayS;
+    const isPast  = ds < todayS;
+    // ── 클래스 결정 ──
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+
+    // 기존 예약 표시
+    if (info) {
+      const p = isPending(info.status) ? 'rsv-pend' : 'rsv';
+      if (info.isStart && info.isEnd) cls += ` ${p}-single`;
+      else if (info.isStart)          cls += ` ${p}-start`;
+      else if (info.isEnd)            cls += ` ${p}-end`;
+      else                            cls += ` ${p}-mid`;
+    }
+
+    // 선택 범위 표시 (중간박이 아닌 경우만)
+    if (!BOOKED_MID.has(ds) && selSet.size > 0) {
+      if (selSet.has(ds)) {
+        if (SEL_CHECKIN && SEL_CHECKOUT) {
+          if (ds === SEL_CHECKIN && ds === SEL_CHECKOUT) cls += ' sel-single';
+          else if (ds === SEL_CHECKIN)                   cls += ' sel-start';
+          else if (ds === SEL_CHECKOUT)                  cls += ' sel-end';
+          else                                           cls += ' sel-mid';
+        } else if (ds === SEL_CHECKIN) {
+          cls += ' sel-single'; // 체크인만 선택된 경우
+        }
+      }
+    }
+
+    // ── 클릭 가능 여부 ──
+    // step=1(체크아웃 선택 중): 타 예약 체크인 당일(CHECKIN_SET)도 체크아웃으로 허용
+    // 단, 중간박(BOOKED_MID)은 항상 불가
+    let clickAttr = '';
+    const isMid     = BOOKED_MID.has(ds);
+    const isCheckin = CHECKIN_SET.has(ds);
+
+    if (isPast || isMid) {
+      if (isPast) cls += ' past';
+      // isMid: 클릭 불가, 기존 예약 표시 유지
+    } else if (isCheckin) {
+      // 타 예약의 체크인 당일
+      if (SEL_STEP === 1) {
+        // 체크아웃 선택 중이면 클릭 허용 (체크아웃으로만 사용)
+        cls += ' free';
+        clickAttr = `onclick="selectDate('${ds}')"`;
+      }
+      // step 0,2: 불가 (이미 누군가 체크인하는 날)
+    } else {
+      // 완전히 빈 날
+      cls += ' free';
+      clickAttr = `onclick="selectDate('${ds}')"`;
+    }
+
+    html += `<div class="${cls}" ${clickAttr}><div class="cal-num">${d}</div></div>`;
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+// ── 날짜 선택 ──
+function selectDate(ds) {
+  if (SEL_STEP === 0 || SEL_STEP === 2) {
+    // 새 체크인 선택
+    SEL_CHECKIN  = ds;
+    SEL_CHECKOUT = null;
+    SEL_STEP     = 1;
+  } else if (SEL_STEP === 1) {
+    if (ds <= SEL_CHECKIN) {
+      // 체크인보다 앞이거나 같으면 → 체크인 재설정
+      SEL_CHECKIN  = ds;
+      SEL_CHECKOUT = null;
+      SEL_STEP     = 1;
+    } else {
+      // 1주일(7박) 초과 불가
+      const n = nightsBetween(SEL_CHECKIN, ds);
+      if (n > 7) {
+        showToast('⚠️ 최대 7박까지만 예약 신청 가능합니다.');
+        return; // 선택 상태 유지 (체크인은 그대로)
+      }
+      // 범위 내 예약 충돌 확인
+      if (hasConflict(SEL_CHECKIN, ds)) {
+        showToast('⚠️ 선택한 기간에 이미 예약된 날짜가 포함되어 있습니다.');
+        SEL_CHECKIN  = null;
+        SEL_CHECKOUT = null;
+        SEL_STEP     = 0;
+      } else {
+        SEL_CHECKOUT = ds;
+        SEL_STEP     = 2;
+      }
+    }
+  }
+  renderCalendar();
+  updateDateUI();
+}
+
+// ── 날짜 UI 업데이트 ──
+function updateDateUI() {
+  const boxIn  = document.getElementById('boxCheckin');
+  const boxOut = document.getElementById('boxCheckout');
+  const valIn  = document.getElementById('valCheckin');
+  const valOut = document.getElementById('valCheckout');
+  const nightsEl   = document.getElementById('nightsDisplay');
+  const hintCal    = document.getElementById('calHint');
+  const hintForm   = document.getElementById('calHintForm');
+
+  if (SEL_CHECKIN) {
+    valIn.textContent = fmtDate(SEL_CHECKIN);
+    boxIn.classList.add('filled');
+  } else {
+    valIn.textContent = '—';
+    boxIn.classList.remove('filled');
+  }
+
+  if (SEL_CHECKOUT) {
+    valOut.textContent = fmtDate(SEL_CHECKOUT);
+    boxOut.classList.add('filled');
+    const n = nightsBetween(SEL_CHECKIN, SEL_CHECKOUT);
+    nightsEl.textContent = `${n}박 (${fmtDateFull(SEL_CHECKIN)} ~ ${fmtDateFull(SEL_CHECKOUT)})`;
+    hintCal.textContent  = '✅ 날짜가 선택되었습니다. 다시 선택하려면 날짜를 클릭하세요.';
+    hintForm.textContent = `${n}박 선택됨 — 아래 정보를 입력 후 신청해주세요`;
+    hintForm.style.color = 'var(--select)';
+  } else {
+    valOut.textContent = '—';
+    boxOut.classList.remove('filled');
+    nightsEl.textContent = '';
+    if (SEL_STEP === 1) {
+      hintCal.textContent  = '📅 체크아웃 날짜를 선택해주세요';
+      hintForm.textContent = '← 체크아웃 날짜를 캘린더에서 선택해주세요';
+      hintForm.style.color = '';
+    } else {
+      hintCal.textContent  = '📅 체크인 날짜를 선택해주세요';
+      hintForm.textContent = '← 왼쪽 캘린더에서 체크인 날짜를 선택해주세요';
+      hintForm.style.color = '';
+    }
+  }
+}
+
+// ── 예약 저장 ──
+async function saveRsv() {
+  const errEl = document.getElementById('rsvErr');
+  errEl.classList.remove('show');
+
+  const name   = document.getElementById('inGuestName').value.trim();
+  const phone  = document.getElementById('inPhone').value.trim();
+  const email  = document.getElementById('inEmail').value.trim();
+  const guests = parseInt(document.getElementById('inGuests').value) || 1;
+  const memo   = document.getElementById('inMemo').value.trim();
+
+  if (!name)          { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
+  if (!SEL_CHECKIN)   { showErr(errEl, '캘린더에서 체크인 날짜를 선택해주세요.'); return; }
+  if (!SEL_CHECKOUT)  { showErr(errEl, '캘린더에서 체크아웃 날짜를 선택해주세요.'); return; }
+
+  const nights = nightsBetween(SEL_CHECKIN, SEL_CHECKOUT);
+  const rsv = {
+    id:         'rsv_' + Date.now(),
+    guestName:  name,
+    phone,
+    email,
+    checkin:    SEL_CHECKIN,
+    checkout:   SEL_CHECKOUT,
+    nights,
+    guests,
+    totalPrice: 0,
+    status:     'pending',
+    memo,
+    createdAt:  todayStr()
+  };
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '신청 중...';
+
+  const ok = await upsertToGAS(rsv);
+
+  btn.disabled = false;
+  btn.textContent = '예약 신청하기';
+
+  if (ok !== false) {
+    RESERVATIONS.push(rsv);
+    buildBookedSet();
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+    renderCalendar();
+    showDone(rsv);
+
+    // 관리자 SMS + 이메일 발송
+    const smsMsg  = `[감성산장]예약신청\n${rsv.guestName} ${rsv.checkin}~${rsv.checkout}\n${rsv.nights}박 ${rsv.phone||'미입력'}`;
+    const emailMsg = `예약 신청이 접수되었습니다.\n\n예약자: ${rsv.guestName}\n연락처: ${rsv.phone || '미입력'}\n이메일: ${rsv.email || '미입력'}\n체크인: ${rsv.checkin}\n체크아웃: ${rsv.checkout}\n${rsv.nights}박 ${rsv.guests}명\n예약코드: ${rsv.id}\n메모: ${rsv.memo || '없음'}`;
+    try {
+      const smsQs   = new URLSearchParams({ action:'sms',   receiver:ADMIN_PHONE, msg:smsMsg });
+      const emailQs = new URLSearchParams({ action:'email', to_email:ADMIN_EMAIL, to_name:'관리자', subject:'[영덕감성산장] 예약신청 접수', message:emailMsg });
+      await Promise.all([
+        fetch(`${GAS_URL}?${smsQs}`,   { redirect:'follow' }),
+        fetch(`${GAS_URL}?${emailQs}`, { redirect:'follow' }),
+      ]);
+    } catch(e) { console.warn('관리자 알림 발송 실패:', e.message); }
+  }
+}
+
+// ── GAS 삭제 ──
+async function deleteFromGAS(id) {
+  try {
+    const qs = new URLSearchParams({ action: 'rsv_delete', id });
+    await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
+  } catch(e) { console.warn('GAS 삭제 실패:', e.message); }
+}
+
+// ── 완료 화면 ──
+function showDone(rsv) {
+  LAST_RSV = rsv;
+  document.getElementById('formPanel').style.display = 'none';
+  document.getElementById('doneCode').textContent    = '예약코드: ' + rsv.id;
+  document.getElementById('doneCard').classList.add('show');
+}
+
+// ── 다시 신청하기 (직전 데이터 복원 + 구글 시트 삭제) ──
+async function resetForm() {
+  const prev = LAST_RSV;
+
+  // 직전 예약 GAS 삭제 + 로컬에서 제거
+  if (prev) {
+    showLoading('이전 신청 내역을 삭제하는 중...');
+    await deleteFromGAS(prev.id);
+    hideLoading();
+    RESERVATIONS = RESERVATIONS.filter(r => r.id !== prev.id);
+    buildBookedSet();
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+  }
+
+  // 폼 전환
+  document.getElementById('doneCard').classList.remove('show');
+  document.getElementById('formPanel').style.display = '';
+  document.getElementById('rsvErr').classList.remove('show');
+
+  // 직전 값 복원
+  if (prev) {
+    document.getElementById('inGuestName').value = prev.guestName || '';
+    document.getElementById('inPhone').value     = prev.phone     || '';
+    document.getElementById('inEmail').value     = prev.email     || '';
+    document.getElementById('inGuests').value    = prev.guests    || 2;
+    document.getElementById('inMemo').value      = prev.memo      || '';
+    SEL_CHECKIN  = prev.checkin  || null;
+    SEL_CHECKOUT = prev.checkout || null;
+    SEL_STEP     = (SEL_CHECKIN && SEL_CHECKOUT) ? 2 : (SEL_CHECKIN ? 1 : 0);
+  } else {
+    ['inGuestName','inPhone','inEmail','inMemo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('inGuests').value = 2;
+    SEL_CHECKIN = SEL_CHECKOUT = null;
+    SEL_STEP = 0;
+  }
+
+  renderCalendar();
+  updateDateUI();
+}
+
+// ── 예약코드 조회 (수정 모드 진입) ──
+function lookupRsv() {
+  const code = document.getElementById('lookupInput').value.trim();
+  if (!code) { showToast('예약코드를 입력해주세요.'); return; }
+  const rsv = RESERVATIONS.find(r => r.id === code);
+  if (!rsv) { showToast('❌ 예약을 찾을 수 없습니다.'); return; }
+
+  // 폼에 기존 데이터 채우기
+  document.getElementById('inGuestName').value = rsv.guestName || '';
+  document.getElementById('inPhone').value     = rsv.phone     || '';
+  document.getElementById('inEmail').value     = rsv.email     || '';
+  document.getElementById('inGuests').value    = rsv.guests    || 2;
+  document.getElementById('inMemo').value      = rsv.memo      || '';
+  SEL_CHECKIN  = rsv.checkin  || null;
+  SEL_CHECKOUT = rsv.checkout || null;
+  SEL_STEP     = (SEL_CHECKIN && SEL_CHECKOUT) ? 2 : (SEL_CHECKIN ? 1 : 0);
+
+  EDIT_MODE   = true;
+  EDIT_RSV_ID = rsv.id;
+
+  // 해당 예약 날짜를 예약 불가에서 제외 → 날짜 재선택 가능
+  buildBookedSet();
+
+  // UI 전환
+  document.getElementById('editBadge').classList.add('show');
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('editBtnRow').classList.add('show');
+  document.getElementById('rsvErr').classList.remove('show');
+
+  renderCalendar();
+  updateDateUI();
+  showToast('✅ 예약 내용을 불러왔습니다. 수정 후 등록하세요.');
+  scrollToForm();
+}
+
+// ── 수정 등록 ──
+async function updateRsv() {
+  const errEl = document.getElementById('rsvErr');
+  errEl.classList.remove('show');
+
+  const name   = document.getElementById('inGuestName').value.trim();
+  const phone  = document.getElementById('inPhone').value.trim();
+  const email  = document.getElementById('inEmail').value.trim();
+  const guests = parseInt(document.getElementById('inGuests').value) || 1;
+  const memo   = document.getElementById('inMemo').value.trim();
+
+  if (!name)         { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
+  if (!SEL_CHECKIN)  { showErr(errEl, '캘린더에서 체크인 날짜를 선택해주세요.'); return; }
+  if (!SEL_CHECKOUT) { showErr(errEl, '캘린더에서 체크아웃 날짜를 선택해주세요.'); return; }
+
+  const original = RESERVATIONS.find(r => r.id === EDIT_RSV_ID);
+  const dateChanged = original && (original.checkin !== SEL_CHECKIN || original.checkout !== SEL_CHECKOUT);
+  const newStatus = dateChanged ? '대기' : (original?.status || '대기');
+
+  const rsv = {
+    id:         EDIT_RSV_ID,
+    guestName:  name, phone, email,
+    checkin:    SEL_CHECKIN,
+    checkout:   SEL_CHECKOUT,
+    nights:     nightsBetween(SEL_CHECKIN, SEL_CHECKOUT),
+    guests,
+    totalPrice: original?.totalPrice || 0,
+    status:     newStatus,
+    memo,
+    createdAt:  original?.createdAt || todayStr(),
+  };
+
+  const btn = document.getElementById('updateBtn');
+  btn.disabled = true;
+  const ok = await upsertToGAS(rsv);
+  btn.disabled = false;
+
+  if (ok !== false) {
+    const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
+    if (idx >= 0) RESERVATIONS[idx] = rsv; else RESERVATIONS.push(rsv);
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+
+    // 관리자 알림
+    const changeNote = dateChanged
+      ? `\n⚠️ 일정 변경됨 → 상태: 대기\n기존: ${original.checkin} ~ ${original.checkout}\n변경: ${rsv.checkin} ~ ${rsv.checkout}`
+      : `\n(일정 변경 없음, 상태 유지: ${newStatus})`;
+    const smsMsg  = `[감성산장]예약수정\n${rsv.guestName} ${rsv.checkin}~${rsv.checkout}\n${rsv.phone||'미입력'}`;
+    const emailMsg = `예약 수정 신청이 접수되었습니다.\n\n예약자: ${rsv.guestName}\n연락처: ${rsv.phone || '미입력'}\n체크인: ${rsv.checkin}\n체크아웃: ${rsv.checkout}\n인원: ${rsv.guests}명\n예약코드: ${rsv.id}\n메모: ${rsv.memo || '없음'}${changeNote}`;
+    try {
+      const smsQs   = new URLSearchParams({ action:'sms',   receiver:ADMIN_PHONE, msg:smsMsg });
+      const emailQs = new URLSearchParams({ action:'email', to_email:ADMIN_EMAIL, to_name:'관리자', subject:'[영덕감성산장] 예약수정 신청', message:emailMsg });
+      await Promise.all([
+        fetch(`${GAS_URL}?${smsQs}`,   { redirect:'follow' }),
+        fetch(`${GAS_URL}?${emailQs}`, { redirect:'follow' }),
+      ]);
+    } catch(e) { console.warn('알림 발송 실패:', e.message); }
+
+    clearEditMode();
+    buildBookedSet();
+    renderCalendar();
+    showDone(rsv);
+  }
+}
+
+// ── 예약취소 신청 ──
+async function cancelRsv() {
+  const rsv = RESERVATIONS.find(r => r.id === EDIT_RSV_ID);
+  if (!rsv) { showToast('❌ 예약 정보를 찾을 수 없습니다.'); return; }
+  if (!confirm(`예약취소를 신청하시겠습니까?\n(${fmtDateFull(rsv.checkin)} ~ ${fmtDateFull(rsv.checkout)})\n\n관리자에게 취소 신청이 전달되며,\n최종 취소는 관리자 확인 후 처리됩니다.`)) return;
+
+  showLoading('취소 신청을 전송하는 중...');
+  try {
+    // 1. 구글 시트 상태 → '취소 신청'
+    const qs = new URLSearchParams({ action:'rsv_status', id:rsv.id, status:'취소 신청' });
+    await fetch(`${GAS_URL}?${qs}`, { redirect:'follow' });
+
+    // 2. 관리자 SMS 발송
+    const smsMsg = `[감성산장]예약취소\n${rsv.guestName} ${rsv.checkin}~${rsv.checkout}\n${rsv.phone||'미입력'}`;
+    const smsQs = new URLSearchParams({ action:'sms', receiver:ADMIN_PHONE, msg:smsMsg });
+    await fetch(`${GAS_URL}?${smsQs}`, { redirect:'follow' });
+
+    // 3. 관리자 이메일 발송
+    const emailMsg = `예약취소 신청이 접수되었습니다.\n\n예약자: ${rsv.guestName}\n연락처: ${rsv.phone || '미입력'}\n체크인: ${rsv.checkin}\n체크아웃: ${rsv.checkout}\n예약코드: ${rsv.id}\n메모: ${rsv.memo || '없음'}`;
+    const emailQs = new URLSearchParams({ action:'email', to_email:ADMIN_EMAIL, to_name:'관리자', subject:'[영덕감성산장] 예약취소 신청', message:emailMsg });
+    await fetch(`${GAS_URL}?${emailQs}`, { redirect:'follow' });
+
+    // 4. 로컬 상태 업데이트
+    const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
+    if (idx >= 0) RESERVATIONS[idx].status = '취소 신청';
+    try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+
+    hideLoading();
+    clearEditMode();
+    buildBookedSet();
+    renderCalendar();
+    updateDateUI();
+    showToast('✅ 취소 신청이 완료되었습니다. 관리자 확인 후 처리됩니다.');
+  } catch(e) {
+    hideLoading();
+    showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message);
+  }
+}
+
+// ── 수정 모드 해제 ──
+function clearEditMode() {
+  EDIT_MODE   = false;
+  EDIT_RSV_ID = null;
+  document.getElementById('editBadge').classList.remove('show');
+  document.getElementById('submitBtn').style.display = '';
+  document.getElementById('editBtnRow').classList.remove('show');
+  document.getElementById('lookupInput').value = '';
+}
+
+function scrollToForm() {
+  document.getElementById('formPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+<style>
+/* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
+@media(max-width:600px){
+  .hero { flex-direction:column; align-items:flex-start; gap:4px; }
+  .hero h1 { font-size:1.4rem; }
+  .hero p { font-size:.82rem; }
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; align-items:center; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border,#ddd); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+}
+</style>
+</body>
+</html>

@@ -1,0 +1,1689 @@
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>동해바다가 내려다 보이는 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.12);
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--surface); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+  flex-shrink:0;
+}
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a {
+  text-decoration:none; font-size:.9rem; font-weight:600;
+  color:var(--text); transition:color .15s;
+}
+.header-nav a:hover { color:var(--primary); }
+.host-only { display:none !important; }
+body.host-mode .host-only { display:inline !important; }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── PHOTO GALLERY ── */
+.gallery { padding:0; }
+.photo-grid {
+  display:grid;
+  grid-template-columns: 1.55fr 1fr 1fr;
+  grid-template-rows: 270px 270px;
+  gap:6px;
+}
+.photo-main {
+  grid-row: 1 / 3;
+  background:linear-gradient(135deg,#7a9e50,#527830);
+  position:relative; overflow:hidden; cursor:pointer;
+}
+.photo-sub {
+  background:linear-gradient(135deg,#c4895a,#9a6030);
+  position:relative; overflow:hidden; cursor:pointer;
+}
+.photo-sub:nth-child(3) { background:linear-gradient(135deg,#d4b896,#b89060); }
+.photo-sub:nth-child(4) { background:linear-gradient(135deg,#4a8ec4,#2a6090); }
+.photo-sub:nth-child(5) { background:linear-gradient(135deg,#8ab8d8,#5890b8); }
+.photo-img {
+  width:100%; height:100%; object-fit:cover;
+  transition:transform .3s;
+}
+.photo-main:hover .photo-img,
+.photo-sub:hover .photo-img { transform:scale(1.04); }
+.photo-placeholder {
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:3rem; opacity:.4;
+}
+.btn-all-photos {
+  position:absolute; bottom:14px; right:14px; z-index:20;
+  background:var(--surface); border:1.5px solid var(--text);
+  border-radius:8px; padding:8px 14px;
+  font-family:var(--sans); font-size:.82rem; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:6px;
+  transition:background .15s;
+}
+.btn-all-photos:hover { background:var(--bg); }
+
+/* ── MAIN CONTENT ── */
+.main-wrap {
+  max-width:1120px; margin:0 auto;
+  padding:32px 40px 60px;
+  display:block;
+}
+
+/* ── LEFT CONTENT ── */
+.prop-title { font-size:1.4rem; font-weight:900; margin-bottom:8px; }
+.prop-meta { font-size:.92rem; color:var(--sub); margin-bottom:10px; }
+.prop-rating {
+  display:flex; align-items:center; gap:6px;
+  font-size:.92rem; font-weight:600;
+}
+.star { color:var(--primary); font-size:1rem; }
+.review-link { color:var(--text); font-weight:700; text-decoration:underline; cursor:pointer; }
+.divider { border:none; border-top:1px solid var(--border); margin:24px 0; }
+
+/* HOST */
+.host-row { display:flex; align-items:center; gap:14px; margin-bottom:4px; }
+.host-avatar {
+  width:48px; height:48px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem; color:#fff; font-weight:700; flex-shrink:0;
+}
+.host-name { font-size:1rem; font-weight:700; }
+.host-years { font-size:.85rem; color:var(--muted); }
+
+/* FEATURES */
+.features { display:flex; flex-direction:column; gap:18px; margin:8px 0; }
+.feature-item { display:flex; align-items:flex-start; gap:16px; }
+.feature-icon { font-size:1.5rem; flex-shrink:0; margin-top:2px; }
+.feature-title { font-size:.95rem; font-weight:700; margin-bottom:2px; }
+.feature-desc { font-size:.85rem; color:var(--muted); line-height:1.5; }
+
+/* DESCRIPTION */
+.desc-text {
+  font-size:.92rem; line-height:1.8; color:var(--sub);
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.desc-text.expanded { -webkit-line-clamp:unset; }
+.btn-more {
+  background:none; border:none; cursor:pointer;
+  font-family:var(--sans); font-size:.9rem; font-weight:700;
+  color:var(--text); text-decoration:underline; margin-top:10px;
+  display:flex; align-items:center; gap:4px;
+}
+
+/* AMENITIES */
+.amenities-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; margin-top:8px;
+}
+.amenity-item {
+  display:flex; align-items:center; gap:10px;
+  font-size:.9rem; color:var(--sub);
+}
+.amenity-icon { font-size:1.2rem; }
+
+/* REVIEWS */
+.rating-big { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.rating-num { font-size:3rem; font-weight:900; }
+.stars-row { font-size:1.2rem; color:var(--primary); letter-spacing:2px; }
+.reviews-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.review-card {
+  background:var(--bg); border-radius:12px; padding:18px;
+}
+.review-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.review-avatar {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.9rem; color:#fff; font-weight:700; flex-shrink:0;
+}
+.review-name { font-size:.88rem; font-weight:700; }
+.review-date { font-size:.78rem; color:var(--muted); }
+.review-text { font-size:.85rem; line-height:1.7; color:var(--sub); }
+
+/* ── BOOKING WIDGET ── */
+.booking-wrap { position:sticky; top:84px; }
+.booking-card {
+  border:1px solid var(--border); border-radius:16px;
+  padding:24px; box-shadow:var(--shadow);
+}
+.booking-price {
+  font-size:1.3rem; font-weight:900; margin-bottom:16px;
+}
+.booking-price span { font-size:.9rem; font-weight:400; color:var(--muted); }
+.booking-price .night-price { color:var(--primary); }
+
+.date-picker {
+  border:1.5px solid var(--border); border-radius:10px;
+  overflow:hidden; margin-bottom:10px;
+}
+.date-row { display:grid; grid-template-columns:1fr 1fr; }
+.date-cell {
+  padding:12px 14px; cursor:pointer;
+  transition:background .15s;
+}
+.date-cell:first-child { border-right:1px solid var(--border); }
+.date-cell:hover { background:var(--bg); }
+.date-label { font-size:.7rem; font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
+.date-val { font-size:.88rem; color:var(--muted); margin-top:2px; }
+
+.guest-select {
+  border:1.5px solid var(--border); border-radius:10px;
+  padding:12px 14px; display:flex; align-items:center;
+  justify-content:space-between; cursor:pointer;
+  transition:background .15s; margin-bottom:14px;
+}
+.guest-select:hover { background:var(--bg); }
+.guest-label { font-size:.7rem; font-weight:800; letter-spacing:.5px; text-transform:uppercase; display:block; }
+.guest-val { font-size:.88rem; margin-top:2px; }
+.guest-arrow { font-size:1.1rem; color:var(--muted); }
+
+.btn-reserve {
+  width:100%; padding:15px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff; border:none; border-radius:10px;
+  font-family:var(--sans); font-size:1rem; font-weight:700;
+  cursor:pointer; transition:opacity .15s; margin-bottom:12px;
+}
+.btn-reserve:hover { opacity:.9; }
+
+.no-charge-notice {
+  text-align:center; font-size:.82rem; color:var(--muted); margin-bottom:16px;
+}
+
+.price-breakdown { border-top:1px solid var(--border); padding-top:14px; }
+.price-row {
+  display:flex; justify-content:space-between;
+  font-size:.88rem; color:var(--sub); margin-bottom:8px;
+}
+.price-row.total {
+  font-weight:800; font-size:.95rem; color:var(--text);
+  border-top:1px solid var(--border); padding-top:12px; margin-top:4px;
+}
+
+.booking-rating {
+  display:flex; align-items:center; justify-content:center;
+  gap:6px; margin-bottom:16px; font-size:.88rem; font-weight:600;
+}
+
+/* ── LOCATION ── */
+.map-placeholder {
+  background:linear-gradient(135deg,#e8f4e8,#c8e6c8);
+  border-radius:12px; height:280px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:3rem; color:#4a7c59; border:1px solid var(--border);
+  position:relative; overflow:hidden;
+}
+.map-label {
+  position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+  background:var(--surface); border-radius:8px; padding:8px 16px;
+  font-size:.88rem; font-weight:700; box-shadow:var(--shadow);
+  white-space:nowrap;
+}
+
+/* ── CTA SECTION ── */
+.cta-section {
+  background:linear-gradient(135deg, #3a5c28 0%, #5a7a30 40%, #7a6830 100%);
+  padding:100px 40px;
+  text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:20px;
+}
+.cta-sub {
+  font-size:.8rem; font-weight:600; letter-spacing:3px;
+  color:rgba(255,255,255,.55); text-transform:uppercase;
+}
+.cta-title {
+  font-size:2.6rem; font-weight:900; line-height:1.3;
+  color:#fff;
+}
+.cta-title span { color:#b8d878; }
+.cta-desc {
+  font-size:.95rem; color:rgba(255,255,255,.7);
+  line-height:1.9; margin-top:4px;
+}
+.cta-buttons { display:flex; gap:16px; margin-top:12px; }
+.btn-cta-primary {
+  padding:14px 36px; border-radius:999px;
+  background:#fff; color:#2a3a18;
+  border:none; font-family:var(--sans);
+  font-size:1rem; font-weight:700; cursor:pointer;
+  transition:background .15s;
+}
+.btn-cta-primary:hover { background:#f0f0e8; }
+.btn-cta-outline {
+  padding:14px 36px; border-radius:999px;
+  background:transparent; color:#fff;
+  border:2px solid rgba(255,255,255,.5);
+  font-family:var(--sans); font-size:1rem; font-weight:700;
+  cursor:pointer; transition:border-color .15s;
+  display:flex; align-items:center; gap:8px;
+}
+.btn-cta-outline:hover { border-color:#fff; }
+
+/* ── FOOTER ── */
+footer {
+  background:#1a1a18;
+  padding:28px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; }
+.footer-logo-icon {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:.85rem;
+}
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* ── PRICE EDIT (HOST) ── */
+.price-edit-btn { display:none; background:none; border:none; cursor:pointer; font-size:.82rem; color:var(--muted); padding:2px 4px; vertical-align:middle; transition:color .12s; }
+.price-edit-btn:hover { color:var(--primary); }
+body.host-mode .price-edit-btn { display:inline; }
+.price-modal-bg { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); justify-content:center; align-items:center; }
+.price-modal-bg.open { display:flex; }
+.price-modal { background:#fff; border-radius:14px; padding:26px 28px; width:100%; max-width:340px; box-shadow:0 10px 40px rgba(0,0,0,.2); }
+.price-modal-title { font-size:1rem; font-weight:900; color:var(--primary); margin-bottom:18px; }
+.price-field { margin-bottom:14px; }
+.price-field label { display:block; font-size:.78rem; color:var(--muted); margin-bottom:5px; font-weight:600; }
+.price-field input { width:100%; padding:9px 13px; border:1px solid var(--border); border-radius:8px; font-family:var(--sans); font-size:.9rem; }
+.price-field input:focus { outline:none; border-color:var(--primary); }
+.price-field .hint { font-size:.72rem; color:#bbb; margin-top:3px; }
+.price-modal-btns { display:flex; gap:8px; margin-top:18px; }
+.price-modal-btns .btn-ok { flex:1; background:var(--primary); color:#fff; border:none; padding:11px; border-radius:8px; font-family:var(--sans); font-weight:700; font-size:.9rem; cursor:pointer; }
+.price-modal-btns .btn-ok:hover { background:var(--primary-dark); }
+.price-modal-btns .btn-cl { background:#f0ebe4; color:var(--text); border:none; padding:11px 18px; border-radius:8px; font-family:var(--sans); font-size:.88rem; cursor:pointer; }
+
+/* ── CALENDAR POPUP ── */
+.cal-popup { display:none; border:1.5px solid var(--border); border-radius:12px; padding:16px 14px 12px; margin-bottom:10px; background:#fff; }
+.cal-popup.open { display:block; }
+.cal-instruction { text-align:center; font-size:.78rem; color:var(--primary); font-weight:700; margin-bottom:12px; letter-spacing:.3px; }
+.cal-nav-row { position:relative; }
+.cal-nav-btn { position:absolute; top:0; z-index:2; background:#fff; border:1px solid var(--border); border-radius:50%; width:28px; height:28px; font-size:1rem; cursor:pointer; transition:background .12s; line-height:26px; text-align:center; padding:0; }
+.cal-nav-btn:hover { background:var(--bg); }
+.cal-nav-btn:first-child { left:0; }
+.cal-nav-btn:last-child { right:0; }
+.cal-months { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 32px; }
+.cal-month-hd { text-align:center; font-size:.85rem; font-weight:800; margin-bottom:10px; }
+.cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.cal-wd { text-align:center; font-size:.68rem; color:var(--muted); font-weight:600; padding:2px 0; }
+.cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.cal-day {
+  text-align:center; font-size:.8rem; padding:6px 2px;
+  border-radius:50%; cursor:pointer; transition:background .1s, color .1s;
+  line-height:1.4;
+}
+.cal-day:hover:not(.cal-dis):not(.cal-empty) { background:var(--bg); }
+.cal-day.cal-empty { cursor:default; }
+.cal-day.cal-dis { color:#ccc; cursor:not-allowed; }
+.cal-day.cal-today { font-weight:900; color:var(--primary); }
+.cal-day.cal-sel { background:var(--primary) !important; color:#fff !important; border-radius:50%; }
+.cal-day.cal-range { background:#f0e8e0; border-radius:0; }
+.cal-day.cal-range-s { background:var(--primary); color:#fff; border-radius:50% 0 0 50%; }
+.cal-day.cal-range-e { background:var(--primary); color:#fff; border-radius:0 50% 50% 0%; }
+.cal-day.cal-hover-range { background:#f5ede4; border-radius:0; }
+.cal-footer-row { display:flex; justify-content:flex-end; margin-top:10px; padding-top:10px; border-top:1px solid #f0ebe4; }
+.cal-clear-btn { background:none; border:none; font-size:.78rem; color:var(--muted); cursor:pointer; text-decoration:underline; }
+.date-cell.active { background:var(--bg); }
+
+/* ── RESERVATION REQUEST MODAL ── */
+.rsv-req-bg { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
+.rsv-req-bg.open { display:flex; }
+.rsv-req-box { background:#fff; border-radius:16px; padding:28px 30px; width:100%; max-width:420px; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.rsv-req-title { font-size:1.05rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
+.rsv-req-summary { font-size:.83rem; color:var(--sub); background:var(--bg); border-radius:8px; padding:10px 14px; line-height:1.9; margin-bottom:16px; }
+.rsv-req-field { margin-bottom:12px; }
+.rsv-req-field label { display:block; font-size:.75rem; color:var(--muted); font-weight:600; margin-bottom:4px; }
+.rsv-req-field input, .rsv-req-field textarea { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; font-family:var(--sans); font-size:.9rem; background:#faf8f5; }
+.rsv-req-field input:focus, .rsv-req-field textarea:focus { outline:none; border-color:var(--primary); }
+.rsv-req-field textarea { resize:vertical; min-height:60px; }
+.rsv-req-btns { display:flex; gap:8px; margin-top:18px; }
+.rsv-req-ok { flex:1; background:var(--primary); color:#fff; border:none; padding:12px; border-radius:9px; font-family:var(--sans); font-weight:700; font-size:.9rem; cursor:pointer; }
+.rsv-req-ok:hover { background:var(--primary-dark); }
+.rsv-req-cl { background:#f0ebe4; color:var(--text); border:none; padding:12px 18px; border-radius:9px; font-family:var(--sans); font-size:.88rem; cursor:pointer; }
+.rsv-req-err { color:#e53935; font-size:.78rem; margin-top:6px; display:none; }
+.rsv-req-err.show { display:block; }
+
+/* ── CONTENT LOADER OVERLAY ── */
+#pgLoader {
+  position:fixed; left:0; right:0; top:64px; bottom:0; z-index:190;
+  background:rgba(247,245,241,.95); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .45s ease; pointer-events:all;
+}
+#pgLoader.pgHide { opacity:0; pointer-events:none; }
+.pgl-spinner {
+  width:48px; height:48px; border-radius:50%;
+  border:4px solid #e0d5cc; border-top-color:#6b3a1f;
+  animation:pglSpin .85s linear infinite;
+}
+@keyframes pglSpin { to { transform:rotate(360deg); } }
+.pgl-icon  { font-size:2rem; line-height:1; }
+.pgl-title { font-size:1.05rem; font-weight:900; color:#3d2010; letter-spacing:-.3px; }
+.pgl-msg   { font-size:.88rem; color:#888; }
+.pgl-sub   { font-size:.76rem; color:#bbb; }
+.pgl-elapsed { font-size:.72rem; color:#ccc; min-height:16px; }
+.pgl-retry { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1.5px solid #ddd; background:#fff; font-family:var(--sans); font-size:.8rem; color:#666; cursor:pointer; }
+.pgl-retry:hover { background:#f5f5f5; }
+
+/* ── PAGE LOAD BAR ── */
+#pageLoadBar {
+  position:fixed; top:0; left:0; height:3px; z-index:9999;
+  width:0%; background:linear-gradient(90deg,#6b3a1f,#c4895a,#e8a060);
+  background-size:300% 100%; animation:none;
+  transition:width .5s cubic-bezier(.4,0,.2,1), opacity .4s ease;
+  opacity:0; pointer-events:none; border-radius:0 2px 2px 0;
+}
+#pageLoadBar.loading {
+  opacity:1; width:70%;
+  animation:barShimmer 1.4s infinite linear;
+}
+#pageLoadBar.done { width:100%; opacity:0; }
+@keyframes barShimmer {
+  0%   { background-position:100% 0; }
+  100% { background-position:0%   0; }
+}
+
+/* ── PHOTO SKELETON ── */
+@keyframes skeletonWave {
+  0%   { transform:translateX(-100%); }
+  100% { transform:translateX(100%); }
+}
+.photo-skeleton { position:relative; overflow:hidden; }
+.photo-skeleton .photo-placeholder { opacity:.08; transition:opacity .3s; }
+.photo-skeleton::after {
+  content:''; position:absolute; inset:0; z-index:3;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0)   0%,
+    rgba(255,255,255,.28) 50%,
+    rgba(255,255,255,0)   100%);
+  animation:skeletonWave 1.6s infinite linear;
+  pointer-events:none;
+}
+.slot-img { opacity:0; transition:opacity .5s ease; }
+.slot-img.loaded { opacity:1; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .header { padding:0 20px; }
+  .photo-grid { grid-template-columns:1fr 1fr; grid-template-rows:160px 160px; }
+  .photo-main { grid-row:1/3; grid-column:1/2; }
+  .main-wrap {
+    grid-template-columns:1fr; gap:32px;
+    padding:24px 16px 40px;
+  }
+  .booking-wrap { position:static; }
+  .reviews-grid { grid-template-columns:1fr; }
+  .amenities-grid { grid-template-columns:1fr; }
+  .cta-section { padding:60px 24px; }
+  .cta-title { font-size:1.8rem; }
+  .cta-buttons { flex-direction:column; align-items:center; }
+  footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
+  .footer-nav { flex-wrap:wrap; justify-content:center; gap:16px; }
+  .cal-months { grid-template-columns:1fr; }
+  .cal-months > div:last-child { display:none; }
+}
+
+/* ── HOST MODE ── */
+.auth-overlay { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; }
+.auth-overlay.open { display:flex; }
+.auth-box { background:#fff; border-radius:18px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.auth-box-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
+.auth-box-sub { font-size:.82rem; color:#888; margin-bottom:18px; line-height:1.6; }
+.auth-field { width:100%; padding:11px 14px; border:1.5px solid #ddd; border-radius:9px; font-family:var(--sans); font-size:.9rem; outline:none; margin-bottom:6px; }
+.auth-field:focus { border-color:var(--primary); }
+.auth-err { font-size:.75rem; color:#e05252; height:16px; margin-bottom:10px; }
+.auth-btns { display:flex; gap:8px; }
+.btn-auth-cancel { flex:1; padding:11px; border-radius:8px; background:#f0f0f0; color:#555; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.btn-auth-ok { flex:1; padding:11px; border-radius:8px; background:var(--primary); color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.host-badge { display:none; position:fixed; bottom:24px; left:24px; z-index:400; background:var(--primary); color:#fff; padding:9px 16px; border-radius:999px; font-size:.78rem; font-weight:700; box-shadow:0 3px 16px rgba(0,0,0,.2); align-items:center; gap:8px; }
+body.host-mode .host-badge { display:flex; }
+.btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-host-save { background:rgba(255,220,100,.25); border:1px solid rgba(255,220,100,.6); border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-host-save:hover { background:rgba(255,220,100,.45); }
+.btn-host-save:disabled { opacity:.6; cursor:default; }
+/* ── URL 입력 모달 ── */
+.url-modal-bg { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.55); align-items:center; justify-content:center; }
+.url-modal-bg.open { display:flex; }
+.url-modal-box { background:#fff; border-radius:16px; padding:28px 28px 24px; width:min(480px,92vw); box-shadow:0 8px 40px rgba(0,0,0,.22); }
+.url-modal-title { font-size:1rem; font-weight:900; color:#3d2010; margin-bottom:6px; }
+.url-modal-hint { font-size:.78rem; color:#888; line-height:1.5; margin-bottom:14px; }
+.url-modal-input { width:100%; border:1.5px solid #ddd; border-radius:8px; padding:9px 12px; font-size:.88rem; font-family:var(--sans); outline:none; }
+.url-modal-input:focus { border-color:var(--primary); }
+.url-preview-wrap { margin-top:10px; min-height:40px; }
+.url-preview-img { width:100%; max-height:180px; object-fit:cover; border-radius:8px; border:1px solid #eee; }
+.url-preview-err { font-size:.78rem; color:#c00; margin-top:4px; }
+.url-drive-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.url-btn-drive {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 14px; border-radius:8px;
+  border:1.5px solid #4285f4; background:#f0f6ff;
+  color:#4285f4; font-family:var(--sans); font-size:.82rem; font-weight:700;
+  cursor:pointer; white-space:nowrap; text-decoration:none;
+  transition:background .12s;
+}
+.url-btn-drive:hover { background:#deeaff; }
+.url-modal-btns { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+.url-btn-cancel { padding:8px 18px; border:1.5px solid #ddd; border-radius:8px; background:#fff; font-family:var(--sans); font-size:.85rem; cursor:pointer; }
+.url-btn-ok { padding:8px 22px; border:none; border-radius:8px; background:#3d2010; color:#fff; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; }
+.url-btn-ok:hover { background:#5c3319; }
+/* ── 호스트 인증 모달 ── */
+.auth-bg { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
+.auth-bg.open { display:flex; }
+.auth-box { background:#fff; border-radius:20px; padding:36px 32px; width:340px; text-align:center; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.auth-title { font-size:1.15rem; font-weight:900; margin-bottom:8px; }
+.auth-sub { font-size:.85rem; color:#888; margin-bottom:22px; line-height:1.6; }
+.auth-input { width:100%; padding:14px; border:1.5px solid #ddd; border-radius:12px; text-align:center; font-size:1rem; letter-spacing:3px; font-family:var(--sans); margin-bottom:10px; }
+.auth-input:focus { outline:none; border-color:var(--primary); }
+.auth-err { color:#e53935; font-size:.8rem; margin-bottom:10px; min-height:18px; }
+.auth-ok { width:100%; background:var(--primary); color:#fff; border:none; padding:14px; border-radius:12px; font-family:var(--sans); font-size:1rem; font-weight:700; cursor:pointer; margin-bottom:6px; }
+.auth-ok:hover { background:var(--primary-dark,#4a2510); }
+.auth-cancel { width:100%; background:transparent; border:none; color:#888; font-size:.88rem; font-family:var(--sans); cursor:pointer; padding:6px; }
+.photo-edit-overlay { display:none; position:absolute; inset:0; z-index:5; background:rgba(0,0,0,.45); align-items:center; justify-content:center; }
+body.host-mode .photo-main:hover .photo-edit-overlay,
+body.host-mode .photo-sub:hover .photo-edit-overlay { display:flex; }
+.btn-change-photo { padding:8px 18px; border-radius:8px; background:#fff; color:#3d2010; border:none; font-family:var(--sans); font-size:.82rem; font-weight:700; cursor:pointer; }
+.gallery-add-wrap { display:none; }
+body.host-mode .gallery-add-wrap { display:block; }
+.btn-add-gallery { width:100%; padding:14px; background:rgba(255,255,255,.07); border:2px dashed rgba(255,255,255,.4); color:#fff; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-add-gallery:hover { background:rgba(255,255,255,.14); }
+.extra-grid { display:grid; grid-template-columns:1.55fr 1fr 1fr; gap:6px; }
+.extra-photo-item { position:relative; overflow:hidden; height:180px; background:#ccc; }
+.extra-photo-item img { width:100%; height:100%; object-fit:cover; }
+.btn-del-extra { display:none; position:absolute; top:8px; right:8px; z-index:6; background:rgba(220,40,40,.85); border:none; border-radius:50%; color:#fff; width:28px; height:28px; font-size:.85rem; cursor:pointer; align-items:center; justify-content:center; }
+body.host-mode .extra-photo-item:hover .btn-del-extra { display:flex; }
+.btn-change-extra { display:none; position:absolute; bottom:8px; left:50%; transform:translateX(-50%); z-index:6; background:#fff; border:none; border-radius:6px; color:#3d2010; padding:5px 12px; font-family:var(--sans); font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
+</style>
+</head>
+<body>
+
+<!-- 페이지 상단 로딩 진행 바 -->
+<div id="pageLoadBar"></div>
+
+<!-- 콘텐츠 로딩 오버레이 -->
+<div id="pgLoader">
+  <div class="pgl-icon">🏠</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">사진 정보를 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="#">
+    <span class="logo-icon">🏠</span>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="#about" data-icon="🏠">숙소 소개</a>
+    <a href="#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="reserved_view.html" class="host-only" data-icon="📅">예약 현황</a>
+    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
+  </nav>
+  <button class="btn-reserve-header" onclick="location.href='reserved_guest.html'">예약 신청</button>
+</header>
+
+<!-- GALLERY -->
+<section class="gallery" id="gallerySection">
+  <div class="photo-grid" id="mainGrid">
+    <div class="photo-main" data-slot="0">
+      <div class="photo-placeholder">🌿</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(0);event.stopPropagation()">📷 사진 변경</button>
+      </div>
+    </div>
+    <div class="photo-sub" data-slot="1">
+      <div class="photo-placeholder">🪟</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(1);event.stopPropagation()">📷 사진 변경</button>
+      </div>
+    </div>
+    <div class="photo-sub" data-slot="2">
+      <div class="photo-placeholder">🔍</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(2);event.stopPropagation()">📷 사진 변경</button>
+      </div>
+    </div>
+    <div class="photo-sub" data-slot="3">
+      <div class="photo-placeholder">🌊</div>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(3);event.stopPropagation()">📷 사진 변경</button>
+      </div>
+    </div>
+    <div class="photo-sub" data-slot="4" style="position:relative;">
+      <div class="photo-placeholder">📷</div>
+      <button class="btn-all-photos" onclick="location.href='pic_view.html'">⊞ 사진 모두 보기</button>
+      <div class="photo-edit-overlay">
+        <button class="btn-change-photo" onclick="startEditSlot(4);event.stopPropagation()">📷 사진 변경</button>
+      </div>
+    </div>
+  </div>
+  <div class="gallery-add-wrap">
+    <button class="btn-add-gallery" onclick="startAddPhoto()">+ 사진 추가</button>
+  </div>
+  <div class="extra-grid" id="extraGrid"></div>
+</section>
+
+<!-- MAIN CONTENT -->
+<div class="main-wrap">
+
+  <!-- LEFT -->
+  <div class="left-content">
+
+    <h1 class="gallery-title">동해바다가 내려다 보이는 영덕감성산장</h1>
+
+    <p class="prop-title">영덕군, 한국의 게스트용 별채 전체</p>
+    <p class="prop-meta">최대 인원 2명 · 침실 1개 · 침대 1개 · 욕실 2개</p>
+    <div class="prop-rating">
+      <span class="star">★</span>
+      <strong>4.69</strong>
+      <a class="review-link" href="#reviews">후기 39개</a>
+    </div>
+
+    <hr class="divider">
+
+    <!-- HOST -->
+    <div class="host-row">
+      <div class="host-avatar">현</div>
+      <div>
+        <div class="host-name">호스트: 현수 님</div>
+        <div class="host-years">호스팅 경력 9년</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- FEATURES -->
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-icon">🏡</div>
+        <div>
+          <div class="feature-title">별채 전체를 단독으로 사용</div>
+          <div class="feature-desc">다른 게스트와 공간을 공유하지 않고 숙소 전체를 이용하실 수 있습니다.</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🌊</div>
+        <div>
+          <div class="feature-title">동해바다 전망</div>
+          <div class="feature-desc">창문과 테라스에서 아름다운 동해바다가 내려다 보이는 프리미엄 뷰를 즐기실 수 있습니다.</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✅</div>
+        <div>
+          <div class="feature-title">현수 님은 슈퍼호스트입니다</div>
+          <div class="feature-desc">슈퍼호스트는 경험이 풍부하고 높은 평점을 유지하며 게스트가 즐거운 시간을 보낼 수 있도록 최선을 다하는 호스트입니다.</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📍</div>
+        <div>
+          <div class="feature-title">완벽한 위치</div>
+          <div class="feature-desc">최근 숙박한 게스트 중 100%가 위치에 별점 5점을 주었습니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- DESCRIPTION -->
+    <h2 id="about" style="font-size:1.1rem;font-weight:800;margin-bottom:12px;scroll-margin-top:80px;">숙소 소개</h2>
+    <p class="desc-text" id="descText">
+      동해바다가 내려다 보이는 영덕 감성 산장입니다. 아름다운 자연 속에서 조용하고 편안한 휴식을 즐길 수 있는 공간으로, 주변의 울창한 나무와 탁 트인 동해 전망이 인상적입니다. 별채 전체를 단독으로 사용하시므로 프라이버시가 완벽하게 보장됩니다. 1층에는 거실 겸 주방이 있으며, 화목난로와 아늑한 분위기가 특징입니다. 테라스에서 바라보는 일출은 잊지 못할 추억이 될 것입니다. 근처에 영덕 대게 거리, 블루로드 트레킹 코스 등 다양한 관광명소가 있어 알찬 여행을 즐기실 수 있습니다.
+    </p>
+    <button class="btn-more" id="btnMore" onclick="toggleDesc()">자세히 보기 <span>›</span></button>
+
+    <hr class="divider">
+
+    <!-- AMENITIES -->
+    <h2 id="amenities" style="font-size:1.1rem;font-weight:800;margin-bottom:4px;scroll-margin-top:80px;">숙소 편의시설</h2>
+    <div class="amenities-grid">
+      <div class="amenity-item"><span class="amenity-icon">🌊</span> 바다 전망</div>
+      <div class="amenity-item"><span class="amenity-icon">📶</span> 무선 인터넷</div>
+      <div class="amenity-item"><span class="amenity-icon">🍳</span> 주방</div>
+      <div class="amenity-item"><span class="amenity-icon">🔥</span> 화목난로</div>
+      <div class="amenity-item"><span class="amenity-icon">🅿️</span> 무료 주차</div>
+      <div class="amenity-item"><span class="amenity-icon">🧺</span> 세탁기</div>
+      <div class="amenity-item"><span class="amenity-icon">❄️</span> 에어컨</div>
+      <div class="amenity-item"><span class="amenity-icon">☕</span> 커피머신</div>
+      <div class="amenity-item"><span class="amenity-icon">🛁</span> 욕실 2개</div>
+      <div class="amenity-item"><span class="amenity-icon">🏕️</span> 야외 테라스</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- REVIEWS -->
+    <section id="reviews">
+      <div class="rating-big" id="ratingBig">
+        <div class="rating-num" id="ratingNum">4.69</div>
+        <div>
+          <div class="stars-row" id="ratingStars">★★★★★</div>
+          <div style="font-size:.85rem;color:var(--muted);margin-top:4px;" id="ratingCount">후기 39개</div>
+        </div>
+      </div>
+      <div class="reviews-grid" id="reviewsGrid">
+      <div class="review-card" onclick="openRvDetail(0)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+        <div class="review-header">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#3a57e8,#7b5fff)">지</div>
+          <div>
+            <div class="review-name">지연</div>
+            <div class="review-date">2025년 11월</div>
+          </div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
+        </div>
+        <p class="review-text">바다 뷰가 정말 환상적이었어요! 산 속에서 동해를 바라보는 느낌이 너무 특별했습니다. 조용하고 아늑한 분위기에서 완전한 힐링을 했어요.</p>
+      </div>
+      <div class="review-card" onclick="openRvDetail(1)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+        <div class="review-header">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#0aad8e,#00c9a7)">민</div>
+          <div>
+            <div class="review-name">민준</div>
+            <div class="review-date">2025년 10월</div>
+          </div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
+        </div>
+        <p class="review-text">호스트분이 정말 친절하시고 숙소가 사진보다 더 예뻤어요. 화목난로 덕분에 가을밤이 따뜻했고, 주방도 잘 갖춰져 있어서 직접 해먹는 재미도 있었습…</p>
+      </div>
+      <div class="review-card" onclick="openRvDetail(2)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+        <div class="review-header">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316)">수</div>
+          <div>
+            <div class="review-name">수진</div>
+            <div class="review-date">2025년 09월</div>
+          </div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
+        </div>
+        <p class="review-text">테라스에서 일출 보는 게 꿈이었는데 이루었어요. 별채라 프라이버시도 완벽하고, 주변 자연 경관도 너무 아름다웠습니다. 꼭 다시 오고 싶어요!</p>
+      </div>
+      <div class="review-card" onclick="openRvDetail(3)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+        <div class="review-header">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#ef4444,#e8174a)">태</div>
+          <div>
+            <div class="review-name">태양</div>
+            <div class="review-date">2025년 08월</div>
+          </div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★☆</div>
+        </div>
+        <p class="review-text">위치가 정말 최고입니다. 영덕 대게도 근처에서 먹을 수 있고, 블루로드 트레킹도 즐겼어요. 숙소 자체도 너무 감성적이고 청결했습니다.</p>
+      </div></div>
+      <div style="text-align:right;margin-top:14px;">
+        <a href="review.html" style="font-size:.85rem;color:var(--primary);font-weight:700;text-decoration:none;">후기 전체보기 →</a>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- LOCATION -->
+    <h2 id="surroundings" style="font-size:1.1rem;font-weight:800;margin-bottom:12px;">위치</h2>
+    <div style="border-radius:12px;overflow:hidden;height:280px;border:1px solid var(--border);">
+      <iframe src="https://maps.google.com/maps?q=경북+영덕군+영덕대게로+767-48&amp;z=16&amp;output=embed" width="100%" height="280" style="border:0;display:block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:10px;line-height:1.6;">
+      경북 영덕군 · 동해 해안가와 접한 산 중턱에 위치. 영덕 대게 거리까지 차로 15분, 강구항까지 20분 거리입니다.
+    </p>
+
+  </div>
+
+
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <p class="cta-sub">// Book Your Stay</p>
+  <h2 class="cta-title">동해 일출과 함께<br><span>특별한 하룻밤</span>을 경험하세요</h2>
+  <p class="cta-desc">영덕감성산장에서 도심의 일상을 잠시 내려놓고<br>자연 속 진짜 휴식을 만나보세요.</p>
+  <div class="cta-buttons">
+    <button class="btn-cta-primary" onclick="location.href='reserved_guest.html'">지금 예약하기</button>
+    <button class="btn-cta-outline" onclick="location.href='tel:010-2698-9056'">📞 전화 문의</button>
+  </div>
+</section>
+
+<!-- 가격 편집 모달 (호스트 전용) -->
+<div class="price-modal-bg" id="priceModalBg">
+  <div class="price-modal">
+    <div class="price-modal-title">✏️ 요금 편집</div>
+    <div class="price-field">
+      <label>1박 요금 (원)</label>
+      <input type="number" id="inputNightRate" min="0" step="1000" placeholder="120000">
+      <div class="hint">예: 120000 → ₩120,000/박</div>
+    </div>
+    <div class="price-field">
+      <label>청소비 (원)</label>
+      <input type="number" id="inputCleanFee" min="0" step="1000" placeholder="30000">
+    </div>
+    <div class="price-field">
+      <label>서비스 수수료율 (%)</label>
+      <input type="number" id="inputSvcRate" min="0" max="30" step="0.1" placeholder="12">
+      <div class="hint">예: 12 → 숙박 요금의 12%</div>
+    </div>
+    <div class="price-modal-btns">
+      <button class="btn-cl" onclick="closePriceModal()">취소</button>
+      <button class="btn-ok" onclick="savePriceModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 후기 상세 팝업 -->
+<div id="rvDetailBg" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);justify-content:center;align-items:center;" onclick="closeRvDetail(event)">
+  <div id="rvDetailBox" style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.22);position:relative;">
+    <button onclick="closeRvDetail()" style="position:absolute;top:16px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#aaa;line-height:1;">✕</button>
+    <div id="rvDetailContent"></div>
+    <div style="margin-top:20px;text-align:center;">
+      <a href="review.html" style="font-size:.85rem;color:var(--primary);font-weight:700;text-decoration:none;">후기 전체보기 →</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <span class="footer-logo-icon">🏠</span>
+    영덕감성산장
+  </div>
+  <nav class="footer-nav">
+    <a href="#about" data-icon="🏠">숙소 소개</a>
+    <a href="#amenities" data-icon="🛁">편의시설</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="reserved_view.html" class="host-only" data-icon="📅">예약 현황</a>
+    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<script>
+// ── 남긴후기 동적 렌더링 ─────────────
+const _RV_CATS = [
+  {key:'clean',label:'청결도'},{key:'kind',label:'친절도'},
+  {key:'location',label:'위치'},{key:'value',label:'가성비'},{key:'facility',label:'시설'},
+];
+const _RV_AVATAR_COLORS = [
+  'linear-gradient(135deg,#3a57e8,#7b5fff)',
+  'linear-gradient(135deg,#0aad8e,#00c9a7)',
+  'linear-gradient(135deg,#f59e0b,#f97316)',
+  'linear-gradient(135deg,#ef4444,#e8174a)',
+  'linear-gradient(135deg,var(--primary),#c8956c)',
+];
+let _rvSource = [];
+
+function _rvEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+function _rvFmt(ym) {
+  if (!ym) return '';
+  const [y,m] = ym.split('-');
+  return `${y}년 ${m}월`;
+}
+function _rvStars(n) {
+  const r = Math.round(n||0);
+  return '★'.repeat(r) + '☆'.repeat(5-r);
+}
+
+(function renderRecentReviews() {
+  const SAMPLE = [
+    { guestName:'지연', stayDate:'2025-11', avg:5, text:'바다 뷰가 정말 환상적이었어요! 산 속에서 동해를 바라보는 느낌이 너무 특별했습니다. 조용하고 아늑한 분위기에서 완전한 힐링을 했어요.', avatarBg:'linear-gradient(135deg,#3a57e8,#7b5fff)' },
+    { guestName:'민준', stayDate:'2025-10', avg:5, text:'호스트분이 정말 친절하시고 숙소가 사진보다 더 예뻤어요. 화목난로 덕분에 가을밤이 따뜻했고, 주방도 잘 갖춰져 있어서 직접 해먹는 재미도 있었습니다.', avatarBg:'linear-gradient(135deg,#0aad8e,#00c9a7)' },
+    { guestName:'수진', stayDate:'2025-09', avg:5, text:'테라스에서 일출 보는 게 꿈이었는데 이루었어요. 별채라 프라이버시도 완벽하고, 주변 자연 경관도 너무 아름다웠습니다. 꼭 다시 오고 싶어요!', avatarBg:'linear-gradient(135deg,#f59e0b,#f97316)' },
+    { guestName:'태양', stayDate:'2025-08', avg:4, text:'위치가 정말 최고입니다. 영덕 대게도 근처에서 먹을 수 있고, 블루로드 트레킹도 즐겼어요. 숙소 자체도 너무 감성적이고 청결했습니다.', avatarBg:'linear-gradient(135deg,#ef4444,#e8174a)' },
+  ];
+
+  let reviews = [];
+  try { reviews = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) {}
+
+  const useSample = reviews.length === 0;
+  _rvSource = useSample ? SAMPLE : [...reviews].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4);
+
+  if (!useSample) {
+    const avg = reviews.reduce((s,r) => s + (r.avg||0), 0) / reviews.length;
+    const full = Math.floor(avg + 0.25);
+    document.getElementById('ratingNum').textContent = avg.toFixed(2);
+    document.getElementById('ratingStars').textContent = '★'.repeat(full) + '☆'.repeat(5-full);
+    document.getElementById('ratingCount').textContent = `후기 ${reviews.length}개`;
+  } else {
+    document.getElementById('ratingNum').textContent = '4.69';
+    document.getElementById('ratingStars').textContent = '★★★★★';
+    document.getElementById('ratingCount').textContent = '후기 39개';
+  }
+
+  const grid = document.getElementById('reviewsGrid');
+  grid.innerHTML = _rvSource.map((r, i) => {
+    const initial = (r.guestName||'?')[0];
+    const bg = r.avatarBg || _RV_AVATAR_COLORS[i % _RV_AVATAR_COLORS.length];
+    const stars = _rvStars(r.avg||5);
+    const preview = r.text.length > 80 ? r.text.slice(0,80) + '…' : r.text;
+    return `
+      <div class="review-card" onclick="openRvDetail(${i})"
+           style="cursor:pointer;transition:box-shadow .15s;"
+           onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'"
+           onmouseout="this.style.boxShadow=''">
+        <div class="review-header">
+          <div class="review-avatar" style="background:${bg}">${initial}</div>
+          <div>
+            <div class="review-name">${_rvEsc(r.guestName)}</div>
+            <div class="review-date">${_rvFmt(r.stayDate)}</div>
+          </div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">${stars}</div>
+        </div>
+        <p class="review-text">${_rvEsc(preview)}</p>
+      </div>`;
+  }).join('');
+})();
+
+function openRvDetail(idx) {
+  const r = _rvSource[idx];
+  if (!r) return;
+  const initial = (r.guestName||'?')[0];
+  const bg = r.avatarBg || _RV_AVATAR_COLORS[idx % _RV_AVATAR_COLORS.length];
+  const photos = r.photos || [];
+
+  const catsHtml = (r.ratings && Object.keys(r.ratings).length)
+    ? `<div style="display:flex;flex-wrap:wrap;gap:10px 18px;margin:14px 0 16px;">
+        ${_RV_CATS.map(c => `
+          <div style="min-width:80px">
+            <div style="font-size:.72rem;color:#888;margin-bottom:3px">${c.label}</div>
+            <div style="font-size:.85rem;color:#f4a828">${'★'.repeat(r.ratings[c.key]||0)}${'☆'.repeat(5-(r.ratings[c.key]||0))}</div>
+          </div>`).join('')}
+      </div>`
+    : '';
+
+  const photosHtml = photos.length
+    ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;">
+        ${photos.map(p => `<img src="${p}" style="width:88px;height:88px;border-radius:9px;object-fit:cover;cursor:pointer"
+          onclick="this.requestFullscreen&&this.requestFullscreen()">`).join('')}
+      </div>`
+    : '';
+
+  const replyHtml = r.hostReply
+    ? `<div style="background:#f8f4ef;border-left:3px solid var(--primary);border-radius:0 9px 9px 0;padding:12px 16px;margin-top:16px;">
+        <div style="font-size:.75rem;color:var(--primary);font-weight:700;margin-bottom:4px">🏠 운영자 답변</div>
+        <div style="font-size:.87rem;color:#555;line-height:1.65">${_rvEsc(r.hostReply)}</div>
+       </div>`
+    : '';
+
+  document.getElementById('rvDetailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <div style="width:46px;height:46px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:700;flex-shrink:0">${initial}</div>
+      <div>
+        <div style="font-weight:700;font-size:.97rem">${_rvEsc(r.guestName)}</div>
+        <div style="font-size:.78rem;color:#888;margin-top:2px">${_rvFmt(r.stayDate)} 투숙${r.createdAt ? ' · 작성 ' + r.createdAt : ''}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:1.1rem;color:#f4a828;letter-spacing:1px">${_rvStars(r.avg||5)}</div>
+        <div style="font-size:.78rem;color:#aaa;margin-top:2px">${(r.avg||5).toFixed(1)} / 5.0</div>
+      </div>
+    </div>
+    ${catsHtml}
+    <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+    <p style="font-size:.9rem;line-height:1.75;color:#444">${_rvEsc(r.text)}</p>
+    ${photosHtml}
+    ${replyHtml}`;
+
+  const bg2 = document.getElementById('rvDetailBg');
+  bg2.style.display = 'flex';
+  setTimeout(() => bg2.style.opacity = 1, 10);
+}
+
+function closeRvDetail(e) {
+  if (e && e.target !== document.getElementById('rvDetailBg')) return;
+  document.getElementById('rvDetailBg').style.display = 'none';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('rvDetailBg').style.display = 'none';
+});
+
+// ── 달력 선택 ────────────────────────
+const checkinEl  = document.getElementById('checkinVal');
+const checkoutEl = document.getElementById('checkoutVal');
+let checkin = null, checkout = null;
+
+let calMode = 'checkin';
+let calBase = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+
+function formatDate(d) { return `${d.getMonth()+1}월 ${d.getDate()}일`; }
+function isSameDay(a, b) { return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function stripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+function openCal(mode) {
+  calMode = mode;
+  document.getElementById('calInstruction').textContent =
+    mode === 'checkin' ? '체크인 날짜를 선택하세요' : '체크아웃 날짜를 선택하세요';
+  document.getElementById('cellCheckin').classList.toggle('active', mode === 'checkin');
+  document.getElementById('cellCheckout').classList.toggle('active', mode === 'checkout');
+  document.getElementById('calPopup').classList.add('open');
+  renderCalMonths();
+}
+
+function closeCal() {
+  document.getElementById('calPopup').classList.remove('open');
+  document.getElementById('cellCheckin').classList.remove('active');
+  document.getElementById('cellCheckout').classList.remove('active');
+}
+
+function navCal(dir) {
+  calBase = new Date(calBase.getFullYear(), calBase.getMonth() + dir * 2, 1);
+  renderCalMonths();
+}
+
+function renderCalMonths() {
+  const m2 = new Date(calBase.getFullYear(), calBase.getMonth() + 1, 1);
+  document.getElementById('calMonths').innerHTML = renderMonth(calBase) + renderMonth(m2);
+}
+
+function renderMonth(first) {
+  const today = stripTime(new Date());
+  const y = first.getFullYear(), m = first.getMonth();
+  const startDow = first.getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  let html = `<div>
+    <div class="cal-month-hd">${y}년 ${m+1}월</div>
+    <div class="cal-weekdays">${['일','월','화','수','목','금','토'].map(w=>`<div class="cal-wd">${w}</div>`).join('')}</div>
+    <div class="cal-days">`;
+
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-day cal-empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(y, m, d);
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast = date < today;
+    let cls = 'cal-day';
+    if (isPast)                              cls += ' cal-dis';
+    else if (isSameDay(date, today))         cls += ' cal-today';
+    if (isSameDay(date, checkin) && isSameDay(date, checkout)) cls += ' cal-sel';
+    else if (isSameDay(date, checkin))       cls += checkin && checkout ? ' cal-range-s' : ' cal-sel';
+    else if (isSameDay(date, checkout))      cls += ' cal-range-e';
+    else if (checkin && checkout && date > checkin && date < checkout) cls += ' cal-range';
+
+    html += `<div class="${cls}" ${!isPast ? `data-date="${ds}"` : ''}>${d}</div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+// 이벤트 위임 — DOM 재생성 없이 클릭/hover 처리
+(function setupCalEvents() {
+  const container = document.getElementById('calMonths');
+  if (!container) return; // 예약 위젯 제거된 경우 스킵
+
+  container.addEventListener('click', e => {
+    const day = e.target.closest('[data-date]');
+    if (!day) return;
+    pickDate(day.dataset.date);
+  });
+
+  container.addEventListener('mouseover', e => {
+    if (!checkin || checkout) return;
+    const day = e.target.closest('[data-date]');
+    container.querySelectorAll('[data-date]').forEach(el => {
+      if (!day) { el.classList.remove('cal-hover-range'); return; }
+      const d = new Date(el.dataset.date);
+      const hd = new Date(day.dataset.date);
+      el.classList.toggle('cal-hover-range', !el.classList.contains('cal-sel') && !el.classList.contains('cal-range-s') && d > checkin && d < hd);
+    });
+  });
+
+  container.addEventListener('mouseleave', () => {
+    container.querySelectorAll('.cal-hover-range').forEach(el => el.classList.remove('cal-hover-range'));
+  });
+})();
+
+function pickDate(ds) {
+  const date = new Date(ds);
+  if (calMode === 'checkin') {
+    checkin = date; checkout = null;
+    checkinEl.textContent = formatDate(date);
+    checkoutEl.textContent = '날짜 추가';
+    calMode = 'checkout';
+    document.getElementById('calInstruction').textContent = '체크아웃 날짜를 선택하세요';
+    document.getElementById('cellCheckin').classList.remove('active');
+    document.getElementById('cellCheckout').classList.add('active');
+    renderCalMonths();
+  } else {
+    if (checkin && date <= checkin) {
+      checkin = date; checkout = null;
+      checkinEl.textContent = formatDate(date);
+      checkoutEl.textContent = '날짜 추가';
+      document.getElementById('calInstruction').textContent = '체크아웃 날짜를 선택하세요';
+      renderCalMonths();
+    } else {
+      checkout = date;
+      checkoutEl.textContent = formatDate(date);
+      calcPrice();
+      renderCalMonths();
+      setTimeout(closeCal, 280);
+    }
+  }
+}
+
+function clearDates() {
+  checkin = checkout = null;
+  checkinEl.textContent = '날짜 추가';
+  checkoutEl.textContent = '날짜 추가';
+  calMode = 'checkin';
+  document.getElementById('calInstruction').textContent = '체크인 날짜를 선택하세요';
+  renderCalMonths();
+}
+
+// 달력 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  const popup = document.getElementById('calPopup');
+  if (!popup) return;
+  if (!popup.classList.contains('open')) return;
+  const picker = document.querySelector('.date-picker');
+  if (picker && !picker.contains(e.target)) closeCal();
+});
+
+// ── 요금 설정 ────────────────────────
+let PRICE = (function() {
+  try { return JSON.parse(localStorage.getItem('pension_prices')) || {}; } catch(e) { return {}; }
+})();
+function getNightRate() { return PRICE.nightRate || 120000; }
+function getCleanFee()  { return PRICE.cleanFee  !== undefined ? PRICE.cleanFee : 30000; }
+function getSvcRate()   { return PRICE.svcRate    !== undefined ? PRICE.svcRate  : 0.12; }
+
+function applyPriceLabels() {
+  const n = document.getElementById('priceNightLabel');
+  const c = document.getElementById('priceCleanLabel');
+  if (n) n.textContent = `₩${getNightRate().toLocaleString()}`;
+  if (c) c.textContent = `₩${getCleanFee().toLocaleString()}`;
+}
+applyPriceLabels();
+
+function calcPrice() {
+  if(!checkin || !checkout) return;
+  const nights = Math.max(1, Math.round((checkout - checkin) / (1000*60*60*24)));
+  const sub = getNightRate() * nights;
+  const svc = Math.round(sub * getSvcRate());
+  document.getElementById('nightsLabel').textContent = `${nights}박`;
+  document.getElementById('subtotal').textContent = `₩${sub.toLocaleString()}`;
+  document.getElementById('serviceFee').textContent = `₩${svc.toLocaleString()}`;
+  document.getElementById('totalPrice').textContent = `₩${(sub + getCleanFee() + svc).toLocaleString()}`;
+}
+
+function openPriceModal() {
+  document.getElementById('inputNightRate').value = getNightRate();
+  document.getElementById('inputCleanFee').value  = getCleanFee();
+  document.getElementById('inputSvcRate').value   = Math.round(getSvcRate() * 1000) / 10;
+  document.getElementById('priceModalBg').classList.add('open');
+}
+function closePriceModal() {
+  document.getElementById('priceModalBg').classList.remove('open');
+}
+function savePriceModal() {
+  const nr = parseInt(document.getElementById('inputNightRate').value);
+  const cf = parseInt(document.getElementById('inputCleanFee').value);
+  const sr = parseFloat(document.getElementById('inputSvcRate').value);
+  if (isNaN(nr) || nr < 0) { alert('1박 요금을 올바르게 입력해주세요.'); return; }
+  if (isNaN(cf) || cf < 0) { alert('청소비를 올바르게 입력해주세요.'); return; }
+  if (isNaN(sr) || sr < 0 || sr > 30) { alert('수수료율을 0~30 사이로 입력해주세요.'); return; }
+  PRICE = { nightRate: nr, cleanFee: cf, svcRate: sr / 100 };
+  try { localStorage.setItem('pension_prices', JSON.stringify(PRICE)); } catch(e) {}
+  applyPriceLabels();
+  calcPrice();
+  closePriceModal();
+}
+if (document.getElementById('priceModalBg')) {
+  document.getElementById('priceModalBg').addEventListener('click', e => {
+    if (e.target === document.getElementById('priceModalBg')) closePriceModal();
+  });
+}
+
+// ── 인원 선택 ────────────────────────
+let guestCount = 1;
+const MAX_GUESTS = 2;
+
+function toggleGuests() {
+  const picker = document.getElementById('guestPicker');
+  const arrow = document.getElementById('guestArrow');
+  const open = picker.style.display === 'none';
+  picker.style.display = open ? 'block' : 'none';
+  arrow.textContent = open ? '▴' : '▾';
+}
+function changeGuest(delta) {
+  guestCount = Math.max(1, Math.min(MAX_GUESTS, guestCount + delta));
+  document.getElementById('guestCount').textContent = guestCount;
+  document.getElementById('guestVal').textContent = `게스트 ${guestCount}명`;
+}
+
+// ── 저장 토글 ────────────────────────
+let saved = false;
+function toggleSave() {
+  saved = !saved;
+  const icon = document.getElementById('heartIcon');
+  icon.setAttribute('fill', saved ? '#e8174a' : 'none');
+  icon.setAttribute('stroke', saved ? '#e8174a' : 'currentColor');
+  document.getElementById('btnSave').querySelector('svg').nextSibling.textContent = saved ? ' 저장됨' : ' 저장';
+}
+
+// ── 더보기 ──────────────────────────
+let descExpanded = false;
+function toggleDesc() {
+  descExpanded = !descExpanded;
+  document.getElementById('descText').classList.toggle('expanded', descExpanded);
+  document.getElementById('btnMore').innerHTML = descExpanded ? '접기 ‹' : '자세히 보기 ›';
+}
+
+// ── 공유 ────────────────────────────
+function sharePage() {
+  if(navigator.share) {
+    navigator.share({ title: document.title, url: location.href });
+  } else {
+    navigator.clipboard.writeText(location.href).then(()=>alert('링크가 복사되었습니다.'));
+  }
+}
+
+// ── 예약 ────────────────────────────
+function handleReserve() {
+  if (!checkin || !checkout) {
+    alert('체크인 · 체크아웃 날짜를 선택해 주세요.');
+    return;
+  }
+  if (checkout <= checkin) {
+    alert('체크아웃 날짜는 체크인 이후여야 합니다.');
+    return;
+  }
+  const nights = Math.round((checkout - checkin) / (1000*60*60*24));
+  const totalText = document.getElementById('totalPrice').textContent;
+  document.getElementById('rsvReqSummary').innerHTML =
+    `체크인: <b>${formatDate(checkin)}</b> &nbsp;→&nbsp; 체크아웃: <b>${formatDate(checkout)}</b><br>인원: <b>${guestCount}명</b> &nbsp;·&nbsp; <b>${nights}박</b> &nbsp;·&nbsp; 예상 요금: <b>${totalText}</b>`;
+  document.getElementById('rsvReqName').value = '';
+  document.getElementById('rsvReqPhone').value = '';
+  document.getElementById('rsvReqEmail').value = '';
+  document.getElementById('rsvReqMemo').value = '';
+  document.getElementById('rsvReqErr').classList.remove('show');
+  document.getElementById('rsvReqBg').classList.add('open');
+  setTimeout(() => document.getElementById('rsvReqName').focus(), 80);
+}
+
+function closeRsvReq(e) {
+  if (e.target === document.getElementById('rsvReqBg')) document.getElementById('rsvReqBg').classList.remove('open');
+}
+
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function submitReservation() {
+  const name  = document.getElementById('rsvReqName').value.trim();
+  const phone = document.getElementById('rsvReqPhone').value.trim();
+  const email = document.getElementById('rsvReqEmail').value.trim();
+  const memo  = document.getElementById('rsvReqMemo').value.trim();
+  const errEl = document.getElementById('rsvReqErr');
+  errEl.classList.remove('show');
+  if (!name)  { errEl.textContent = '이름을 입력해주세요.';    errEl.classList.add('show'); return; }
+  if (!phone) { errEl.textContent = '연락처를 입력해주세요.'; errEl.classList.add('show'); return; }
+  if (!email) { errEl.textContent = '이메일을 입력해주세요.'; errEl.classList.add('show'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '올바른 이메일 형식이 아닙니다.'; errEl.classList.add('show'); return; }
+
+  const nights   = Math.round((checkout - checkin) / (1000*60*60*24));
+  const totalNum = parseInt(document.getElementById('totalPrice').textContent.replace(/[^0-9]/g, '')) || 0;
+  const todayS   = toDateStr(new Date());
+
+  const reservations = JSON.parse(localStorage.getItem('pension_reservations') || '[]');
+  reservations.push({
+    id: 'rsv_' + Date.now(),
+    guestName: name,
+    phone: phone,
+    email: email,
+    checkin:  toDateStr(checkin),
+    checkout: toDateStr(checkout),
+    nights:   nights,
+    guests:   guestCount,
+    totalPrice: totalNum,
+    status:   'pending',
+    memo:     memo,
+    createdAt: todayS
+  });
+  localStorage.setItem('pension_reservations', JSON.stringify(reservations));
+
+  document.getElementById('rsvReqBg').classList.remove('open');
+  alert(`예약 문의가 접수되었습니다!\n호스트가 확인 후 연락 드리겠습니다.\n\n이름: ${name}\n연락처: ${phone}`);
+}
+
+// ════════════════════════════════════════
+// HOST MODE  (Apps Script 연동)
+// ════════════════════════════════════════
+const HOST_KEY = 'pension_host';
+const HOST_PWD = '1dl34';
+
+// ▼ Apps Script 웹 앱 URL — 배포 후 여기에 붙여넣기
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+// ▼ 호스트 저장용 토큰 (Apps Script 속성의 AUTH_TOKEN 과 동일하게)
+const AUTH_TOKEN = '1dl34';
+
+// 인메모리 상태 (앱 시작 시 시트에서 fetch)
+let slotData  = {};   // { slot_id: url, ... }
+let extraData = [];   // [ url, ... ]
+let editingSlot = null, editingExtraIdx = null;
+let urlModalTarget = null;  // 'slot' | 'extra-add' | 'extra-change'
+
+function checkHostAuth() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  document.getElementById('authField').value = '';
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authBg').classList.add('open');
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+}
+function closeAuth() { document.getElementById('authBg').classList.remove('open'); }
+function closeAuthOutside(e) { if (e.target === document.getElementById('authBg')) closeAuth(); }
+function confirmAuth() {
+  if (document.getElementById('authField').value === HOST_PWD) {
+    sessionStorage.setItem(HOST_KEY, '1');
+    closeAuth();
+    activateHost();
+  } else {
+    document.getElementById('authErr').textContent = '암호가 올바르지 않습니다.';
+    document.getElementById('authField').value = '';
+    document.getElementById('authField').focus();
+  }
+}
+function activateHost() { document.body.classList.add('host-mode'); }
+function exitHostMode() { sessionStorage.removeItem(HOST_KEY); document.body.classList.remove('host-mode'); }
+
+// ── Google Drive URL 정규화 ──
+// uc?export=view 는 차단됨 → thumbnail?sz=w1200 사용
+function normalizeDriveUrl(url) {
+  if (!url) return url;
+  // 형식 1: /file/d/FILE_ID/
+  const m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?\s]+)/);
+  if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w1200`;
+  // 형식 2: open?id=FILE_ID
+  const m2 = url.match(/drive\.google\.com\/open\?id=([^&\s]+)/);
+  if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w1200`;
+  // 형식 3: uc?export=view&id=FILE_ID (이미 변환됐지만 구형 데이터 대비)
+  const m3 = url.match(/drive\.google\.com\/uc\?.*[?&]id=([^&\s]+)/);
+  if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w1200`;
+  return url;
+}
+
+// ── URL 입력 모달 ──
+function openUrlModal(target, title) {
+  urlModalTarget = target;
+  document.getElementById('urlModalTitle').textContent = title || '사진 URL 입력';
+  document.getElementById('urlModalInput').value = '';
+  document.getElementById('urlPreviewImg').style.display = 'none';
+  document.getElementById('urlPreviewErr').textContent = '';
+  document.getElementById('urlModalBg').classList.add('open');
+  setTimeout(() => document.getElementById('urlModalInput').focus(), 80);
+}
+function closeUrlModal(e) {
+  if (e && e.target !== document.getElementById('urlModalBg')) return;
+  document.getElementById('urlModalBg').classList.remove('open');
+}
+function previewUrlInput() {
+  const raw = document.getElementById('urlModalInput').value.trim();
+  const url = normalizeDriveUrl(raw);
+  const img  = document.getElementById('urlPreviewImg');
+  const err  = document.getElementById('urlPreviewErr');
+  const cvWrap = document.getElementById('urlConvertedWrap');
+  const cvSpan = document.getElementById('urlConverted');
+
+  if (!url) {
+    img.style.display = 'none'; err.textContent = ''; cvWrap.style.display = 'none';
+    return;
+  }
+  // Drive URL이 변환된 경우 변환 결과 표시
+  if (url !== raw) {
+    cvSpan.textContent = url;
+    cvWrap.style.display = 'block';
+  } else {
+    cvWrap.style.display = 'none';
+  }
+  img.style.display = 'block';
+  img.src = url;
+  img.onerror = () => {
+    img.style.display = 'none';
+    err.textContent = '⚠️ 이미지를 불러올 수 없습니다. Drive 파일 공유 설정(링크가 있는 모든 사용자)을 확인하세요.';
+  };
+  img.onload = () => { err.textContent = ''; };
+}
+function confirmUrlInput() {
+  const raw = document.getElementById('urlModalInput').value.trim();
+  if (!raw) { alert('URL을 입력하세요.'); return; }
+  const url = normalizeDriveUrl(raw);
+  document.getElementById('urlModalBg').classList.remove('open');
+
+  if (urlModalTarget === 'slot') {
+    slotData[editingSlot] = url;
+    applySlotPhoto(editingSlot, url);
+  } else if (urlModalTarget === 'extra-add') {
+    extraData.push(url);
+    renderExtras();
+  } else if (urlModalTarget === 'extra-change') {
+    extraData[editingExtraIdx] = url;
+    renderExtras();
+  }
+}
+
+// ── 갤러리 슬롯 사진 변경 ──
+function startEditSlot(slot) {
+  editingSlot = slot;
+  openUrlModal('slot', '슬롯 사진 URL 입력');
+}
+function applySlotPhoto(slot, src) {
+  const el = document.querySelector(`[data-slot="${slot}"]`); if (!el) return;
+  let img = el.querySelector('.slot-img');
+  if (!img) {
+    img = document.createElement('img'); img.className = 'slot-img';
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;';
+    el.prepend(img);
+  }
+  img.onload  = () => img.classList.add('loaded');
+  img.onerror = () => img.classList.add('loaded');
+  img.src = src;
+}
+
+// ── 사진 추가 ──
+function startAddPhoto() { openUrlModal('extra-add', '추가 사진 URL 입력'); }
+function renderExtras() {
+  document.getElementById('extraGrid').innerHTML = extraData.map((src, i) => `
+    <div class="extra-photo-item">
+      <img src="${src}" alt="">
+      <button class="btn-del-extra" onclick="delExtra(${i});event.stopPropagation()">✕</button>
+      <button class="btn-change-extra" onclick="startChangeExtra(${i});event.stopPropagation()">📷 변경</button>
+    </div>`).join('');
+}
+function delExtra(idx) {
+  if (!confirm('이 사진을 삭제할까요?')) return;
+  extraData.splice(idx, 1);
+  renderExtras();
+}
+function startChangeExtra(idx) {
+  editingExtraIdx = idx;
+  openUrlModal('extra-change', '사진 URL 변경');
+}
+
+// ── HTML 내보내기 (사진 embed) ──
+// ── 시트에 저장 (호스트 전용) ──
+async function saveToSheet() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    alert('APPS_SCRIPT_URL 을 설정하지 않았습니다.\nindex.html 상단의 APPS_SCRIPT_URL 값을 채워주세요.');
+    return;
+  }
+  const btn = document.querySelector('.btn-host-save');
+  btn.textContent = '저장 중…'; btn.disabled = true;
+  try {
+    const slotsPayload  = Object.entries(slotData).map(([slot_id, url]) => ({ slot_id, url }));
+    const extrasPayload = extraData.map((url, i) => ({ order: i, url }));
+
+    await postSheet('index_slots',  slotsPayload);
+    await postSheet('index_extras', extrasPayload);
+
+    lcClear(); // 저장 후 로컬 캐시 무효화
+    btn.textContent = '✅ 저장 완료!';
+    setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
+  } catch(err) {
+    alert('저장 실패: ' + err.message);
+    btn.textContent = '💾 저장'; btn.disabled = false;
+  }
+}
+
+function postSheet(sheet, data) {
+  return fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ token: AUTH_TOKEN, sheet, action: 'save', data }),
+  });
+}
+
+// ── 로딩 오버레이 ──
+let _pglTimer = null, _pglSec = 0;
+function showPgLoader(msg) {
+  const el = document.getElementById('pgLoader');
+  if (!el) return;
+  el.classList.remove('pgHide');
+  if (msg) document.getElementById('pglMsg').textContent = msg;
+  _pglSec = 0;
+  document.getElementById('pglElapsed').textContent = '';
+  document.getElementById('pglRetry').style.display = 'none';
+  if (_pglTimer) clearInterval(_pglTimer);
+  _pglTimer = setInterval(() => {
+    _pglSec++;
+    const el = document.getElementById('pglElapsed');
+    if (_pglSec >= 3 && el) el.textContent = `${_pglSec}초째 로딩 중...`;
+    if (_pglSec >= 10) {
+      const rb = document.getElementById('pglRetry');
+      if (rb) rb.style.display = 'inline-block';
+    }
+  }, 1000);
+}
+function hidePgLoader() {
+  if (_pglTimer) { clearInterval(_pglTimer); _pglTimer = null; }
+  const el = document.getElementById('pgLoader');
+  if (el) { el.classList.add('pgHide'); setTimeout(() => { if(el.parentNode) el.remove(); }, 500); }
+}
+
+// ── 로딩 바 제어 ──
+function startLoadBar() {
+  const bar = document.getElementById('pageLoadBar');
+  bar.classList.remove('done');
+  bar.classList.add('loading');
+  document.querySelectorAll('[data-slot]').forEach(el => el.classList.add('photo-skeleton'));
+  showPgLoader('메인 사진을 불러오는 중입니다...');
+}
+function finishLoadBar() {
+  const bar = document.getElementById('pageLoadBar');
+  bar.classList.remove('loading');
+  bar.classList.add('done');
+  document.querySelectorAll('[data-slot]').forEach(el => el.classList.remove('photo-skeleton'));
+  setTimeout(() => bar.classList.remove('done'), 500);
+  hidePgLoader();
+}
+
+// ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화) ──
+const LC_KEY = 'pension_cache_index';
+function lcGet() { try { return JSON.parse(sessionStorage.getItem(LC_KEY)||'null'); } catch(e){return null;} }
+function lcSet(d) { try { sessionStorage.setItem(LC_KEY, JSON.stringify(d)); } catch(e){} }
+function lcClear() { try { sessionStorage.removeItem(LC_KEY); } catch(e){} }
+
+function applyIndexCache(cached) {
+  if (cached.slotData) {
+    slotData = cached.slotData;
+    Object.entries(slotData).forEach(([slot, src]) => applySlotPhoto(slot, src));
+  }
+  if (cached.extraData) {
+    extraData = cached.extraData;
+    renderExtras();
+  }
+}
+
+async function fetchIndexFromSheet() {
+  // 두 시트를 한 번의 요청으로 합산 (?sheets=)
+  const res  = await fetch(`${APPS_SCRIPT_URL}?sheets=index_slots,index_extras`);
+  const json = await res.json();
+  if (!json.ok) return null;
+  const slots  = json.data['index_slots']  || [];
+  const extras = json.data['index_extras'] || [];
+  const newSlotData  = {};
+  slots.forEach(r => { if (r.url) newSlotData[r.slot_id] = normalizeDriveUrl(r.url); });
+  extras.sort((a, b) => Number(a.order) - Number(b.order));
+  const newExtraData = extras.filter(r => r.url).map(r => normalizeDriveUrl(r.url));
+  return { slotData: newSlotData, extraData: newExtraData };
+}
+
+// ── 시트에서 데이터 로드 ──
+async function loadFromSheet() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+
+  const cached = lcGet();
+  if (cached) {
+    // 캐시 즉시 표시 → 로더 숨김
+    applyIndexCache(cached);
+    finishLoadBar();
+    // 호스트 모드일 때만 백그라운드 갱신 (게스트는 변경 불가)
+    if (sessionStorage.getItem(HOST_KEY) === '1') {
+      fetchIndexFromSheet().then(fresh => {
+        if (!fresh) return;
+        if (JSON.stringify(fresh) !== JSON.stringify(cached)) {
+          applyIndexCache(fresh);
+          lcSet(fresh);
+        }
+      }).catch(() => {});
+    }
+    return;
+  }
+
+  // 캐시 없음: 대기 후 표시
+  startLoadBar();
+  try {
+    const fresh = await fetchIndexFromSheet();
+    if (fresh) {
+      applyIndexCache(fresh);
+      lcSet(fresh);
+    }
+  } catch(err) {
+    console.warn('시트 로드 실패:', err);
+  } finally {
+    finishLoadBar();
+  }
+}
+
+// ── 초기화 ──
+(function initHost() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') {
+    activateHost();
+    lcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+  }
+  loadFromSheet();
+})();
+</script>
+
+<!-- 호스트 인증 모달 -->
+<div class="auth-bg" id="authBg" onclick="closeAuthOutside(event)">
+  <div class="auth-box">
+    <div class="auth-title">🔐 호스트 인증</div>
+    <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-input" id="authField" type="password" placeholder="암호 입력" onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr"></div>
+    <button class="auth-ok" onclick="confirmAuth()">확인</button>
+    <button class="auth-cancel" onclick="closeAuth()">취소</button>
+  </div>
+</div>
+
+<!-- HOST BADGE -->
+<div class="host-badge" id="hostBadge">
+  ✏️ 호스트 모드
+  <span style="opacity:.35">|</span>
+  <a href="reserved_view.html" style="color:#fff;text-decoration:none;opacity:.8;font-size:.75rem;font-weight:700;">📅 예약현황</a>
+  <button class="btn-host-save" onclick="saveToSheet()">💾 저장</button>
+  <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
+</div>
+
+<!-- URL 입력 모달 -->
+<div class="url-modal-bg" id="urlModalBg" onclick="closeUrlModal(event)">
+  <div class="url-modal-box">
+    <div class="url-modal-title" id="urlModalTitle">사진 URL 입력</div>
+    <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 직접 URL을 붙여넣으세요.<br>Drive 링크는 <b>thumbnail</b> 형식으로 자동 변환되어 적용됩니다.</div>
+    <div class="url-drive-row">
+      <a class="url-btn-drive" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"/>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"/>
+          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"/>
+        </svg>
+        Drive에서 찾기
+      </a>
+      <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
+    </div>
+    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
+    <div id="urlConvertedWrap" style="display:none;margin-top:6px;padding:6px 10px;background:#f5f5f0;border-radius:6px;font-size:.72rem;color:#666;word-break:break-all;">
+      변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;"></span>
+    </div>
+    <div class="url-preview-wrap">
+      <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
+      <div class="url-preview-err" id="urlPreviewErr"></div>
+    </div>
+    <div class="url-modal-btns">
+      <button class="url-btn-cancel" onclick="document.getElementById('urlModalBg').classList.remove('open')">취소</button>
+      <button class="url-btn-ok" onclick="confirmUrlInput()">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- 예약 문의 모달 -->
+<div class="rsv-req-bg" id="rsvReqBg" onclick="closeRsvReq(event)">
+  <div class="rsv-req-box">
+    <div class="rsv-req-title">예약 문의 접수</div>
+    <div class="rsv-req-summary" id="rsvReqSummary"></div>
+    <div class="rsv-req-field">
+      <label>이름 *</label>
+      <input type="text" id="rsvReqName" placeholder="홍길동" maxlength="20" onkeydown="if(event.key==='Enter')document.getElementById('rsvReqPhone').focus()">
+    </div>
+    <div class="rsv-req-field">
+      <label>연락처 *</label>
+      <input type="tel" id="rsvReqPhone" placeholder="010-0000-0000" onkeydown="if(event.key==='Enter')document.getElementById('rsvReqEmail').focus()">
+    </div>
+    <div class="rsv-req-field">
+      <label>이메일 *</label>
+      <input type="email" id="rsvReqEmail" placeholder="example@email.com" onkeydown="if(event.key==='Enter')submitReservation()">
+    </div>
+    <div class="rsv-req-field">
+      <label>메모 (선택)</label>
+      <textarea id="rsvReqMemo" placeholder="늦은 체크인, 반려동물 동반 등 특이사항"></textarea>
+    </div>
+    <div class="rsv-req-err" id="rsvReqErr"></div>
+    <div class="rsv-req-btns">
+      <button class="rsv-req-cl" onclick="document.getElementById('rsvReqBg').classList.remove('open')">취소</button>
+      <button class="rsv-req-ok" onclick="submitReservation()">문의 접수하기</button>
+    </div>
+  </div>
+</div>
+
+
+<style>
+/* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
+@media(max-width:600px){
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; align-items:center; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border,#ddd); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+}
+</style>
+</body></html>

@@ -1,0 +1,785 @@
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>동영상 갤러리 - 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f4f2ee;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.10);
+  --shadow-hover: 0 8px 32px rgba(0,0,0,.16);
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+}
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── PAGE HERO ── */
+.page-hero {
+  background:linear-gradient(135deg,#1a2a4a 0%,#2a3a5a 50%,#1a304a 100%);
+  padding:18px 48px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.page-hero-left { display:flex; align-items:center; gap:20px; }
+.page-hero-sub { font-size:.7rem; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,.5); text-transform:uppercase; white-space:nowrap; }
+.page-hero-title { font-size:1rem; font-weight:900; color:#fff; }
+.page-hero-desc { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.6; }
+.hero-btns { display:flex; align-items:center; gap:10px; }
+.hero-link {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  border-radius:999px; padding:8px 18px;
+  font-size:.85rem; font-weight:700; color:#fff; text-decoration:none;
+  transition:background .15s;
+}
+.hero-link:hover { background:rgba(255,255,255,.25); }
+.video-count-badge {
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+  border-radius:999px; padding:8px 18px;
+  font-size:.85rem; font-weight:700; color:#fff; white-space:nowrap;
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 48px; display:flex; align-items:center; gap:6px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-btn {
+  flex-shrink:0; padding:16px 18px;
+  border:none; border-bottom:2.5px solid transparent;
+  background:transparent; font-family:var(--sans);
+  font-size:.85rem; font-weight:600; color:var(--muted);
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.filter-btn:hover { color:var(--text); }
+.filter-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* ── GALLERY GRID ── */
+.gallery-wrap { padding:36px 48px 60px; max-width:1280px; margin:0 auto; }
+.empty-msg { text-align:center; padding:80px 20px; color:var(--muted); font-size:.95rem; line-height:1.8; }
+.empty-msg .empty-icon { font-size:3.5rem; margin-bottom:16px; }
+
+/* ── VIDEO CARD ── */
+.video-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+.video-card {
+  background:var(--surface); border-radius:16px;
+  overflow:hidden; box-shadow:var(--shadow);
+  cursor:pointer; transition:transform .2s, box-shadow .2s;
+}
+.video-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-hover); }
+.video-thumb {
+  position:relative; width:100%; padding-top:56.25%; /* 16:9 */
+  background:#111; overflow:hidden;
+}
+.video-thumb iframe,
+.video-thumb video {
+  position:absolute; inset:0; width:100%; height:100%;
+  border:none; object-fit:cover;
+}
+.video-thumb-placeholder {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; color:rgba(255,255,255,.5); font-size:.8rem;
+}
+.video-thumb-placeholder .thumb-icon { font-size:2.8rem; opacity:.5; }
+.play-overlay {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.25); transition:background .15s;
+}
+.video-card:hover .play-overlay { background:rgba(0,0,0,.4); }
+.play-btn {
+  width:56px; height:56px; border-radius:50%;
+  background:rgba(255,255,255,.92); border:none;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem; color:#1a1a1a;
+  transform:scale(1); transition:transform .15s;
+  pointer-events:none;
+}
+.video-card:hover .play-btn { transform:scale(1.1); }
+.video-duration {
+  position:absolute; bottom:8px; right:10px;
+  background:rgba(0,0,0,.7); color:#fff;
+  font-size:.7rem; font-weight:700; border-radius:4px; padding:2px 6px;
+}
+.card-body { padding:16px 18px 18px; }
+.card-category {
+  display:inline-block; font-size:.68rem; font-weight:700;
+  letter-spacing:.5px; text-transform:uppercase; color:var(--primary);
+  background:#f5ede6; border-radius:4px; padding:3px 8px; margin-bottom:8px;
+}
+.card-title { font-size:.98rem; font-weight:800; margin-bottom:5px; line-height:1.4; }
+.card-desc { font-size:.82rem; color:var(--sub); line-height:1.7; }
+
+/* ── PLAYER MODAL ── */
+.player-overlay {
+  display:none; position:fixed; inset:0; z-index:600;
+  background:rgba(0,0,0,.92); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.player-overlay.open { display:flex; animation:fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.player-wrap {
+  position:relative; width:100%; max-width:900px;
+}
+.player-close {
+  position:absolute; top:-44px; right:0;
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+  color:#fff; font-size:1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.player-close:hover { background:rgba(255,255,255,.3); }
+.player-inner {
+  position:relative; width:100%; padding-top:56.25%;
+  background:#000; border-radius:12px; overflow:hidden;
+}
+.player-inner iframe,
+.player-inner video {
+  position:absolute; inset:0; width:100%; height:100%; border:none;
+}
+.player-info {
+  padding:16px 4px 0;
+  color:#fff;
+}
+.player-info-cat { font-size:.72rem; font-weight:700; color:rgba(255,255,255,.5); margin-bottom:4px; }
+.player-info-title { font-size:1.05rem; font-weight:800; }
+.player-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+  color:#fff; font-size:1.3rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s; z-index:5;
+}
+.player-nav:hover { background:rgba(255,255,255,.25); }
+.player-prev { left:-60px; }
+.player-next { right:-60px; }
+
+/* ── HOST ── */
+.fab-add { display:none; position:fixed; bottom:24px; right:24px; z-index:400; background:var(--primary); color:#fff; border:none; border-radius:999px; padding:14px 22px; font-family:var(--sans); font-size:.9rem; font-weight:700; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,.2); align-items:center; gap:8px; }
+body.host-mode .fab-add { display:flex; }
+.btn-del-video { display:none; position:absolute; top:8px; right:8px; z-index:10; background:rgba(220,40,40,.85); border:none; border-radius:50%; color:#fff; width:28px; height:28px; font-size:.85rem; cursor:pointer; align-items:center; justify-content:center; }
+body.host-mode .video-thumb .btn-del-video { display:flex; }
+.btn-edit-video { display:none; position:absolute; bottom:8px; right:8px; z-index:10; background:var(--primary); border:none; border-radius:6px; color:#fff; padding:4px 10px; font-family:var(--sans); font-size:.72rem; font-weight:700; cursor:pointer; align-items:center; gap:4px; }
+body.host-mode .card-body .btn-edit-video { display:flex; }
+.host-badge { display:none; position:fixed; bottom:24px; left:24px; z-index:400; background:var(--primary); color:#fff; padding:9px 16px; border-radius:999px; font-size:.78rem; font-weight:700; box-shadow:0 3px 16px rgba(0,0,0,.2); align-items:center; gap:8px; }
+body.host-mode .host-badge { display:flex; }
+.btn-host-exit { background:rgba(255,255,255,.2); border:none; border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-host-save { background:rgba(255,220,100,.25); border:1px solid rgba(255,220,100,.6); border-radius:4px; color:#fff; padding:2px 8px; font-size:.72rem; font-family:var(--sans); font-weight:700; cursor:pointer; }
+.btn-host-save:hover { background:rgba(255,220,100,.45); }
+.btn-host-save:disabled { opacity:.6; cursor:default; }
+.btn-edit-video { display:none; position:absolute; bottom:8px; right:8px; z-index:10; background:var(--primary); border:none; border-radius:6px; color:#fff; padding:4px 10px; font-family:var(--sans); font-size:.72rem; font-weight:700; cursor:pointer; align-items:center; gap:4px; }
+body.host-mode .card-body .btn-edit-video { display:flex; }
+
+/* ── VIDEO ADD MODAL ── */
+.vm-overlay { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:20px; }
+.vm-overlay.open { display:flex; }
+.vm-box { background:#fff; border-radius:18px; padding:28px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.vm-title { font-size:1.05rem; font-weight:900; margin-bottom:20px; }
+.vm-label { font-size:.78rem; font-weight:700; color:var(--sub); display:block; margin-bottom:6px; margin-top:14px; }
+.vm-input, .vm-select, .vm-textarea { width:100%; padding:10px 12px; border:1.5px solid #ddd; border-radius:8px; font-family:var(--sans); font-size:.88rem; outline:none; }
+.vm-input:focus, .vm-select:focus, .vm-textarea:focus { border-color:var(--primary); }
+.vm-textarea { resize:vertical; min-height:60px; }
+.vm-hint { font-size:.75rem; color:var(--muted); margin-top:5px; line-height:1.5; }
+.url-drive-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.url-btn-drive { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:8px; border:1.5px solid #4285f4; background:#f0f6ff; color:#4285f4; font-family:var(--sans); font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; text-decoration:none; transition:background .12s; }
+.url-btn-drive:hover { background:#deeaff; }
+.vm-or { text-align:center; font-size:.8rem; color:var(--muted); margin:14px 0 0; }
+.vm-file-area { border:2px dashed #ddd; border-radius:8px; padding:16px; text-align:center; cursor:pointer; font-size:.85rem; color:#aaa; margin-top:8px; transition:border-color .15s; }
+.vm-file-area:hover { border-color:var(--primary); color:var(--primary); }
+.vm-btns { display:flex; gap:8px; margin-top:20px; }
+.btn-vm-cancel { flex:1; padding:12px; border-radius:8px; background:#f0f0f0; color:#555; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.btn-vm-ok { flex:1; padding:12px; border-radius:8px; background:var(--primary); color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+
+/* ── AUTH ── */
+.auth-overlay { display:none; position:fixed; inset:0; z-index:800; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; }
+.auth-overlay.open { display:flex; }
+.auth-box { background:#fff; border-radius:18px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.auth-box-title { font-size:1.05rem; font-weight:900; margin-bottom:6px; }
+.auth-box-sub { font-size:.82rem; color:#888; margin-bottom:18px; line-height:1.6; }
+.auth-field { width:100%; padding:11px 14px; border:1.5px solid #ddd; border-radius:9px; font-family:var(--sans); font-size:.9rem; outline:none; margin-bottom:6px; }
+.auth-field:focus { border-color:var(--primary); }
+.auth-err { font-size:.75rem; color:#e05252; height:16px; margin-bottom:10px; }
+.auth-btns { display:flex; gap:8px; }
+.btn-auth-cancel { flex:1; padding:11px; border-radius:8px; background:#f0f0f0; color:#555; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+.btn-auth-ok { flex:1; padding:11px; border-radius:8px; background:var(--primary); color:#fff; border:none; font-family:var(--sans); font-size:.88rem; font-weight:700; cursor:pointer; }
+
+/* ── FOOTER ── */
+footer { background:#1a1a18; padding:28px 48px; display:flex; align-items:center; justify-content:space-between; }
+.footer-logo { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:800; color:#fff; }
+.footer-logo-icon { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7a5c3a,#4a3018); display:flex; align-items:center; justify-content:center; font-size:.85rem; }
+.footer-nav { display:flex; gap:24px; }
+.footer-nav a { text-decoration:none; font-size:.82rem; color:rgba(255,255,255,.5); font-weight:500; transition:color .15s; }
+.footer-nav a:hover { color:#fff; }
+.footer-copy { font-size:.78rem; color:rgba(255,255,255,.35); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .header { padding:0 20px; }
+  .page-hero { padding:14px 16px 12px; flex-wrap:wrap; gap:10px; }
+  .filter-bar { padding:0 16px; }
+  .gallery-wrap { padding:24px 16px 40px; }
+  .video-grid { grid-template-columns:1fr 1fr; gap:14px; }
+  .player-prev { left:-10px; }
+  .player-next { right:-10px; }
+  footer { flex-direction:column; gap:16px; text-align:center; padding:24px 16px; }
+}
+@media(max-width:560px) {
+  .video-grid { grid-template-columns:1fr; }
+  .player-nav { display:none; }
+}
+
+/* ── CONTENT LOADER OVERLAY ── */
+#pgLoader {
+  position:fixed; left:0; right:0; top:64px; bottom:0; z-index:190;
+  background:rgba(247,245,241,.95); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .45s ease;
+}
+#pgLoader.pgHide { opacity:0; pointer-events:none; }
+.pgl-spinner { width:48px; height:48px; border-radius:50%; border:4px solid #e0d5cc; border-top-color:#6b3a1f; animation:pglSpin .85s linear infinite; }
+@keyframes pglSpin { to { transform:rotate(360deg); } }
+.pgl-icon  { font-size:2rem; }
+.pgl-title { font-size:1.05rem; font-weight:900; color:#3d2010; }
+.pgl-msg   { font-size:.88rem; color:#888; }
+.pgl-sub   { font-size:.76rem; color:#bbb; }
+.pgl-elapsed { font-size:.72rem; color:#ccc; min-height:16px; }
+.pgl-retry { display:none; margin-top:4px; padding:7px 18px; border-radius:999px; border:1.5px solid #ddd; background:#fff; font-family:var(--sans); font-size:.8rem; color:#666; cursor:pointer; }
+.pgl-retry:hover { background:#f5f5f5; }
+</style>
+<script id="__vid_emb__">window.__EMBED_VID__=[];</script>
+</head>
+<body>
+
+<!-- 콘텐츠 로딩 오버레이 -->
+<div id="pgLoader">
+  <div class="pgl-icon">🎬</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">동영상 목록을 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <span class="logo-icon">🏠</span>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about" data-icon="🏠">공간소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
+  </nav>
+</header>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-left">
+    <p class="page-hero-sub">// Video Gallery</p>
+    <h1 class="page-hero-title">동영상 갤러리</h1>
+    <p class="page-hero-desc">영덕감성산장의 공간과 풍경을<br>영상으로 생생하게 경험해보세요.</p>
+  </div>
+  <div class="hero-btns">
+    <div class="video-count-badge" id="videoCountBadge">총 6개</div>
+    <a href="pic_view.html" class="hero-link">🖼 사진모두보기</a>
+    <a href="pic_slide.html" class="hero-link">▶ 슬라이드보기</a>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" style="justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button class="filter-btn active" onclick="filterVideos('all',this)">전체</button>
+    <button class="filter-btn" onclick="filterVideos('exterior',this)">외관 · 전경</button>
+    <button class="filter-btn" onclick="filterVideos('interior',this)">실내 공간</button>
+    <button class="filter-btn" onclick="filterVideos('view',this)">전망 · 자연</button>
+    <button class="filter-btn" onclick="filterVideos('facility',this)">편의시설</button>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="gallery-wrap">
+  <div class="video-grid" id="videoGrid"></div>
+  <div class="empty-msg" id="emptyMsg" style="display:none;">
+    <div class="empty-icon">🎬</div>
+    <div>아직 등록된 동영상이 없습니다.</div>
+    <div style="margin-top:6px;font-size:.82rem;">호스트 모드에서 동영상을 추가할 수 있습니다.</div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab-add" onclick="openVideoModal(null)">＋ 동영상 추가</button>
+
+<!-- PLAYER MODAL -->
+<div class="player-overlay" id="playerOverlay" onclick="closePlayerOutside(event)">
+  <div class="player-wrap">
+    <button class="player-close" onclick="closePlayer()">✕</button>
+    <button class="player-nav player-prev" onclick="playerMove(-1)">‹</button>
+    <button class="player-nav player-next" onclick="playerMove(1)">›</button>
+    <div class="player-inner" id="playerInner"></div>
+    <div class="player-info">
+      <div class="player-info-cat" id="playerCat">외관 · 전경</div>
+      <div class="player-info-title" id="playerTitle"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO ADD MODAL -->
+<div class="vm-overlay" id="vmOverlay" onclick="closeVmOutside(event)">
+  <div class="vm-box">
+    <div class="vm-title" id="vmTitle">동영상 추가</div>
+    <label class="vm-label">동영상 URL (YouTube 또는 Google Drive)</label>
+    <div class="url-drive-row">
+      <a class="url-btn-drive" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"/>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"/>
+          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"/>
+        </svg>
+        Drive에서 찾기
+      </a>
+      <span style="font-size:.74rem;color:#aaa;">링크 복사 후 아래에 붙여넣으세요</span>
+    </div>
+    <input class="vm-input" id="vmYoutubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=... 또는 Drive 링크">
+    <div class="vm-hint">Drive는 <b>링크가 있는 모든 사용자</b> 공유 설정이 필요합니다.</div>
+    <label class="vm-label">카테고리</label>
+    <select class="vm-select" id="vmCat">
+      <option value="exterior">외관 · 전경</option>
+      <option value="interior">실내 공간</option>
+      <option value="view">전망 · 자연</option>
+      <option value="facility">편의시설</option>
+    </select>
+    <label class="vm-label">제목 (선택)</label>
+    <input class="vm-input" id="vmVideoTitle" type="text" placeholder="동영상 제목 (선택 입력)">
+    <label class="vm-label">설명</label>
+    <textarea class="vm-textarea" id="vmVideoDesc" placeholder="동영상 설명을 입력하세요"></textarea>
+    <label class="vm-label">길이 (선택)</label>
+    <input class="vm-input" id="vmDuration" type="text" placeholder="예: 1:23">
+    <div class="vm-btns">
+      <button class="btn-vm-cancel" onclick="closeVideoModal()">취소</button>
+      <button class="btn-vm-ok" onclick="saveVideo()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-box">
+    <div class="auth-box-title">🔐 호스트 인증</div>
+    <div class="auth-box-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
+    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력" onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-btns">
+      <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
+      <button class="btn-auth-ok" onclick="confirmAuth()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOST BADGE -->
+<div class="host-badge">
+  🎬 호스트 모드
+  <span style="opacity:.35">|</span>
+  <button class="btn-host-save" onclick="saveToSheet()">💾 저장</button>
+  <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <span class="footer-logo-icon">🏠</span>
+    영덕감성산장
+  </div>
+  <nav class="footer-nav">
+    <a href="index.html#about" data-icon="🏠">공간소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="pic_view.html">사진</a>
+  </nav>
+  <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
+</footer>
+
+<script>
+const HOST_KEY = 'pension_host';
+const HOST_PWD = '1dl34';
+
+// ▼ Apps Script 웹 앱 URL — 배포 후 여기에 붙여넣기
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+// ▼ 호스트 저장용 토큰 (Apps Script 속성의 AUTH_TOKEN 과 동일하게)
+const AUTH_TOKEN = '1dl34';
+const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
+
+let videos = [];
+let filtered = [];
+let currentFilter = 'all';
+let currentPlayerIdx = 0;
+let editingId = null;
+
+let _pendingAfterAuth = null;
+
+// ── 초기화 ──
+function hostCheckThenAdd() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') { openVideoModal(null); return; }
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authField').value = '';
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+  _pendingAfterAuth = () => openVideoModal(null);
+}
+
+let _pglTimer = null, _pglSec = 0;
+function showPgLoader(msg) {
+  const el = document.getElementById('pgLoader'); if (!el) return;
+  el.classList.remove('pgHide');
+  if (msg) document.getElementById('pglMsg').textContent = msg;
+  _pglSec = 0;
+  document.getElementById('pglElapsed').textContent = '';
+  document.getElementById('pglRetry').style.display = 'none';
+  if (_pglTimer) clearInterval(_pglTimer);
+  _pglTimer = setInterval(() => {
+    _pglSec++;
+    const e = document.getElementById('pglElapsed');
+    if (_pglSec >= 3 && e) e.textContent = `${_pglSec}초째 로딩 중...`;
+    if (_pglSec >= 10) { const rb = document.getElementById('pglRetry'); if (rb) rb.style.display = 'inline-block'; }
+  }, 1000);
+}
+function hidePgLoader() {
+  if (_pglTimer) { clearInterval(_pglTimer); _pglTimer = null; }
+  const el = document.getElementById('pgLoader');
+  if (el) { el.classList.add('pgHide'); setTimeout(() => { if (el.parentNode) el.remove(); }, 500); }
+}
+
+async function init() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') {
+    document.body.classList.add('host-mode');
+    vlcClear(); // 호스트는 항상 최신 데이터
+  }
+  const hasCached = !!vlcGet();
+  if (!hasCached) showPgLoader('동영상 목록을 불러오는 중입니다...');
+  await loadFromSheet();
+  applyFilter();
+  hidePgLoader();
+}
+
+// ── 브라우저 캐시 헬퍼 (세션 단위) ──
+const VLC_KEY = 'pension_cache_pic_video';
+function vlcGet() { try { return JSON.parse(sessionStorage.getItem(VLC_KEY)||'null'); } catch(e){return null;} }
+function vlcSet(d) { try { sessionStorage.setItem(VLC_KEY, JSON.stringify(d)); } catch(e){} }
+function vlcClear() { try { sessionStorage.removeItem(VLC_KEY); } catch(e){} }
+
+function parseSheetVideos(data) {
+  return data.map(r => ({
+    id:        Number(r.id),
+    cat:       r.cat,
+    category:  CAT_LABELS[r.cat] || r.cat,
+    title:     r.title,
+    desc:      r.desc,
+    duration:  r.duration,
+    youtubeUrl:r.youtube_url,
+    youtubeId: r.youtube_id || extractYoutubeId(r.youtube_url) || null,
+    driveId:   extractDriveId(r.youtube_url) || null,
+    createdAt: Number(r.created_at) || 0,
+  }));
+}
+
+async function loadFromSheet() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    videos = [];
+    return;
+  }
+  const cached = vlcGet();
+  if (cached) { videos = cached; return; }
+  try {
+    const res  = await fetch(`${APPS_SCRIPT_URL}?sheet=pic_video`);
+    const json = await res.json();
+    videos = (json.ok && json.data.length) ? parseSheetVideos(json.data) : [];
+    if (videos.length) vlcSet(videos);
+  } catch(err) {
+    console.warn('동영상 시트 로드 실패:', err);
+    videos = [];
+  }
+}
+
+function saveVideos() { /* 시트에 저장은 saveToSheet() 사용 */ }
+
+async function saveToSheet() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    alert('APPS_SCRIPT_URL 을 설정해 주세요.');
+    return;
+  }
+  const btn = document.querySelector('.btn-host-save');
+  btn.textContent = '저장 중…'; btn.disabled = true;
+  try {
+    const payload = videos.map(v => ({
+      id:          v.id,
+      cat:         v.cat,
+      title:       v.title,
+      desc:        v.desc,
+      duration:    v.duration || '',
+      youtube_url: v.youtubeUrl || '',
+      youtube_id:  v.youtubeId || '',
+      created_at:  v.createdAt || Date.now(),
+    }));
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ token: AUTH_TOKEN, sheet: 'pic_video', action: 'save', data: payload }),
+    });
+    vlcClear();
+    btn.textContent = '✅ 저장 완료!';
+    setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
+  } catch(err) {
+    alert('저장 실패: ' + err.message);
+    btn.textContent = '💾 저장'; btn.disabled = false;
+  }
+}
+
+// ── 필터 ──
+function filterVideos(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = cat;
+  applyFilter();
+}
+function applyFilter() {
+  filtered = (currentFilter === 'all' ? videos : videos.filter(v => v.cat === currentFilter))
+    .slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  renderGrid();
+}
+
+// ── 렌더 ──
+function renderGrid() {
+  const grid = document.getElementById('videoGrid');
+  const empty = document.getElementById('emptyMsg');
+  document.getElementById('videoCountBadge').textContent = `총 ${videos.length}개`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map((v, i) => {
+    const thumbHtml = v.youtubeId
+      ? `<img src="https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
+      : v.driveId
+        ? `<div class="video-thumb-placeholder" style="background:linear-gradient(135deg,#e8f4fd,#c8e3f8);"><span class="thumb-icon">📁</span><span style="color:#1a6fa8;">Drive 동영상</span></div>`
+        : `<div class="video-thumb-placeholder"><span class="thumb-icon">🎬</span><span>${v.title || ''}</span></div>`;
+
+    return `
+    <div class="video-card" onclick="openPlayer(${i})">
+      <div class="video-thumb" style="position:relative;">
+        ${thumbHtml}
+        <div class="play-overlay">
+          <div class="play-btn">▶</div>
+        </div>
+        ${v.duration ? `<div class="video-duration">${v.duration}</div>` : ''}
+        <button class="btn-del-video" onclick="deleteVideo(${v.id});event.stopPropagation()">✕</button>
+      </div>
+      <div class="card-body" style="position:relative;">
+        <span class="card-category">${v.category}</span>
+        <div class="card-title">${v.title}</div>
+        ${v.desc ? `<div class="card-desc">${v.desc}</div>` : ''}
+        <button class="btn-edit-video" onclick="openVideoModal(${v.id});event.stopPropagation()">✏️ 수정</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 플레이어 ──
+function openPlayer(idx) {
+  currentPlayerIdx = idx;
+  renderPlayer();
+  document.getElementById('playerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function renderPlayer() {
+  const v = filtered[currentPlayerIdx];
+  if (!v) return;
+  const inner = document.getElementById('playerInner');
+
+  if (v.youtubeId) {
+    inner.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1&rel=0&enablejsapi=1" allow="autoplay; fullscreen; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  } else if (v.driveId) {
+    inner.innerHTML = `<iframe src="https://drive.google.com/file/d/${v.driveId}/preview" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  } else {
+    inner.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;opacity:.3;">🎬</div>`;
+  }
+  document.getElementById('playerCat').textContent   = v.category;
+  document.getElementById('playerTitle').textContent = v.title;
+}
+function playerMove(dir) {
+  if (!filtered.length) return;
+  // iframe autoplay 중단
+  document.getElementById('playerInner').innerHTML = '';
+  currentPlayerIdx = (currentPlayerIdx + dir + filtered.length) % filtered.length;
+  renderPlayer();
+}
+function closePlayer() {
+  document.getElementById('playerInner').innerHTML = '';
+  document.getElementById('playerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closePlayerOutside(e) { if (e.target === document.getElementById('playerOverlay')) closePlayer(); }
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('playerOverlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  playerMove(-1);
+  if (e.key === 'ArrowRight') playerMove(1);
+  if (e.key === 'Escape')     closePlayer();
+});
+
+// ── YouTube / Google Drive ID 추출 ──
+function extractYoutubeId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function extractDriveId(url) {
+  if (!url) return null;
+  const m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+// ── 동영상 추가 모달 ──
+function openVideoModal(id) {
+  editingId = id;
+  const v = id ? videos.find(v => v.id === id) : null;
+  document.getElementById('vmTitle').textContent   = id ? '동영상 수정' : '동영상 추가';
+  document.getElementById('vmYoutubeUrl').value    = v?.youtubeUrl || '';
+  document.getElementById('vmCat').value           = v?.cat || 'exterior';
+  document.getElementById('vmVideoTitle').value    = v?.title || '';
+  document.getElementById('vmVideoDesc').value     = v?.desc || '';
+  document.getElementById('vmDuration').value      = v?.duration || '';
+  document.getElementById('vmOverlay').classList.add('open');
+}
+function closeVideoModal() { document.getElementById('vmOverlay').classList.remove('open'); }
+function closeVmOutside(e) { if (e.target === document.getElementById('vmOverlay')) closeVideoModal(); }
+
+function saveVideo() {
+  const youtubeUrl = document.getElementById('vmYoutubeUrl').value.trim();
+  const cat        = document.getElementById('vmCat').value;
+  const title      = document.getElementById('vmVideoTitle').value.trim();
+  const desc       = document.getElementById('vmVideoDesc').value.trim();
+  const duration   = document.getElementById('vmDuration').value.trim();
+
+  if (!youtubeUrl && !editingId) { alert('동영상 URL을 입력하세요.'); return; }
+
+  const youtubeId = extractYoutubeId(youtubeUrl);
+  const driveId   = extractDriveId(youtubeUrl);
+
+  if (editingId) {
+    const v = videos.find(v => v.id === editingId);
+    if (v) {
+      Object.assign(v, { cat, category:CAT_LABELS[cat], title, desc, duration });
+      if (youtubeUrl) { v.youtubeUrl = youtubeUrl; v.youtubeId = youtubeId; v.driveId = driveId; }
+    }
+  } else {
+    const newId = videos.length ? Math.max(...videos.map(v => v.id)) + 1 : 1;
+    videos.push({
+      id: newId, cat, category: CAT_LABELS[cat], title, desc, duration,
+      youtubeUrl, youtubeId: youtubeId || null, driveId: driveId || null,
+      createdAt: Date.now(),
+    });
+  }
+
+  saveVideos();
+  applyFilter();
+  closeVideoModal();
+}
+
+function deleteVideo(id) {
+  if (!confirm('이 동영상을 삭제할까요?')) return;
+  videos = videos.filter(v => v.id !== id);
+  saveVideos(); applyFilter();
+}
+
+// ── HOST AUTH ──
+function checkHostAuth() {
+  if (sessionStorage.getItem(HOST_KEY) === '1') { exitHostMode(); return; }
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authField').value = '';
+  setTimeout(() => document.getElementById('authField').focus(), 80);
+}
+function closeAuth() { document.getElementById('authOverlay').classList.remove('open'); }
+function confirmAuth() {
+  if (document.getElementById('authField').value === HOST_PWD) {
+    sessionStorage.setItem(HOST_KEY, '1');
+    closeAuth();
+    document.body.classList.add('host-mode');
+    if (_pendingAfterAuth) { _pendingAfterAuth(); _pendingAfterAuth = null; }
+  } else {
+    document.getElementById('authErr').textContent = '인증 암호가 올바르지 않습니다.';
+    document.getElementById('authField').value = '';
+    document.getElementById('authField').focus();
+  }
+}
+function exitHostMode() {
+  sessionStorage.removeItem(HOST_KEY);
+  document.body.classList.remove('host-mode');
+}
+
+init();
+</script>
+<style>
+/* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
+@media(max-width:600px){
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; align-items:center; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border,#ddd); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; line-height:1; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+}
+</style>
+</body></html>
