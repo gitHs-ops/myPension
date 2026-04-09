@@ -486,8 +486,6 @@ async function upsertToGAS(rsv) {
   } catch(e) {
     showToast('⚠️ 저장 실패: ' + e.message, true);
     return false;
-  } finally {
-    hideLoading();
   }
 }
 
@@ -890,9 +888,6 @@ async function updateRsv() {
   if (delBtn) delBtn.disabled = true;
   showLoading('수정 내용을 저장하는 중...');
   const ok = await upsertToGAS(rsv);
-  hideLoading();
-  btn.disabled = false;
-  if (delBtn) delBtn.disabled = false;
 
   if (ok !== false) {
     const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
@@ -900,6 +895,7 @@ async function updateRsv() {
     try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
 
     // 관리자 알림
+    showLoading('관리자에게 알림을 발송하는 중...');
     const changeNote = dateChanged
       ? `\n⚠️ 일정 변경됨 → 상태: 대기\n기존: ${original.checkin} ~ ${original.checkout}\n변경: ${rsv.checkin} ~ ${rsv.checkout}`
       : `\n(일정 변경 없음, 상태 유지: ${newStatus})`;
@@ -914,10 +910,17 @@ async function updateRsv() {
       ]);
     } catch(e) { console.warn('알림 발송 실패:', e.message); }
 
+    hideLoading();
+    btn.disabled = false;
+    if (delBtn) delBtn.disabled = false;
     clearEditMode();
     buildBookedSet();
     renderCalendar();
     showDone(rsv);
+  } else {
+    hideLoading();
+    btn.disabled = false;
+    if (delBtn) delBtn.disabled = false;
   }
 }
 
