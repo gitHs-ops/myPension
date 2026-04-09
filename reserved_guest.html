@@ -486,6 +486,8 @@ async function upsertToGAS(rsv) {
   } catch(e) {
     showToast('⚠️ 저장 실패: ' + e.message, true);
     return false;
+  } finally {
+    hideLoading();
   }
 }
 
