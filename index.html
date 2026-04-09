@@ -1433,11 +1433,10 @@ function startChangeExtra(idx) {
   openUrlModal('extra-change', '사진 URL 변경');
 }
 
-// ── HTML 내보내기 (사진 embed) ──
-// ── 시트에 저장 (호스트 전용) ──
+// ── 시트에 저장 (호스트 전용 — 백업용) ──
 async function saveToSheet() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    alert('APPS_SCRIPT_URL 을 설정하지 않았습니다.\nindex.html 상단의 APPS_SCRIPT_URL 값을 채워주세요.');
+    alert('APPS_SCRIPT_URL 을 설정하지 않았습니다.');
     return;
   }
   const btn = document.querySelector('.btn-host-save');
@@ -1445,17 +1444,30 @@ async function saveToSheet() {
   try {
     const slotsPayload  = Object.entries(slotData).map(([slot_id, url]) => ({ slot_id, url }));
     const extrasPayload = extraData.map((url, i) => ({ order: i, url }));
-
     await postSheet('index_slots',  slotsPayload);
     await postSheet('index_extras', extrasPayload);
-
-    lcClear(); // 저장 후 로컬 캐시 무효화
+    lcClear();
     btn.textContent = '✅ 저장 완료!';
     setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
   } catch(err) {
     alert('저장 실패: ' + err.message);
     btn.textContent = '💾 저장'; btn.disabled = false;
   }
+}
+
+// ── HTML로 저장 (사진 embed → index.html 다운로드) ──
+function exportHtml() {
+  const embedJson = JSON.stringify({ slotData, extraData }, null, 2);
+  const updated = document.documentElement.outerHTML.replace(
+    /window\.__EMBED__\s*=\s*\{[\s\S]*?\};/,
+    'window.__EMBED__ = ' + embedJson + ';'
+  );
+  const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function postSheet(sheet, data) {
@@ -1581,11 +1593,26 @@ async function loadFromSheet() {
 
 // ── 초기화 ──
 (function initHost() {
-  if (sessionStorage.getItem(HOST_KEY) === '1') {
+  const isHost = sessionStorage.getItem(HOST_KEY) === '1';
+  if (isHost) {
     activateHost();
-    lcClear(); // 호스트는 항상 최신 데이터 (Sheets 직접 수정 포함)
+    lcClear();
+    loadFromSheet(); // 호스트만 GAS 호출
+    return;
   }
-  loadFromSheet();
+
+  // 게스트: __EMBED__ 데이터 즉시 적용 (GAS 호출 없음)
+  const emb = window.__EMBED__ || {};
+  if (emb.slotData && Object.keys(emb.slotData).length > 0) {
+    slotData  = emb.slotData;
+    extraData = emb.extraData || [];
+    Object.entries(slotData).forEach(([slot, src]) => applySlotPhoto(slot, src));
+    renderExtras();
+    finishLoadBar();
+  } else {
+    // __EMBED__ 비어있으면 GAS에서 로드 (초기 설정 시)
+    loadFromSheet();
+  }
 })();
 </script>
 
@@ -1606,7 +1633,8 @@ async function loadFromSheet() {
   ✏️ 호스트 모드
   <span style="opacity:.35">|</span>
   <a href="reserved_view.html" style="color:#fff;text-decoration:none;opacity:.8;font-size:.75rem;font-weight:700;">📅 예약현황</a>
-  <button class="btn-host-save" onclick="saveToSheet()">💾 저장</button>
+  <button class="btn-host-save" onclick="saveToSheet()">💾 시트저장</button>
+  <button class="btn-host-save" onclick="exportHtml()" style="background:rgba(100,220,150,.25);border-color:rgba(100,220,150,.6);">📥 HTML저장</button>
   <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
 </div>
 
