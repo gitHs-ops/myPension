@@ -952,7 +952,21 @@ function clearEditMode() {
 }
 
 function scrollToForm() {
-  document.getElementById('formPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+  // 완료카드가 보이는 경우 → 숨기고 폼 다시 표시
+  const doneCard = document.getElementById('doneCard');
+  const formPanel = document.getElementById('formPanel');
+  if (doneCard.classList.contains('show')) {
+    doneCard.classList.remove('show');
+    formPanel.style.display = '';
+    // 폼 초기화
+    ['inGuestName','inPhone','inEmail','inMemo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('inGuests').value = 2;
+    SEL_CHECKIN = SEL_CHECKOUT = null;
+    SEL_STEP = 0;
+    renderCalendar();
+    updateDateUI();
+  }
+  formPanel.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
