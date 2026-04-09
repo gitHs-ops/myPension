@@ -884,10 +884,15 @@ async function updateRsv() {
     createdAt:  original?.createdAt || todayStr(),
   };
 
-  const btn = document.getElementById('updateBtn');
+  const btn    = document.getElementById('updateBtn');
+  const delBtn = document.getElementById('deleteBtn');
   btn.disabled = true;
+  if (delBtn) delBtn.disabled = true;
+  showLoading('수정 내용을 저장하는 중...');
   const ok = await upsertToGAS(rsv);
+  hideLoading();
   btn.disabled = false;
+  if (delBtn) delBtn.disabled = false;
 
   if (ok !== false) {
     const idx = RESERVATIONS.findIndex(r => r.id === EDIT_RSV_ID);
@@ -922,6 +927,10 @@ async function cancelRsv() {
   if (!rsv) { showToast('❌ 예약 정보를 찾을 수 없습니다.', true); return; }
   if (!confirm(`예약취소를 신청하시겠습니까?\n(${fmtDateFull(rsv.checkin)} ~ ${fmtDateFull(rsv.checkout)})\n\n관리자에게 취소 신청이 전달되며,\n최종 취소는 관리자 확인 후 처리됩니다.`)) return;
 
+  const updateBtn = document.getElementById('updateBtn');
+  const deleteBtn = document.querySelector('.btn-delete');
+  if (updateBtn) updateBtn.disabled = true;
+  if (deleteBtn) deleteBtn.disabled = true;
   showLoading('취소 신청을 전송하는 중...');
   try {
     // 1. 구글 시트 상태 → '취소 신청'
@@ -944,6 +953,8 @@ async function cancelRsv() {
     try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
 
     hideLoading();
+    if (updateBtn) updateBtn.disabled = false;
+    if (deleteBtn) deleteBtn.disabled = false;
     clearEditMode();
     buildBookedSet();
     renderCalendar();
@@ -951,6 +962,8 @@ async function cancelRsv() {
     showToast('✅ 취소 신청이 완료되었습니다. 관리자 확인 후 처리됩니다.');
   } catch(e) {
     hideLoading();
+    if (updateBtn) updateBtn.disabled = false;
+    if (deleteBtn) deleteBtn.disabled = false;
     showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message, true);
   }
 }
