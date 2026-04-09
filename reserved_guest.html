@@ -402,24 +402,37 @@ let CHECKIN_SET  = new Set(); // 타 예약의 체크인 당일 집합
 // 수정 모드
 let EDIT_MODE   = false;
 let EDIT_RSV_ID = null;
+let CAL_LOCK    = false; // 백그라운드 갱신 중 캘린더 잠금
 
 // ── INIT ──
 async function init() {
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-  // 1. 캐시 먼저 렌더링 → 즉시 캘린더 표시
+  const CACHE_TTL = 5 * 60 * 1000; // 5분
+  let cacheValid = false;
+
   try {
-    const cached = JSON.parse(localStorage.getItem('pension_reservations') || '[]');
-    if (cached.length > 0) {
+    const cached    = JSON.parse(localStorage.getItem('pension_reservations') || '[]');
+    const cachedAt  = parseInt(localStorage.getItem('pension_reservations_at') || '0');
+    const age       = Date.now() - cachedAt;
+
+    if (cached.length > 0 && age < CACHE_TTL) {
+      // 캐시 신선 → 즉시 렌더링 + 백그라운드 갱신(잠금 포함)
       RESERVATIONS = cached;
       buildBookedSet();
       renderCalendar();
       updateDateUI();
+      cacheValid = true;
+      CAL_LOCK = true;
+      showCalLock();
+      loadFromGAS(true).finally(() => { CAL_LOCK = false; hideCalLock(); });
     }
   } catch(e) {}
 
-  // 2. 백그라운드에서 GAS 최신 데이터 갱신
-  loadFromGAS(true);
+  if (!cacheValid) {
+    // 캐시 없거나 만료 → 로딩 표시 후 GAS 로드
+    await loadFromGAS(false);
+  }
 }
 
 // ── 로딩 ──
@@ -439,7 +452,7 @@ async function loadFromGAS(background) {
     const data = await res.json();
     if (data.success) {
       RESERVATIONS = data.reservations || [];
-      try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+      try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); localStorage.setItem('pension_reservations_at', Date.now()); } catch(e) {}
       buildBookedSet();
       renderCalendar();
       updateDateUI();
@@ -650,6 +663,7 @@ function renderCalendar() {
 
 // ── 날짜 선택 ──
 function selectDate(ds) {
+  if (CAL_LOCK) { showToast('예약 정보를 갱신 중입니다. 잠시 후 선택해주세요.'); return; }
   if (SEL_STEP === 0 || SEL_STEP === 2) {
     // 새 체크인 선택
     SEL_CHECKIN  = ds;
@@ -967,6 +981,25 @@ function scrollToForm() {
     updateDateUI();
   }
   formPanel.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+
+// ── 캘린더 갱신 잠금 표시 ──
+function showCalLock() {
+  let el = document.getElementById('calLockBanner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'calLockBanner';
+    el.style.cssText = 'text-align:center;font-size:.75rem;color:#d97706;padding:4px 0;margin-bottom:4px;';
+    el.textContent = '🔄 최신 예약 정보 갱신 중...';
+    const grid = document.getElementById('calGrid');
+    grid.parentNode.insertBefore(el, grid);
+  }
+  el.style.display = '';
+}
+function hideCalLock() {
+  const el = document.getElementById('calLockBanner');
+  if (el) el.style.display = 'none';
 }
 
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
