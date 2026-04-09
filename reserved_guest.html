@@ -406,10 +406,20 @@ let EDIT_RSV_ID = null;
 // ── INIT ──
 async function init() {
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  await loadFromGAS();
-  buildBookedSet();
-  renderCalendar();
-  updateDateUI();
+
+  // 1. 캐시 먼저 렌더링 → 즉시 캘린더 표시
+  try {
+    const cached = JSON.parse(localStorage.getItem('pension_reservations') || '[]');
+    if (cached.length > 0) {
+      RESERVATIONS = cached;
+      buildBookedSet();
+      renderCalendar();
+      updateDateUI();
+    }
+  } catch(e) {}
+
+  // 2. 백그라운드에서 GAS 최신 데이터 갱신
+  loadFromGAS(true);
 }
 
 // ── 로딩 ──
@@ -422,20 +432,28 @@ function hideLoading() {
 }
 
 // ── GAS 로드 ──
-async function loadFromGAS() {
-  showLoading('예약 일정을 불러오는 중...');
+async function loadFromGAS(background) {
+  if (!background) showLoading('예약 일정을 불러오는 중...');
   try {
     const res  = await fetch(`${GAS_URL}?action=rsv_load`, { redirect: 'follow' });
     const data = await res.json();
     if (data.success) {
       RESERVATIONS = data.reservations || [];
       try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
+      buildBookedSet();
+      renderCalendar();
+      updateDateUI();
     } else throw new Error(data.message);
   } catch(e) {
-    try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
+    if (!background) {
+      try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
+      buildBookedSet();
+      renderCalendar();
+      updateDateUI();
+    }
     console.warn('GAS 로드 실패 — 로컬 캐시 사용:', e.message);
   } finally {
-    hideLoading();
+    if (!background) hideLoading();
   }
 }
 
@@ -450,10 +468,10 @@ async function upsertToGAS(rsv) {
     });
     const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
     const data = await res.json();
-    if (!data.success) showToast('⚠️ 저장 실패: ' + data.message);
+    if (!data.success) showToast('⚠️ 저장 실패: ' + data.message, true);
     return data.success;
   } catch(e) {
-    showToast('⚠️ 저장 실패: ' + e.message);
+    showToast('⚠️ 저장 실패: ' + e.message, true);
     return false;
   } finally {
     hideLoading();
@@ -790,7 +808,7 @@ function lookupRsv() {
   const code = document.getElementById('lookupInput').value.trim();
   if (!code) { showToast('예약코드를 입력해주세요.'); return; }
   const rsv = RESERVATIONS.find(r => r.id === code);
-  if (!rsv) { showToast('❌ 예약을 찾을 수 없습니다.'); return; }
+  if (!rsv) { showToast('❌ 예약을 찾을 수 없습니다.', true); return; }
 
   // 폼에 기존 데이터 채우기
   document.getElementById('inGuestName').value = rsv.guestName || '';
@@ -887,7 +905,7 @@ async function updateRsv() {
 // ── 예약취소 신청 ──
 async function cancelRsv() {
   const rsv = RESERVATIONS.find(r => r.id === EDIT_RSV_ID);
-  if (!rsv) { showToast('❌ 예약 정보를 찾을 수 없습니다.'); return; }
+  if (!rsv) { showToast('❌ 예약 정보를 찾을 수 없습니다.', true); return; }
   if (!confirm(`예약취소를 신청하시겠습니까?\n(${fmtDateFull(rsv.checkin)} ~ ${fmtDateFull(rsv.checkout)})\n\n관리자에게 취소 신청이 전달되며,\n최종 취소는 관리자 확인 후 처리됩니다.`)) return;
 
   showLoading('취소 신청을 전송하는 중...');
@@ -919,7 +937,7 @@ async function cancelRsv() {
     showToast('✅ 취소 신청이 완료되었습니다. 관리자 확인 후 처리됩니다.');
   } catch(e) {
     hideLoading();
-    showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message);
+    showToast('⚠️ 취소 신청 중 오류가 발생했습니다: ' + e.message, true);
   }
 }
 
@@ -954,11 +972,20 @@ function copyCode() {
   });
 }
 
-function showToast(msg) {
+function showToast(msg, isError) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  if (isError) {
+    el.style.cursor = 'pointer';
+    el.style.background = '#c0392b';
+    el.onclick = () => { el.classList.remove('show'); el.onclick=null; el.style.cursor=''; el.style.background=''; };
+  } else {
+    el.style.cursor = '';
+    el.style.background = '';
+    el.onclick = null;
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
 }
 
 init();
