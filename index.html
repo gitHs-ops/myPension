@@ -1476,50 +1476,34 @@ function startChangeExtra(idx) {
   openUrlModal('extra-change', '사진 URL 변경');
 }
 
-// ── 시트에 저장 (호스트 전용 — 백업용) ──
-async function saveToSheet() {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    alert('APPS_SCRIPT_URL 을 설정하지 않았습니다.');
-    return;
-  }
-  const btn = document.querySelector('.btn-host-save');
-  btn.textContent = '저장 중…'; btn.disabled = true;
-  try {
-    const slotsPayload  = Object.entries(slotData).map(([slot_id, url]) => ({ slot_id, url }));
-    const extrasPayload = extraData.map((url, i) => ({ order: i, url }));
-    await postSheet('index_slots',  slotsPayload);
-    await postSheet('index_extras', extrasPayload);
-    lcClear();
-    btn.textContent = '✅ 저장 완료!';
-    setTimeout(() => { btn.textContent = '💾 저장'; btn.disabled = false; }, 2000);
-  } catch(err) {
-    alert('저장 실패: ' + err.message);
-    btn.textContent = '💾 저장'; btn.disabled = false;
-  }
-}
-
-// ── HTML로 저장 (사진 embed → index.html 다운로드) ──
+// ── HTML로 저장 (사진 embed → index.html 다운로드, 게스트 모드로 내보내기) ──
 function exportHtml() {
   const embedJson = JSON.stringify({ slotData, extraData }, null, 2);
-  const updated = document.documentElement.outerHTML.replace(
+  let updated = document.documentElement.outerHTML;
+
+  // 1) __EMBED__ 데이터 삽입
+  updated = updated.replace(
     /window\.__EMBED__\s*=\s*\{[\s\S]*?\};/,
     'window.__EMBED__ = ' + embedJson + ';'
   );
+
+  // 2) body 태그에서 host-mode 클래스 제거 → 게스트 모드로 시작
+  updated = updated.replace(/<body([^>]*)\bhost-mode\b([^>]*)>/,
+    (match, before, after) => {
+      const cls = (before + after).replace(/class="([^"]*)"/, (m, c) => {
+        const cleaned = c.replace(/\bhost-mode\b/g, '').trim();
+        return cleaned ? `class="${cleaned}"` : '';
+      });
+      return `<body${cls}>`;
+    }
+  );
+
   const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'index.html';
   a.click();
   URL.revokeObjectURL(a.href);
-}
-
-function postSheet(sheet, data) {
-  return fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ token: AUTH_TOKEN, sheet, action: 'save', data }),
-  });
 }
 
 // ── 로딩 오버레이 ──
@@ -1676,7 +1660,6 @@ async function loadFromSheet() {
   ✏️ 호스트 모드
   <span style="opacity:.35">|</span>
   <a href="reserved_view.html" style="color:#fff;text-decoration:none;opacity:.8;font-size:.75rem;font-weight:700;">📅 예약현황</a>
-  <button class="btn-host-save" onclick="saveToSheet()">💾 시트저장</button>
   <button class="btn-host-save" onclick="exportHtml()" style="background:rgba(100,220,150,.25);border-color:rgba(100,220,150,.6);">📥 HTML저장</button>
   <button class="btn-host-exit" onclick="exitHostMode()">종료</button>
 </div>
