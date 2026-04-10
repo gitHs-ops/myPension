@@ -526,21 +526,13 @@ body.host-mode .extra-photo-item:hover .btn-del-extra { display:flex; }
 body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 </style>
 </head>
-<body>
+<body class="host-mode">
 
 <!-- 페이지 상단 로딩 진행 바 -->
-<div id="pageLoadBar"></div>
+<div id="pageLoadBar" class=""></div>
 
 <!-- 콘텐츠 로딩 오버레이 -->
-<div id="pgLoader">
-  <div class="pgl-icon">🏠</div>
-  <div class="pgl-spinner"></div>
-  <div class="pgl-title">잠시만 기다려 주세요</div>
-  <div class="pgl-msg" id="pglMsg">사진 정보를 불러오는 중입니다...</div>
-  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
-  <div class="pgl-elapsed" id="pglElapsed"></div>
-  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
-</div>
+
 
 <!-- HEADER -->
 <header class="header">
@@ -563,31 +555,31 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 <!-- GALLERY -->
 <section class="gallery" id="gallerySection">
   <div class="photo-grid" id="mainGrid">
-    <div class="photo-main" data-slot="0">
+    <div class="photo-main" data-slot="0"><img class="slot-img loaded" src="https://drive.google.com/thumbnail?id=1qViXF3gZ-QPcB7dfCtTOQ9sNpZ-7p9io&amp;sz=w1200" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
       <div class="photo-placeholder">🌿</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(0);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="1">
+    <div class="photo-sub" data-slot="1"><img class="slot-img loaded" src="https://drive.google.com/thumbnail?id=1cQ5FECEuaTzTaC-Ok8oZIHkxMOLXy8zR&amp;sz=w1200" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
       <div class="photo-placeholder">🪟</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(1);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="2">
+    <div class="photo-sub" data-slot="2"><img class="slot-img loaded" src="https://drive.google.com/thumbnail?id=1Dpq7jC7TE3T5kwqtP_cjrWo92aGW3kZJ&amp;sz=w1200" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
       <div class="photo-placeholder">🔍</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(2);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="3">
+    <div class="photo-sub" data-slot="3"><img class="slot-img loaded" src="https://drive.google.com/thumbnail?id=194GfAcypI76SfWKg4N-jPNDUAUG-W3TU&amp;sz=w1200" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
       <div class="photo-placeholder">🌊</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(3);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="4" style="position:relative;">
+    <div class="photo-sub" data-slot="4" style="position:relative;"><img class="slot-img loaded" src="https://drive.google.com/thumbnail?id=1qnxHisgp2DK-ekXBfxhGN7ZXqEmxheKQ&amp;sz=w1200" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
       <div class="photo-placeholder">📷</div>
       <button class="btn-all-photos" onclick="location.href='pic_view.html'">⊞ 사진 모두 보기</button>
       <div class="photo-edit-overlay">
@@ -1641,28 +1633,28 @@ async function loadFromSheet() {
 <!-- URL 입력 모달 -->
 <div class="url-modal-bg" id="urlModalBg" onclick="closeUrlModal(event)">
   <div class="url-modal-box">
-    <div class="url-modal-title" id="urlModalTitle">사진 URL 입력</div>
+    <div class="url-modal-title" id="urlModalTitle">슬롯 사진 URL 입력</div>
     <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 직접 URL을 붙여넣으세요.<br>Drive 링크는 <b>thumbnail</b> 형식으로 자동 변환되어 적용됩니다.</div>
     <div class="url-drive-row">
       <a class="url-btn-drive" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"/>
-          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"/>
-          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"/>
-          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"/>
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"></path>
+          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"></path>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"></path>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"></path>
+          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"></path>
+          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"></path>
         </svg>
         Drive에서 찾기
       </a>
       <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
     </div>
     <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
-    <div id="urlConvertedWrap" style="display:none;margin-top:6px;padding:6px 10px;background:#f5f5f0;border-radius:6px;font-size:.72rem;color:#666;word-break:break-all;">
-      변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;"></span>
+    <div id="urlConvertedWrap" style="display: block; margin-top: 6px; padding: 6px 10px; background: rgb(245, 245, 240); border-radius: 6px; font-size: 0.72rem; color: rgb(102, 102, 102); word-break: break-all;">
+      변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;">https://drive.google.com/thumbnail?id=1cQ5FECEuaTzTaC-Ok8oZIHkxMOLXy8zR&amp;sz=w1200</span>
     </div>
     <div class="url-preview-wrap">
-      <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
+      <img class="url-preview-img" id="urlPreviewImg" src="https://drive.google.com/thumbnail?id=1cQ5FECEuaTzTaC-Ok8oZIHkxMOLXy8zR&amp;sz=w1200" alt="" style="display: block;">
       <div class="url-preview-err" id="urlPreviewErr"></div>
     </div>
     <div class="url-modal-btns">
