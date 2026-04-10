@@ -526,13 +526,21 @@ body.host-mode .extra-photo-item:hover .btn-del-extra { display:flex; }
 body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 </style>
 </head>
-<body class="host-mode">
+<body>
 
 <!-- 페이지 상단 로딩 진행 바 -->
-<div id="pageLoadBar" class=""></div>
+<div id="pageLoadBar"></div>
 
 <!-- 콘텐츠 로딩 오버레이 -->
-
+<div id="pgLoader">
+  <div class="pgl-icon">🏠</div>
+  <div class="pgl-spinner"></div>
+  <div class="pgl-title">잠시만 기다려 주세요</div>
+  <div class="pgl-msg" id="pglMsg">사진 정보를 불러오는 중입니다...</div>
+  <div class="pgl-sub">Google Sheets에서 데이터를 가져오고 있어요</div>
+  <div class="pgl-elapsed" id="pglElapsed"></div>
+  <button class="pgl-retry" id="pglRetry" onclick="location.reload()">새로고침</button>
+</div>
 
 <!-- HEADER -->
 <header class="header">
@@ -555,31 +563,31 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
 <!-- GALLERY -->
 <section class="gallery" id="gallerySection">
   <div class="photo-grid" id="mainGrid">
-    <div class="photo-main" data-slot="0"><img class="slot-img loaded" src="https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/slot_0.jpg" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+    <div class="photo-main" data-slot="0">
       <div class="photo-placeholder">🌿</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(0);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="1"><img class="slot-img loaded" src="https://drive.google.com/thumbnail?id=1Xf_pnkEuO4Jvr3vSrK4dmdgUxbJ_C43c&amp;sz=w1200" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+    <div class="photo-sub" data-slot="1">
       <div class="photo-placeholder">🪟</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(1);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="2"><img class="slot-img loaded" src="https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/slot_2.jpg" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+    <div class="photo-sub" data-slot="2">
       <div class="photo-placeholder">🔍</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(2);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="3"><img class="slot-img loaded" src="https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/slot_3.jpg" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+    <div class="photo-sub" data-slot="3">
       <div class="photo-placeholder">🌊</div>
       <div class="photo-edit-overlay">
         <button class="btn-change-photo" onclick="startEditSlot(3);event.stopPropagation()">📷 사진 변경</button>
       </div>
     </div>
-    <div class="photo-sub" data-slot="4" style="position:relative;"><img class="slot-img loaded" src="https://raw.githubusercontent.com/gitHs-ops/myPension/main/images/slot_4.jpg" style="position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+    <div class="photo-sub" data-slot="4" style="position:relative;">
       <div class="photo-placeholder">📷</div>
       <button class="btn-all-photos" onclick="location.href='pic_view.html'">⊞ 사진 모두 보기</button>
       <div class="photo-edit-overlay">
@@ -685,56 +693,56 @@ body.host-mode .extra-photo-item:hover .btn-change-extra { display:flex; }
     <!-- REVIEWS -->
     <section id="reviews">
       <div class="rating-big" id="ratingBig">
-        <div class="rating-num" id="ratingNum">4.75</div>
+        <div class="rating-num" id="ratingNum">4.69</div>
         <div>
           <div class="stars-row" id="ratingStars">★★★★★</div>
-          <div style="font-size:.85rem;color:var(--muted);margin-top:4px;" id="ratingCount">후기 4개</div>
+          <div style="font-size:.85rem;color:var(--muted);margin-top:4px;" id="ratingCount">후기 39개</div>
         </div>
       </div>
       <div class="reviews-grid" id="reviewsGrid">
       <div class="review-card" onclick="openRvDetail(0)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
         <div class="review-header">
-          <div class="review-avatar" style="background:linear-gradient(135deg,#3a57e8,#7b5fff)">q</div>
+          <div class="review-avatar" style="background:linear-gradient(135deg,#3a57e8,#7b5fff)">지</div>
           <div>
-            <div class="review-name">qqqq</div>
-            <div class="review-date">Wed Apr 01 2026 00:00:00 GMT+0900 (한국 표준시)년 undefined월</div>
+            <div class="review-name">지연</div>
+            <div class="review-date">2025년 11월</div>
           </div>
           <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
         </div>
-        <p class="review-text">qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq</p>
+        <p class="review-text">바다 뷰가 정말 환상적이었어요! 산 속에서 동해를 바라보는 느낌이 너무 특별했습니다. 조용하고 아늑한 분위기에서 완전한 힐링을 했어요.</p>
       </div>
       <div class="review-card" onclick="openRvDetail(1)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
         <div class="review-header">
-          <div class="review-avatar" style="background:linear-gradient(135deg,#0aad8e,#00c9a7)">ㄴ</div>
+          <div class="review-avatar" style="background:linear-gradient(135deg,#0aad8e,#00c9a7)">민</div>
           <div>
-            <div class="review-name">ㄴㄴㄴㄴㄴ</div>
-            <div class="review-date">Wed Apr 01 2026 00:00:00 GMT+0900 (한국 표준시)년 undefined월</div>
+            <div class="review-name">민준</div>
+            <div class="review-date">2025년 10월</div>
           </div>
-          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★☆</div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
         </div>
-        <p class="review-text">ㅁㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ</p>
+        <p class="review-text">호스트분이 정말 친절하시고 숙소가 사진보다 더 예뻤어요. 화목난로 덕분에 가을밤이 따뜻했고, 주방도 잘 갖춰져 있어서 직접 해먹는 재미도 있었습…</p>
       </div>
       <div class="review-card" onclick="openRvDetail(2)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
         <div class="review-header">
-          <div class="review-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316)">김</div>
+          <div class="review-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316)">수</div>
           <div>
-            <div class="review-name">김현수</div>
-            <div class="review-date">Wed Apr 01 2026 00:00:00 GMT+0900 (한국 표준시)년 undefined월</div>
+            <div class="review-name">수진</div>
+            <div class="review-date">2025년 09월</div>
           </div>
           <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
         </div>
-        <p class="review-text">ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂ</p>
+        <p class="review-text">테라스에서 일출 보는 게 꿈이었는데 이루었어요. 별채라 프라이버시도 완벽하고, 주변 자연 경관도 너무 아름다웠습니다. 꼭 다시 오고 싶어요!</p>
       </div>
       <div class="review-card" onclick="openRvDetail(3)" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
         <div class="review-header">
-          <div class="review-avatar" style="background:linear-gradient(135deg,#ef4444,#e8174a)">g</div>
+          <div class="review-avatar" style="background:linear-gradient(135deg,#ef4444,#e8174a)">태</div>
           <div>
-            <div class="review-name">gggg3</div>
-            <div class="review-date">2026년 04월</div>
+            <div class="review-name">태양</div>
+            <div class="review-date">2025년 08월</div>
           </div>
-          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★★</div>
+          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">★★★★☆</div>
         </div>
-        <p class="review-text">rntaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
+        <p class="review-text">위치가 정말 최고입니다. 영덕 대게도 근처에서 먹을 수 있고, 블루로드 트레킹도 즐겼어요. 숙소 자체도 너무 감성적이고 청결했습니다.</p>
       </div></div>
       <div style="text-align:right;margin-top:14px;">
         <a href="review.html" style="font-size:.85rem;color:var(--primary);font-weight:700;text-decoration:none;">후기 전체보기 →</a>
@@ -1633,28 +1641,28 @@ async function loadFromSheet() {
 <!-- URL 입력 모달 -->
 <div class="url-modal-bg" id="urlModalBg" onclick="closeUrlModal(event)">
   <div class="url-modal-box">
-    <div class="url-modal-title" id="urlModalTitle">슬롯 사진 URL 입력</div>
+    <div class="url-modal-title" id="urlModalTitle">사진 URL 입력</div>
     <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 직접 URL을 붙여넣으세요.<br>Drive 링크는 <b>thumbnail</b> 형식으로 자동 변환되어 적용됩니다.</div>
     <div class="url-drive-row">
       <a class="url-btn-drive" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"></path>
-          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"></path>
-          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"></path>
-          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"></path>
-          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"></path>
-          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"></path>
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"/>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"/>
+          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"/>
         </svg>
         Drive에서 찾기
       </a>
       <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
     </div>
     <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
-    <div id="urlConvertedWrap" style="display: block; margin-top: 6px; padding: 6px 10px; background: rgb(245, 245, 240); border-radius: 6px; font-size: 0.72rem; color: rgb(102, 102, 102); word-break: break-all;">
-      변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;">https://drive.google.com/thumbnail?id=1Xf_pnkEuO4Jvr3vSrK4dmdgUxbJ_C43c&amp;sz=w1200</span>
+    <div id="urlConvertedWrap" style="display:none;margin-top:6px;padding:6px 10px;background:#f5f5f0;border-radius:6px;font-size:.72rem;color:#666;word-break:break-all;">
+      변환 URL: <span id="urlConverted" style="color:#3d2010;font-weight:700;"></span>
     </div>
     <div class="url-preview-wrap">
-      <img class="url-preview-img" id="urlPreviewImg" src="https://drive.google.com/thumbnail?id=1Xf_pnkEuO4Jvr3vSrK4dmdgUxbJ_C43c&amp;sz=w1200" alt="" style="display: block;">
+      <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
       <div class="url-preview-err" id="urlPreviewErr"></div>
     </div>
     <div class="url-modal-btns">
