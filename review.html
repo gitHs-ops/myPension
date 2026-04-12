@@ -110,7 +110,18 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .rv-cats { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
 .rv-cat { font-size:.76rem; color:var(--muted); }
 .rv-cat b { color:var(--text); font-weight:600; }
-.rv-text { font-size:.9rem; line-height:1.7; color:#444; margin-bottom:14px; }
+.rv-text { font-size:.9rem; line-height:1.7; color:#444; margin-bottom:0; }
+.rv-text-wrap { position:relative; margin-bottom:14px; }
+.rv-translate-btn {
+  display:inline-flex; align-items:center; gap:4px;
+  float:right; margin-left:10px; margin-bottom:4px;
+  font-size:.75rem; font-weight:600;
+  color:var(--primary); background:#f8f4ef;
+  border:1px solid #ddd; border-radius:20px;
+  padding:3px 10px; text-decoration:none;
+  transition:background .15s, border-color .15s; white-space:nowrap;
+}
+.rv-translate-btn:hover { background:#f0e8df; border-color:var(--primary); }
 .rv-photos { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
 .rv-photo { width:84px; height:84px; border-radius:9px; object-fit:cover; cursor:pointer; transition:opacity .15s; }
 .rv-photo:hover { opacity:.85; }
@@ -159,6 +170,8 @@ body.host-mode .rv-host-btns { display:flex; }
 .featured-card-stars { margin-left:auto; font-size:.88rem; color:#f4a828; }
 .featured-card-text { font-size:.84rem; line-height:1.65; color:#444; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
 .featured-empty { font-size:.85rem; color:#aaa; padding:10px 0; }
+.btn-sm.fav-on { background:#fffbea; border-color:#f4a828; color:#b07d00; font-weight:700; }
+.btn-sm.fav-on:hover { background:#fff3cc; }
 .btn-sm.del:hover { background:#fff5f5; }
 
 /* ── EMPTY STATE ── */
@@ -891,7 +904,10 @@ function renderCard(r) {
     <div class="rv-cats">
       ${CATS.map(c => `<span class="rv-cat">${c.label} <b>${r.ratings[c.key]||0}</b></span>`).join('')}
     </div>
-    <div class="rv-text">${esc(r.text)}</div>
+    <div class="rv-text-wrap">
+      ${isEnglish(r.text) ? `<a class="rv-translate-btn" href="https://translate.google.com/?sl=en&tl=ko&text=${encodeURIComponent(r.text)}&op=translate" target="_blank" rel="noopener" title="Google 번역으로 보기">🌐 번역</a>` : ''}
+      <div class="rv-text">${esc(r.text)}</div>
+    </div>
     ${photos.length ? `<div class="rv-photos">${photos.map((p,i) =>
       `<img class="rv-photo" src="${p}" onclick="openLb(${JSON.stringify(photos).replace(/"/g,'&quot;')},${i})">`
     ).join('')}</div>` : ''}
@@ -907,6 +923,15 @@ function renderCard(r) {
       <button class="btn-sm del" onclick="deleteReview('${r.id}')">🗑 삭제</button>
     </div>
   </div>`;
+}
+
+// ── 영문 감지 (영문자 비율 40% 이상이면 영문으로 판단) ──
+function isEnglish(text) {
+  if (!text) return false;
+  const letters = text.replace(/\s/g, '');
+  if (letters.length === 0) return false;
+  const engCount = (letters.match(/[a-zA-Z]/g) || []).length;
+  return (engCount / letters.length) >= 0.4;
 }
 
 function esc(s) {
