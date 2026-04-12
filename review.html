@@ -375,7 +375,6 @@ footer {
     <a href="pic_view.html" data-icon="📷">갤러리</a>
     <a href="review.html" data-icon="💬">게스트 후기</a>
     <a href="reserved_view.html" data-icon="📅">예약현황</a>
-    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
   </nav>
 </header>
 
@@ -420,7 +419,6 @@ footer {
     <a href="index.html#amenities" data-icon="🛁">편의시설</a>
     <a href="pic_view.html">사진 모두보기</a>
     <a href="review.html" data-icon="💬">게스트 후기</a>
-    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
   </nav>
   <span class="footer-copy">© 2026 영덕감성산장. 경북 영덕군.</span>
 </footer>
@@ -607,7 +605,7 @@ let LB_IDX = 0;
 
 // ── INIT ──
 async function init() {
-  HOST_MODE = localStorage.getItem(HOST_KEY) === '1';
+  HOST_MODE = sessionStorage.getItem(HOST_KEY) === '1';
   if (HOST_MODE) {
     document.body.classList.add('host-mode');
     rcClear();   // 호스트는 항상 최신 데이터
@@ -1148,14 +1146,14 @@ function confirmAuth() {
 }
 function activateHost() {
   HOST_MODE = true;
-  localStorage.setItem('pension_host', '1');
+  sessionStorage.setItem('pension_host', '1');
   document.body.classList.add('host-mode');
   closeAuthModal();
   renderList();
 }
 function exitHostMode() {
   HOST_MODE = false;
-  localStorage.removeItem('pension_host');
+  sessionStorage.removeItem('pension_host');
   document.body.classList.remove('host-mode');
   renderList();
 }
