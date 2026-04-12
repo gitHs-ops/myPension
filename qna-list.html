@@ -113,14 +113,14 @@ td { font-size:.92rem; color:var(--text); }
 </header>
 
 <!-- HERO -->
-<section class="hero">
-  <div>
-    <h1>❓ Q &amp; A</h1>
-    <p>궁금한 점을 확인하고 문의하세요</p>
-  </div>
+<section class="hero" style="padding:24px 48px;">
+  <p style="font-size:1rem;opacity:.9;">❓ Q &amp; A &nbsp;|&nbsp; 궁금한 점을 확인하고 문의하세요</p>
 </section>
   <div class="content-wrap"><div class="content-card">
-    <div id="statusBar" class="status-bar">⏳ 목록 불러오는 중...</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div id="statusBar" class="status-bar" style="margin-bottom:0;">⏳ 목록 불러오는 중...</div>
+      <a href="qna-add.html" class="btn" style="text-decoration:none;white-space:nowrap;">+ Q&amp;A 등록</a>
+    </div>
     <table>
       <thead>
         <tr>
@@ -194,7 +194,7 @@ td { font-size:.92rem; color:var(--text); }
           <td class="app-title">${app.name}</td>
           <td class="desc">${app.desc}</td>
           <td style="display:flex;gap:6px;align-items:center;">
-            <button class="btn-icon btn-edit" title="수정" onclick="location.href='app-add.html?edit=${idx}'">✏️</button>
+            <button class="btn-icon btn-edit" title="수정" onclick="location.href='qna-add.html?edit=${idx}'">✏️</button>
             <button class="btn-icon btn-del" title="삭제" onclick="deleteApp(${idx})">🗑️</button>
           </td>
         </tr>`;
