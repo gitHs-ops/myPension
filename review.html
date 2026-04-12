@@ -111,19 +111,6 @@ body { font-family:var(--sans); color:var(--text); background:var(--bg); }
 .rv-cat { font-size:.76rem; color:var(--muted); }
 .rv-cat b { color:var(--text); font-weight:600; }
 .rv-text { font-size:.9rem; line-height:1.7; color:#444; margin-bottom:14px; }
-.rv-text-wrap { position:relative; margin-bottom:14px; }
-.rv-text-wrap .rv-text { margin-bottom:0; }
-.rv-translate-btn {
-  display:inline-flex; align-items:center; gap:4px;
-  float:right; margin-left:10px; margin-bottom:4px;
-  font-size:.75rem; font-weight:600;
-  color:var(--primary); background:#f8f4ef;
-  border:1px solid #ddd; border-radius:20px;
-  padding:3px 10px; text-decoration:none;
-  transition:background .15s, border-color .15s;
-  white-space:nowrap;
-}
-.rv-translate-btn:hover { background:#f0e8df; border-color:var(--primary); }
 .rv-photos { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
 .rv-photo { width:84px; height:84px; border-radius:9px; object-fit:cover; cursor:pointer; transition:opacity .15s; }
 .rv-photo:hover { opacity:.85; }
@@ -142,7 +129,36 @@ body.host-mode .rv-host-btns { display:flex; }
   cursor:pointer; color:var(--text); transition:background .12s;
 }
 .btn-sm:hover { background:#f5f0ea; }
-.btn-sm.del { border-color:#e53935; color:#e53935; }
+.btn-sm.fav-on { background:#fffbea; border-color:#f4a828; color:#b07d00; font-weight:700; }
+.btn-sm.fav-on:hover { background:#fff3cc; }
+
+/* ── 대표 후기 고정 섹션 ── */
+.featured-wrap { max-width:860px; margin:24px auto 0; padding:0 24px; }
+.featured-head { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.featured-head-title { font-size:1rem; font-weight:700; }
+.featured-badge { font-size:.72rem; background:#fff8e1; color:#b07d00; border:1px solid #f4a828; border-radius:10px; padding:2px 9px; font-weight:700; }
+.featured-scroll { display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; scrollbar-width:thin; }
+.featured-scroll::-webkit-scrollbar { height:4px; }
+.featured-scroll::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+.featured-card {
+  flex-shrink:0; width:280px;
+  background:#fff; border-radius:12px; padding:18px 20px;
+  border:1.5px solid #f4e8d0; box-shadow:0 2px 10px rgba(0,0,0,.06);
+  cursor:pointer; transition:box-shadow .15s;
+}
+.featured-card:hover { box-shadow:0 4px 18px rgba(0,0,0,.12); }
+.featured-card-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.featured-card-avatar {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,#6b3a1f,#c8956c);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.95rem; color:#fff; font-weight:700;
+}
+.featured-card-name { font-size:.88rem; font-weight:700; }
+.featured-card-date { font-size:.74rem; color:#888; margin-top:2px; }
+.featured-card-stars { margin-left:auto; font-size:.88rem; color:#f4a828; }
+.featured-card-text { font-size:.84rem; line-height:1.65; color:#444; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.featured-empty { font-size:.85rem; color:#aaa; padding:10px 0; }
 .btn-sm.del:hover { background:#fff5f5; }
 
 /* ── EMPTY STATE ── */
@@ -403,6 +419,15 @@ footer {
 <!-- ── RATING OVERVIEW ── -->
 <div class="overview-wrap">
   <div class="overview-card" id="overviewCard"></div>
+</div>
+
+<!-- ── 대표 후기 고정 섹션 ── -->
+<div class="featured-wrap" id="featuredWrap" style="display:none">
+  <div class="featured-head">
+    <span class="featured-head-title">⭐ 대표 후기</span>
+    <span class="featured-badge">호스트 선정</span>
+  </div>
+  <div class="featured-scroll" id="featuredList"></div>
 </div>
 
 <!-- ── REVIEWS ── -->
@@ -697,6 +722,7 @@ function parseSheetReviews(rows) {
     hostReply:     r.hostReply     || '',
     hostReplyDate: r.hostReplyDate || '',
     createdAt:     r.createdAt     || '',
+    featured:      r.featured === 'true' || r.featured === true,
   })).filter(r => r.id);
 }
 
@@ -730,6 +756,7 @@ async function saveReviews() {
       hostReply:     r.hostReply     || '',
       hostReplyDate: r.hostReplyDate || '',
       createdAt:     r.createdAt,
+      featured:      r.featured ? 'true' : 'false',
     }));
     try {
       await fetch(APPS_SCRIPT_URL, {
@@ -802,6 +829,45 @@ function renderList() {
   if (SORT === 'highest') list.sort((a,b) => b.avg - a.avg);
   if (SORT === 'lowest')  list.sort((a,b) => a.avg - b.avg);
   el.innerHTML = list.map(renderCard).join('');
+  renderFeatured();
+}
+
+// ── 대표 후기 렌더링 ──
+function renderFeatured() {
+  const featured = REVIEWS.filter(r => r.featured);
+  const wrap = document.getElementById('featuredWrap');
+  const list = document.getElementById('featuredList');
+  if (!featured.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  list.innerHTML = featured.map(r => {
+    const initial = (r.guestName||'?')[0];
+    const stars = '★'.repeat(Math.round(r.avg||0)) + '☆'.repeat(5 - Math.round(r.avg||0));
+    const preview = r.text.length > 120 ? r.text.slice(0,120) + '…' : r.text;
+    return `
+      <div class="featured-card" onclick="document.getElementById('rc_${r.id}').scrollIntoView({behavior:'smooth',block:'center'})">
+        <div class="featured-card-head">
+          <div class="featured-card-avatar">${initial}</div>
+          <div>
+            <div class="featured-card-name">${esc(r.guestName)}</div>
+            <div class="featured-card-date">${fmtDate(r.stayDate)}</div>
+          </div>
+          <div class="featured-card-stars">${stars}</div>
+        </div>
+        <div class="featured-card-text">${esc(preview)}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── 즐겨찾기 토글 ──
+async function toggleFeatured(id) {
+  if (!HOST_MODE) return;
+  const r = REVIEWS.find(r => r.id === id);
+  if (!r) return;
+  r.featured = !r.featured;
+  await saveReviews();
+  rcClear();
+  renderOverview();
+  renderList();
 }
 
 function renderCard(r) {
@@ -825,13 +891,7 @@ function renderCard(r) {
     <div class="rv-cats">
       ${CATS.map(c => `<span class="rv-cat">${c.label} <b>${r.ratings[c.key]||0}</b></span>`).join('')}
     </div>
-    <div class="rv-text-wrap">
-      ${isEnglish(r.text) ? `
-      <a class="rv-translate-btn"
-         href="https://translate.google.com/?sl=en&tl=ko&text=${encodeURIComponent(r.text)}&op=translate"
-         target="_blank" rel="noopener" title="Google 번역으로 보기">🌐 번역</a>` : ''}
-      <div class="rv-text">${esc(r.text)}</div>
-    </div>
+    <div class="rv-text">${esc(r.text)}</div>
     ${photos.length ? `<div class="rv-photos">${photos.map((p,i) =>
       `<img class="rv-photo" src="${p}" onclick="openLb(${JSON.stringify(photos).replace(/"/g,'&quot;')},${i})">`
     ).join('')}</div>` : ''}
@@ -842,19 +902,11 @@ function renderCard(r) {
         ${r.hostReplyDate ? `<div class="rv-reply-date">${r.hostReplyDate}</div>` : ''}
       </div>` : ''}
     <div class="rv-host-btns">
+      <button class="btn-sm ${r.featured ? 'fav-on' : ''}" onclick="toggleFeatured('${r.id}')">${r.featured ? '⭐ 추천 해제' : '☆ 대표 후기 등록'}</button>
       <button class="btn-sm" onclick="openReplyModal('${r.id}')">${r.hostReply ? '✏️ 답변 수정' : '💬 답변 달기'}</button>
       <button class="btn-sm del" onclick="deleteReview('${r.id}')">🗑 삭제</button>
     </div>
   </div>`;
-}
-
-// ── 영문 감지 (영문자 비율 40% 이상이면 영문으로 판단) ──
-function isEnglish(text) {
-  if (!text) return false;
-  const letters = text.replace(/\s/g, '');
-  if (letters.length === 0) return false;
-  const engCount = (letters.match(/[a-zA-Z]/g) || []).length;
-  return (engCount / letters.length) >= 0.4;
 }
 
 function esc(s) {

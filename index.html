@@ -898,46 +898,83 @@ function _rvStars(n) {
     { guestName:'태양', stayDate:'2025-08', avg:4, text:'위치가 정말 최고입니다. 영덕 대게도 근처에서 먹을 수 있고, 블루로드 트레킹도 즐겼어요. 숙소 자체도 너무 감성적이고 청결했습니다.', avatarBg:'linear-gradient(135deg,#ef4444,#e8174a)' },
   ];
 
-  let reviews = [];
-  try { reviews = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) {}
+  function renderGrid(reviews, useSample) {
+    if (!useSample) {
+      const avg = reviews.reduce((s,r) => s + (r.avg||0), 0) / reviews.length;
+      const full = Math.floor(avg + 0.25);
+      document.getElementById('ratingNum').textContent = avg.toFixed(2);
+      document.getElementById('ratingStars').textContent = '★'.repeat(full) + '☆'.repeat(5-full);
+      document.getElementById('ratingCount').textContent = `후기 ${reviews.length}개`;
+    }
+    _rvSource = reviews;
+    const grid = document.getElementById('reviewsGrid');
+    grid.innerHTML = reviews.slice(0,4).map((r, i) => {
+      const initial = (r.guestName||'?')[0];
+      const bg = r.avatarBg || _RV_AVATAR_COLORS[i % _RV_AVATAR_COLORS.length];
+      const stars = _rvStars(r.avg||5);
+      const preview = r.text.length > 80 ? r.text.slice(0,80) + '…' : r.text;
+      return `
+        <div class="review-card" onclick="openRvDetail(${i})"
+             style="cursor:pointer;transition:box-shadow .15s;"
+             onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'"
+             onmouseout="this.style.boxShadow=''">
+          <div class="review-header">
+            <div class="review-avatar" style="background:${bg}">${_rvEsc(r.guestName)}</div>
+            <div>
+              <div class="review-name">${_rvEsc(r.guestName)}</div>
+              <div class="review-date">${_rvFmt(r.stayDate)}</div>
+            </div>
+            <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">${stars}</div>
+          </div>
+          <p class="review-text">${_rvEsc(preview)}</p>
+        </div>`;
+    }).join('');
+  }
 
-  const useSample = reviews.length === 0;
-  _rvSource = useSample ? SAMPLE : [...reviews].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4);
-
-  if (!useSample) {
-    const avg = reviews.reduce((s,r) => s + (r.avg||0), 0) / reviews.length;
-    const full = Math.floor(avg + 0.25);
-    document.getElementById('ratingNum').textContent = avg.toFixed(2);
-    document.getElementById('ratingStars').textContent = '★'.repeat(full) + '☆'.repeat(5-full);
-    document.getElementById('ratingCount').textContent = `후기 ${reviews.length}개`;
+  // 1) GAS에서 featured 후기 우선 로드
+  if (APPS_SCRIPT_URL) {
+    fetch(`${APPS_SCRIPT_URL}?sheet=reviews`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.ok || !json.data || !json.data.length) throw new Error('no data');
+        const all = json.data.map(r => ({
+          ...r,
+          avg:      parseFloat(r.avg) || 0,
+          ratings:  (() => { try { return JSON.parse(r.ratings||'{}'); } catch(e) { return {}; } })(),
+          featured: r.featured === 'true',
+        }));
+        // featured 있으면 우선, 없으면 최신순
+        const featured = all.filter(r => r.featured);
+        const source   = featured.length ? featured : [...all].sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+        // 전체 평점 계산
+        const avg = all.reduce((s,r) => s + (r.avg||0), 0) / all.length;
+        const full = Math.floor(avg + 0.25);
+        document.getElementById('ratingNum').textContent = avg.toFixed(2);
+        document.getElementById('ratingStars').textContent = '★'.repeat(full) + '☆'.repeat(5-full);
+        document.getElementById('ratingCount').textContent = `후기 ${all.length}개`;
+        renderGrid(source, false);
+      })
+      .catch(() => {
+        // GAS 실패 시 localStorage 폴백
+        let reviews = [];
+        try { reviews = JSON.parse(localStorage.getItem('rv_reviews') || '[]'); } catch(e) {}
+        if (reviews.length) {
+          const featured = reviews.filter(r => r.featured);
+          renderGrid(featured.length ? featured : [...reviews].sort((a,b) => b.createdAt.localeCompare(a.createdAt)), false);
+        } else {
+          document.getElementById('ratingNum').textContent = '4.69';
+          document.getElementById('ratingStars').textContent = '★★★★★';
+          document.getElementById('ratingCount').textContent = '후기 39개';
+          renderGrid(SAMPLE, true);
+        }
+      });
   } else {
+    // GAS URL 없으면 샘플
     document.getElementById('ratingNum').textContent = '4.69';
     document.getElementById('ratingStars').textContent = '★★★★★';
     document.getElementById('ratingCount').textContent = '후기 39개';
+    renderGrid(SAMPLE, true);
   }
-
-  const grid = document.getElementById('reviewsGrid');
-  grid.innerHTML = _rvSource.map((r, i) => {
-    const initial = (r.guestName||'?')[0];
-    const bg = r.avatarBg || _RV_AVATAR_COLORS[i % _RV_AVATAR_COLORS.length];
-    const stars = _rvStars(r.avg||5);
-    const preview = r.text.length > 80 ? r.text.slice(0,80) + '…' : r.text;
-    return `
-      <div class="review-card" onclick="openRvDetail(${i})"
-           style="cursor:pointer;transition:box-shadow .15s;"
-           onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)'"
-           onmouseout="this.style.boxShadow=''">
-        <div class="review-header">
-          <div class="review-avatar" style="background:${bg}">${initial}</div>
-          <div>
-            <div class="review-name">${_rvEsc(r.guestName)}</div>
-            <div class="review-date">${_rvFmt(r.stayDate)}</div>
-          </div>
-          <div style="margin-left:auto;font-size:.9rem;color:#f4a828;letter-spacing:1px">${stars}</div>
-        </div>
-        <p class="review-text">${_rvEsc(preview)}</p>
-      </div>`;
-  }).join('');
 })();
 
 function openRvDetail(idx) {
