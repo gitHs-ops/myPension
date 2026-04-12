@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q&A 등록 — 영덕감성산장</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6b3a1f;
+      --primary-dark: #4a2510;
+      --text: #222222;
+      --sub: #555555;
+      --muted: #888888;
+      --border: #dddddd;
+      --surface: #ffffff;
+      --bg: #f7f7f7;
+      --radius: 12px;
+      --shadow: 0 2px 16px rgba(0,0,0,.12);
+      --sans: 'Noto Sans KR', sans-serif;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+    /* ── HEADER ── */
+    .header {
+      position:sticky; top:0; z-index:200;
+      background:var(--surface); border-bottom:1px solid var(--border);
+      padding:0 40px; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+    .logo-icon {
+      width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg,#7a5c3a,#4a3018);
+      display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
+    }
+    .header-nav { display:flex; align-items:center; gap:28px; }
+    .header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+    .header-nav a:hover { color:var(--primary); }
+    .btn-reserve-header {
+      padding:10px 22px; border-radius:999px;
+      background:#3d2010; color:#fff; border:none;
+      font-family:var(--sans); font-size:.88rem; font-weight:700;
+      cursor:pointer; transition:background .15s;
+    }
+    .btn-reserve-header:hover { background:#5c3319; }
+
+    /* ── HERO ── */
+    .hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; }
+    .hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
+    .hero p { font-size:.92rem; opacity:.75; }
+
+    /* ── FORM ── */
+    .content-wrap { max-width:560px; margin:40px auto; padding:0 24px 60px; }
+    .form-card {
+      background:var(--surface); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:36px 32px;
+    }
+    .form-title {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:24px;
+    }
+    .form-title h2 { font-size:1.15rem; font-weight:900; color:var(--primary); }
+    .back-link { color:var(--primary); text-decoration:none; font-size:.92rem; font-weight:600; }
+    .back-link:hover { text-decoration:underline; }
+    label { display:block; margin-bottom:7px; color:var(--sub); font-weight:700; font-size:.92rem; }
+    input, textarea {
+      width:100%; padding:11px 14px;
+      border:1.5px solid var(--border); border-radius:8px;
+      font-size:.95rem; margin-bottom:20px;
+      font-family:var(--sans); background:var(--bg);
+      transition:border-color .15s;
+    }
+    input:focus, textarea:focus { outline:none; border-color:var(--primary); }
+    textarea { resize:vertical; min-height:100px; }
+    .btn-submit {
+      width:100%; padding:13px 0;
+      background:var(--primary); color:#fff; border:none;
+      border-radius:10px; font-family:var(--sans);
+      font-size:1rem; font-weight:700; cursor:pointer;
+      transition:background .15s;
+    }
+    .btn-submit:hover { background:var(--primary-dark); }
+    .btn-submit:disabled { background:var(--muted); cursor:default; }
+    .msg { font-weight:700; text-align:center; margin-bottom:14px; min-height:20px; font-size:.92rem; }
+    .msg.ok { color:#2a9d5c; }
+    .msg.err { color:#ef4444; }
+
+    @media(max-width:600px){
+      .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; }
+      .logo { flex:1; order:1; }
+      .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+      .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+      .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border); margin-top:8px; gap:0 !important; }
+      .header-nav a { flex:1; text-align:center; font-size:0 !important; }
+      .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+      .hero { padding:28px 20px; }
+      .content-wrap { padding:0 12px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <div class="logo-icon">🏠</div>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="qna-list.html" data-icon="❓">Q&A</a>
+    <a href="reserved_view.html" data-icon="📅">예약현황</a>
+    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
+  </nav>
+  <button class="btn-reserve-header" onclick="location.href='reserved_guest.html'">예약 신청</button>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>❓ Q &amp; A</h1>
+  <p>궁금한 점을 확인하고 문의하세요</p>
+</section>
+
+<!-- FORM -->
+<div class="content-wrap">
+  <div class="form-card">
+    <div class="form-title">
+      <h2 id="formTitle">Q&A 등록</h2>
+      <a href="qna-list.html" class="back-link">← 목록으로</a>
+    </div>
+    <form id="qnaForm" autocomplete="off" onsubmit="return false;">
+      <label for="name">질문</label>
+      <textarea id="name" required maxlength="200" autocomplete="off" placeholder="질문 내용을 입력하세요"></textarea>
+      <label for="desc">답변</label>
+      <textarea id="desc" required maxlength="500" autocomplete="off" placeholder="답변 내용을 입력하세요"></textarea>
+      <div id="msg" class="msg"></div>
+      <button class="btn-submit" id="submitBtn" onclick="addOrEditQna()">등록하기</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── 설정 ──
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZDRXoaAZb6ukSoUWNI3d20dD3ROPOhkYRdga3F0kmX3RQUoskIprVtSS046cdNefq-Q/exec';
+
+  function getQueryParam(key) {
+    return new URLSearchParams(window.location.search).get(key);
+  }
+  function getCachedApps() {
+    try { return JSON.parse(localStorage.getItem('qna') || '[]'); } catch(e) { return []; }
+  }
+  function setMsg(text, isErr) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  }
+
+  // ── GAS 저장 ──
+  async function saveApps(apps) {
+    const data = encodeURIComponent(JSON.stringify(apps));
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=save&target=qna&data=${data}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error('저장 실패');
+    localStorage.setItem('qna', JSON.stringify(apps));
+  }
+
+  // ── 수정 모드 초기화 ──
+  const editIdx = getQueryParam('edit');
+  const apps = getCachedApps();
+  if (editIdx !== null && apps[editIdx]) {
+    document.getElementById('formTitle').textContent = 'Q&A 수정';
+    document.getElementById('submitBtn').textContent = '수정하기';
+    document.getElementById('name').value = apps[editIdx].name;
+    document.getElementById('desc').value = apps[editIdx].desc;
+  }
+
+  // ── 등록/수정 실행 ──
+  async function addOrEditQna() {
+    const name = document.getElementById('name').value.trim();
+    const desc = document.getElementById('desc').value.trim();
+    if (!name || !desc) {
+      setMsg('질문과 답변을 모두 입력해 주세요.', true); return;
+    }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '저장 중...';
+
+    let apps = getCachedApps();
+    const today = new Date();
+    const date = today.getFullYear() + '-' +
+      String(today.getMonth()+1).padStart(2,'0') + '-' +
+      String(today.getDate()).padStart(2,'0');
+
+    if (editIdx !== null && apps[editIdx]) {
+      apps[editIdx] = { name, desc, date };
+    } else {
+      apps.unshift({ name, desc, date });
+    }
+
+    try {
+      await saveApps(apps);
+      setMsg(editIdx !== null ? '✅ 수정 완료! 목록으로 이동합니다...' : '✅ 등록 완료! 목록으로 이동합니다...');
+      setTimeout(() => { window.location.href = 'qna-list.html'; }, 900);
+    } catch(e) {
+      setMsg('❌ 저장 실패: ' + e.message, true);
+      btn.disabled = false;
+      btn.textContent = editIdx !== null ? '수정하기' : '등록하기';
+    }
+  }
+</script>
+</body>
+</html>

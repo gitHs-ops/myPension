@@ -1,82 +1,132 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>앱 목록 게시판</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(180deg, #167684 0%, #7ed6d3 100%);
-      color: #222;
-      font-family: 'Noto Sans KR', sans-serif;
-      margin: 0;
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
-    }
-    .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(51,88,244,.10); padding: 40px 32px; position:relative; z-index:1; }
-    .nav { background: #fff; border-bottom: 1.5px solid #e2e8f4; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 8px rgba(51,88,244,.04); }
-    .nav-logo { font-weight: 800; font-size: 1.1rem; color: #3358f4; letter-spacing: -0.02em; }
-    .nav-menu { display: flex; gap: 24px; }
-    .nav-menu a { color: #4a567a; text-decoration: none; font-size: .95rem; font-weight: 500; transition: color .15s; }
-    .nav-menu a:hover { color: #3358f4; }
-    h1 { font-size: 1.6rem; color: #3358f4; margin-bottom: 8px; }
-    .subtitle { color: #8893b0; font-size: 1.05rem; margin-bottom: 28px; }
-    table { width: 100%; border-collapse: collapse; background: #fff; }
-    thead { background: #f4f6fb; }
-    th, td { padding: 14px 10px; text-align: left; }
-    th { color: #4a567a; font-size: .98rem; border-bottom: 2px solid #e2e8f4; }
-    tr { border-bottom: 1px solid #e2e8f4; }
-    td { font-size: .97rem; color: #222; }
-    .app-title { font-weight: 700; color: #3358f4; }
-    .desc { color: #4a567a; font-size: .96rem; }
-    .date { color: #8893b0; font-size: .93rem; }
-    .btn { background: #3358f4; color: #fff; border: none; border-radius: 8px; padding: 7px 18px; font-size: .95rem; font-weight: 600; cursor: pointer; transition: background .15s; }
-    .btn:hover { background: #223a99; }
-    .btn-icon { border: none; border-radius: 8px; width: 36px; height: 36px; font-size: 1.1rem; cursor: pointer; transition: background .15s, transform .1s; display: inline-flex; align-items: center; justify-content: center; }
-    .btn-icon:hover { transform: scale(1.12); }
-    .btn-edit { background: #e8effe; color: #3358f4; }
-    .btn-edit:hover { background: #c7d3fc; }
-    .btn-del { background: #fee2e2; color: #ef4444; }
-    .btn-del:hover { background: #fca5a5; }
-    .btn-go { background: #e6faf7; color: #0ec7a5; }
-    .btn-go:hover { background: #b2f0e8; }
-    .status-bar { font-size: .85rem; color: #8893b0; margin-bottom: 10px; min-height: 20px; }
-    .status-bar.err { color: #ef4444; }
-    @media (max-width: 960px) {
-      .container { max-width: 98vw; padding: 18px 4vw; }
-      .nav { padding: 0 12px; }
-      th, td { padding: 10px 4px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q&A — 영덕감성산장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6b3a1f;
+  --primary-dark: #4a2510;
+  --text: #222222;
+  --sub: #555555;
+  --muted: #888888;
+  --border: #dddddd;
+  --surface: #ffffff;
+  --bg: #f7f7f7;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,.12);
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); color:var(--text); background:var(--bg); }
+
+/* ── HEADER ── */
+.header {
+  position:sticky; top:0; z-index:200;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 40px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:900; color:#3d2010; text-decoration:none; }
+.logo-icon {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#7a5c3a,#4a3018);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
+}
+.header-nav { display:flex; align-items:center; gap:28px; }
+.header-nav a { text-decoration:none; font-size:.9rem; font-weight:600; color:var(--text); transition:color .15s; }
+.header-nav a:hover { color:var(--primary); }
+.btn-reserve-header {
+  padding:10px 22px; border-radius:999px;
+  background:#3d2010; color:#fff; border:none;
+  font-family:var(--sans); font-size:.88rem; font-weight:700;
+  cursor:pointer; transition:background .15s;
+}
+.btn-reserve-header:hover { background:#5c3319; }
+
+/* ── HERO ── */
+.hero { background:linear-gradient(135deg,#3d2210,#6b3a1f 55%,#8b5c3a); padding:44px 48px 36px; color:#fff; display:flex; align-items:center; justify-content:space-between; }
+.hero h1 { font-size:1.8rem; font-weight:900; margin-bottom:6px; }
+.hero p { font-size:.92rem; opacity:.75; }
+
+/* ── CONTENT ── */
+.content-wrap { max-width:900px; margin:32px auto; padding:0 24px 60px; }
+.content-card { background:var(--surface); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow); }
+h2 { font-size:1.1rem; color:var(--primary); margin-bottom:8px; }
+.subtitle { color:var(--muted); font-size:.92rem; margin-bottom:28px; }
+table { width:100%; border-collapse:collapse; }
+thead { background:var(--bg); }
+th, td { padding:14px 10px; text-align:left; }
+th { color:var(--sub); font-size:.92rem; border-bottom:2px solid var(--border); }
+tr { border-bottom:1px solid var(--border); }
+td { font-size:.92rem; color:var(--text); }
+.btn { background:var(--primary); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:.9rem; font-weight:700; cursor:pointer; transition:background .15s; text-decoration:none; display:inline-block; }
+.btn:hover { background:var(--primary-dark); }
+.btn-icon { border:none; border-radius:8px; width:36px; height:36px; font-size:1.1rem; cursor:pointer; transition:background .15s, transform .1s; display:inline-flex; align-items:center; justify-content:center; }
+.btn-icon:hover { transform:scale(1.12); }
+.btn-edit { background:#f0ebe4; color:var(--primary); }
+.btn-edit:hover { background:#e0d0c4; }
+.btn-del { background:#fee2e2; color:#ef4444; }
+.btn-del:hover { background:#fca5a5; }
+.btn-go { background:#f0ebe4; color:var(--primary); }
+.btn-go:hover { background:#e0d0c4; }
+.status-bar { font-size:.85rem; color:var(--muted); margin-bottom:10px; min-height:20px; }
+.status-bar.err { color:#ef4444; }
+.app-title { font-weight:700; color:var(--primary); }
+.desc { color:var(--sub); font-size:.92rem; }
+.date { color:var(--muted); font-size:.88rem; }
+
+@media(max-width:600px){
+  .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; }
+  .logo { flex:1; order:1; }
+  .btn-reserve-header { order:2; font-size:0 !important; padding:8px 11px !important; }
+  .btn-reserve-header::after { content:"📋"; font-size:1.2rem; }
+  .header-nav { order:3; width:100%; justify-content:space-around; padding:6px 0 8px; border-top:1px solid var(--border); margin-top:8px; gap:0 !important; }
+  .header-nav a { flex:1; text-align:center; font-size:0 !important; }
+  .header-nav a::after { font-size:1.35rem; content:attr(data-icon); }
+  .content-wrap { padding:0 12px 40px; }
+  .hero { padding:28px 20px; }
+}
+</style>
 </head>
 <body>
-  <nav class="nav">
-    <div class="nav-logo">AppList <span style="color:#0ec7a5;">Board</span></div>
-    <div class="nav-menu">
-      <a href="#">홈</a>
-      <a href="#">소개</a>
-      <a href="#">문의</a>
-    </div>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="index.html" title="홈으로">
+    <div class="logo-icon">🏠</div>
+    영덕감성산장
+  </a>
+  <nav class="header-nav">
+    <a href="index.html#about" data-icon="🏠">숙소 소개</a>
+    <a href="index.html#amenities" data-icon="🛁">편의시설</a>
+    <a href="surroundings.html" data-icon="🌿">주변 환경</a>
+    <a href="pic_view.html" data-icon="📷">갤러리</a>
+    <a href="review.html" data-icon="💬">게스트 후기</a>
+    <a href="qna-list.html" data-icon="❓">Q&amp;A</a>
+    <a href="reserved_view.html" data-icon="📅">예약현황</a>
+    <a href="#" onclick="checkHostAuth();return false;" data-icon="🔐">호스트모드</a>
   </nav>
-  <div class="container">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-      <h1 style="margin-bottom:0;display:flex;align-items:center;gap:16px;">
-        앱 목록 게시판
-        <span id="verInfo" style="font-size:.98rem;font-weight:500;color:#8893b0;"></span>
-      </h1>
-      <a href="app-add.html" class="btn" style="padding:9px 20px;font-size:.98rem;">+ 앱 추가</a>
-    </div>
-    <div class="subtitle">최신 앱과 도구를 한눈에 확인하고 바로 이동하세요.</div>
+  <button class="btn-reserve-header" onclick="location.href='reserved_guest.html'">예약 신청</button>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <h1>❓ Q &amp; A</h1>
+    <p>궁금한 점을 확인하고 문의하세요</p>
+  </div>
+</section>
+  <div class="content-wrap"><div class="content-card">
     <div id="statusBar" class="status-bar">⏳ 목록 불러오는 중...</div>
     <table>
       <thead>
         <tr>
-          <th>앱 이름</th>
-          <th>설명</th>
           <th>등록일</th>
-          <th>바로가기</th>
+          <th>질문</th>
+          <th>답변</th>
           <th>관리</th>
         </tr>
       </thead>
@@ -88,31 +138,6 @@
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZDRXoaAZb6ukSoUWNI3d20dD3ROPOhkYRdga3F0kmX3RQUoskIprVtSS046cdNefq-Q/exec';
     const SHEET_ID = '1tIHCgQNqSQgWmjilcP74z7SWvfO0JbD-V8dC0fJ5CV0';
 
-    // ── 버전 표시 (페이지 로드 시 고정, 앱 저장 시에만 증가) ──
-    const VER_KEY = 'appListVer';
-    (function(){
-      const today = new Date();
-      const dateStr = today.getFullYear() + '-' +
-        ('0'+(today.getMonth()+1)).slice(-2) + '-' +
-        ('0'+today.getDate()).slice(-2);
-      let verObj = { v: 1.0, date: dateStr };
-      try { verObj = JSON.parse(localStorage.getItem(VER_KEY)) || verObj; } catch(e) {}
-      if (verObj.date !== dateStr) {
-        verObj = { v: 1.0, date: dateStr };
-        localStorage.setItem(VER_KEY, JSON.stringify(verObj));
-      }
-      document.addEventListener('DOMContentLoaded', function(){
-        const el = document.getElementById('verInfo');
-        if(el) el.textContent = 'Ver ' + verObj.v.toFixed(1) + ' (' + verObj.date + ')';
-      });
-    })();
-    function bumpVersion() {
-      let verObj = { v: 1.0, date: '' };
-      try { verObj = JSON.parse(localStorage.getItem(VER_KEY)) || verObj; } catch(e) {}
-      verObj.v = Math.round((verObj.v + 0.1) * 10) / 10;
-      localStorage.setItem(VER_KEY, JSON.stringify(verObj));
-    }
-
     // ── 상태 메시지 ──
     function setStatus(msg, isErr) {
       const el = document.getElementById('statusBar');
@@ -123,11 +148,11 @@
     // ── GAS에서 목록 로드 ──
     async function loadApps() {
       try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=list`);
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=list&target=qna`);
         const json = await res.json();
         if (!json.ok) throw new Error('GAS 응답 오류');
         // GAS 데이터를 localStorage에도 캐시
-        localStorage.setItem('apps', JSON.stringify(json.data));
+        localStorage.setItem('qna', JSON.stringify(json.data));
         renderApps(json.data);
         setStatus(`✅ ${json.data.length}개 앱 로드 완료`);
       } catch(e) {
@@ -143,16 +168,16 @@
     }
 
     function getCachedApps() {
-      try { return JSON.parse(localStorage.getItem('apps') || '[]'); } catch(e) { return []; }
+      try { return JSON.parse(localStorage.getItem('qna') || '[]'); } catch(e) { return []; }
     }
 
     // ── GAS에 전체 목록 저장 ──
     async function saveApps(apps) {
       const data = encodeURIComponent(JSON.stringify(apps));
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=save&data=${data}`);
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=save&target=qna&data=${data}`);
       const json = await res.json();
       if (!json.ok) throw new Error('저장 실패');
-      localStorage.setItem('apps', JSON.stringify(apps));
+      localStorage.setItem('qna', JSON.stringify(apps));
     }
 
     // ── 렌더링 ──
@@ -160,15 +185,14 @@
       const tbody = document.getElementById('appTbody');
       tbody.innerHTML = '';
       if (!apps.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8893b0;padding:32px;">등록된 앱이 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#8893b0;padding:32px;">등록된 Q&A가 없습니다.</td></tr>';
         return;
       }
       apps.forEach((app, idx) => {
         tbody.innerHTML += `<tr>
+          <td class="date">${app.date}</td>
           <td class="app-title">${app.name}</td>
           <td class="desc">${app.desc}</td>
-          <td class="date">${app.date}</td>
-          <td><a href="${app.url}" class="btn-icon btn-go" title="이동" style="text-decoration:none;">🚀</a></td>
           <td style="display:flex;gap:6px;align-items:center;">
             <button class="btn-icon btn-edit" title="수정" onclick="location.href='app-add.html?edit=${idx}'">✏️</button>
             <button class="btn-icon btn-del" title="삭제" onclick="deleteApp(${idx})">🗑️</button>
