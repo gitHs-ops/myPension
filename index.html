@@ -931,9 +931,10 @@ function _rvStars(n) {
     }).join('');
   }
 
-  // 1) GAS에서 featured 후기 우선 로드
-  if (APPS_SCRIPT_URL) {
-    fetch(`${APPS_SCRIPT_URL}?sheet=reviews`)
+  // GAS에서 featured 후기 우선 로드
+  const _GAS = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
+  if (_GAS) {
+    fetch(`${_GAS}?sheet=reviews`)
       .then(r => r.json())
       .then(json => {
         if (!json.ok || !json.data || !json.data.length) throw new Error('no data');
