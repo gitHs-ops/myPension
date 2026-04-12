@@ -131,6 +131,7 @@ td { font-size:.92rem; color:var(--text); }
       </thead>
       <tbody id="appTbody"></tbody>
     </table>
+    <div class="pagination" id="pagination"></div>
   </div>
   <script>
     // ── 설정 ──
@@ -183,29 +184,73 @@ td { font-size:.92rem; color:var(--text); }
     const HOST_KEY = 'pension_host';
     function isHost() { return sessionStorage.getItem(HOST_KEY) === '1'; }
 
-    // ── 렌더링 ──
+    // ── 페이징 ──
+    const PAGE_SIZE = 5;
+    let currentPage = 1;
+    let allApps = [];
+
     function renderApps(apps) {
+      allApps = apps;
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderPage() {
       const tbody = document.getElementById('appTbody');
       tbody.innerHTML = '';
-      if (!apps.length) {
+      if (!allApps.length) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#8893b0;padding:32px;">등록된 Q&A가 없습니다.</td></tr>';
+        renderPagination();
         return;
       }
       const host = isHost();
-      apps.forEach((app, idx) => {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageItems = allApps.slice(start, start + PAGE_SIZE);
+      pageItems.forEach((app, i) => {
+        const idx = start + i; // 전체 인덱스
         const mgmt = host
-          ? `<td style="display:flex;gap:6px;align-items:center;">
+          ? `<td style="display:flex;gap:6px;align-items:center;" onclick="event.stopPropagation()">
                <button class="btn-icon btn-edit" title="수정" onclick="location.href='qna-add.html?edit=${idx}'">✏️</button>
                <button class="btn-icon btn-del" title="삭제" onclick="deleteApp(${idx})">🗑️</button>
              </td>`
           : `<td style="color:#ccc;font-size:.82rem;padding-left:6px;">🔒</td>`;
-        tbody.innerHTML += `<tr>
+        tbody.innerHTML += `<tr style="cursor:pointer;" onclick="location.href='qna-add.html?view=${idx}'">
           <td class="date">${app.date}</td>
-          <td class="app-title">${app.name}</td>
+          <td class="app-title" style="text-decoration:underline;text-underline-offset:3px;">${app.name}</td>
           <td class="desc">${app.desc}</td>
           ${mgmt}
         </tr>`;
       });
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const total = Math.ceil(allApps.length / PAGE_SIZE);
+      const pg = document.getElementById('pagination');
+      pg.innerHTML = '';
+      if (total <= 1) return;
+      // 이전 버튼
+      const prev = document.createElement('button');
+      prev.className = 'page-btn';
+      prev.textContent = '‹';
+      prev.disabled = currentPage === 1;
+      prev.onclick = () => { currentPage--; renderPage(); };
+      pg.appendChild(prev);
+      // 페이지 번호
+      for (let i = 1; i <= total; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = ((p) => () => { currentPage = p; renderPage(); })(i);
+        pg.appendChild(btn);
+      }
+      // 다음 버튼
+      const next = document.createElement('button');
+      next.className = 'page-btn';
+      next.textContent = '›';
+      next.disabled = currentPage === total;
+      next.onclick = () => { currentPage++; renderPage(); };
+      pg.appendChild(next);
     }
 
     // ── 삭제 ──

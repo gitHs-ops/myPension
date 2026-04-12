@@ -86,6 +86,9 @@
     .msg { font-weight:700; text-align:center; margin-bottom:14px; min-height:20px; font-size:.92rem; }
     .msg.ok { color:#2a9d5c; }
     .msg.err { color:#ef4444; }
+    .view-mode textarea { background:var(--surface); color:var(--text); cursor:default; border-color:var(--border); resize:none; }
+    .view-mode label { color:var(--primary); font-size:.95rem; }
+    .view-date { font-size:.85rem; color:var(--muted); margin-bottom:20px; }
 
     @media(max-width:600px){
       .header { flex-wrap:wrap; height:auto; padding:8px 16px 0; }
@@ -170,10 +173,29 @@
     localStorage.setItem('qna', JSON.stringify(apps));
   }
 
-  // ── 수정 모드 초기화 ──
+  // ── 모드 초기화 (view / edit / add) ──
   const editIdx = getQueryParam('edit');
+  const viewIdx = getQueryParam('view');
   const apps = getCachedApps();
-  if (editIdx !== null && apps[editIdx]) {
+
+  if (viewIdx !== null && apps[viewIdx]) {
+    // 보기 모드
+    const item = apps[viewIdx];
+    document.getElementById('formTitle').textContent = 'Q&A 내용';
+    document.getElementById('name').value = item.name;
+    document.getElementById('desc').value = item.desc;
+    document.getElementById('name').readOnly = true;
+    document.getElementById('desc').readOnly = true;
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('msg').style.display = 'none';
+    document.querySelector('.form-card').classList.add('view-mode');
+    // 등록일 표시
+    const dateEl = document.createElement('div');
+    dateEl.className = 'view-date';
+    dateEl.textContent = '📅 등록일: ' + item.date;
+    document.querySelector('.form-title').insertAdjacentElement('afterend', dateEl);
+  } else if (editIdx !== null && apps[editIdx]) {
+    // 수정 모드
     document.getElementById('formTitle').textContent = 'Q&A 수정';
     document.getElementById('submitBtn').textContent = '수정하기';
     document.getElementById('name').value = apps[editIdx].name;
