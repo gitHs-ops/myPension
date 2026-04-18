@@ -250,16 +250,17 @@ body.host-mode .host-badge { display:flex; }
 .url-preview-wrap { margin-top:10px; min-height:40px; }
 .url-preview-img { width:100%; max-height:180px; object-fit:cover; border-radius:8px; border:1px solid #eee; }
 .url-preview-err { font-size:.78rem; color:#c00; margin-top:4px; }
-.url-drive-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
-.url-btn-drive {
+.url-imgbb-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.url-btn-imgbb {
   display:inline-flex; align-items:center; gap:6px;
   padding:8px 14px; border-radius:8px;
-  border:1.5px solid #4285f4; background:#f0f6ff;
-  color:#4285f4; font-family:var(--sans); font-size:.82rem; font-weight:700;
-  cursor:pointer; white-space:nowrap; text-decoration:none;
+  border:1.5px solid #e8760a; background:#fff8f2;
+  color:#e8760a; font-family:var(--sans); font-size:.82rem; font-weight:700;
+  cursor:pointer; white-space:nowrap;
   transition:background .12s;
 }
-.url-btn-drive:hover { background:#deeaff; }
+.url-btn-imgbb:hover { background:#fdebd0; }
+.url-imgbb-sep { text-align:center; font-size:.78rem; color:#ccc; margin:8px 0; }
 .url-modal-btns { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
 .url-btn-cancel { padding:8px 18px; border:1.5px solid #ddd; border-radius:8px; background:#fff; font-family:var(--sans); font-size:.85rem; cursor:pointer; }
 .url-btn-ok { padding:8px 22px; border:none; border-radius:8px; background:#3d2010; color:#fff; font-family:var(--sans); font-size:.85rem; font-weight:700; cursor:pointer; }
@@ -407,6 +408,7 @@ const HOST_PWD = '1dl34';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
 // ▼ 호스트 저장용 토큰 (Apps Script 속성의 AUTH_TOKEN 과 동일하게)
 const AUTH_TOKEN = '1dl34';
+const IMGBB_API_KEY = 'b5a6e9481bb9cb4791108cf50761a459';
 const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
 
 let cards = [];
@@ -462,16 +464,35 @@ async function init() {
 
 function saveCards() { /* 시트 저장은 saveToSheet() 사용 */ }
 
-// ── Google Drive URL 정규화 (thumbnail 방식, uc?export=view 는 차단됨) ──
-function normalizeDriveUrl(url) {
-  if (!url) return url;
-  const m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?\s]+)/);
-  if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w1200`;
-  const m2 = url.match(/drive\.google\.com\/open\?id=([^&\s]+)/);
-  if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w1200`;
-  const m3 = url.match(/drive\.google\.com\/uc\?.*[?&]id=([^&\s]+)/);
-  if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w1200`;
-  return url;
+// ── ImgBB 업로드 ──
+async function uploadToImgBB(base64) {
+  const form = new FormData();
+  form.append('key', IMGBB_API_KEY);
+  form.append('image', base64);
+  const res  = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:form });
+  const json = await res.json();
+  if (json.success) return json.data.display_url;
+  throw new Error(json.error?.message || '업로드 실패');
+}
+async function uploadFileToImgBB(input) {
+  const file = input.files[0]; if (!file) return;
+  const status = document.getElementById('imgbbStatus');
+  status.textContent = '업로드 중...'; status.style.color = '#888';
+  try {
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload  = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+    const url = await uploadToImgBB(base64);
+    document.getElementById('urlModalInput').value = url;
+    status.textContent = '✅ 업로드 완료'; status.style.color = '#2a8a2a';
+    previewUrlInput();
+  } catch(e) {
+    status.textContent = '⚠️ ' + e.message; status.style.color = '#c00';
+  }
+  input.value = '';
 }
 
 // ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화) ──
@@ -487,7 +508,7 @@ function parseSheetCards(data) {
     category:  CAT_LABELS[r.cat] || r.cat,
     title:     r.title,
     desc:      r.desc,
-    img_url:   normalizeDriveUrl(r.img_url || ''),
+    img_url:   r.img_url || '',
     featured:  r.featured === 'true' || r.featured === true,
     bg:        'linear-gradient(135deg,#7a9e50,#527830)',
     icon:      '🖼️',
@@ -582,16 +603,16 @@ function openUrlModal(target, title) {
   setTimeout(() => document.getElementById('urlModalInput').focus(), 80);
 }
 function previewUrlInput() {
-  const url = normalizeDriveUrl(document.getElementById('urlModalInput').value.trim());
+  const url = document.getElementById('urlModalInput').value.trim();
   const img = document.getElementById('urlPreviewImg');
   const err = document.getElementById('urlPreviewErr');
   if (!url) { img.style.display='none'; err.textContent=''; return; }
   img.style.display = 'block'; img.src = url;
-  img.onerror = () => { img.style.display='none'; err.textContent='⚠️ 이미지를 불러올 수 없습니다. Drive 파일 공유 설정을 확인하세요.'; };
+  img.onerror = () => { img.style.display='none'; err.textContent='⚠️ 이미지를 불러올 수 없습니다. URL을 확인하세요.'; };
   img.onload  = () => { err.textContent=''; };
 }
 function confirmUrlInput() {
-  const url = normalizeDriveUrl(document.getElementById('urlModalInput').value.trim());
+  const url = document.getElementById('urlModalInput').value.trim();
   if (!url) { alert('URL을 입력하세요.'); return; }
   document.getElementById('urlModalBg').classList.remove('open');
   if (urlModalTarget === 'change') {
@@ -805,22 +826,14 @@ init();
 <div class="url-modal-bg" id="urlModalBg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="url-modal-box">
     <div class="url-modal-title" id="urlModalTitle">사진 URL 입력</div>
-    <div class="url-modal-hint">Google Drive 공유 링크 또는 이미지 URL을 붙여넣으세요.<br>Drive 링크는 <b>thumbnail</b> 형식으로 자동 변환되어 적용됩니다.</div>
-    <div class="url-drive-row">
-      <a class="url-btn-drive" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.3C.4 50.7 0 52.25 0 53.8h27.5z" fill="#00ac47"/>
-          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.85z" fill="#ea4335"/>
-          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-          <path d="M59.8 53.8h27.5c0-1.55-.4-3.1-1.2-4.5L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#2684fc"/>
-          <path d="M43.65 25L29.9 48.8l-2.4 5H59.8l-2.4-5z" fill="#ffba00"/>
-        </svg>
-        Drive에서 찾기
-      </a>
-      <span style="font-size:.74rem;color:#aaa;">↑ Drive를 열고 파일 공유 링크를 복사해서 붙여넣으세요</span>
+    <div class="url-modal-hint">사진 파일을 선택하면 ImgBB에 자동 업로드됩니다.<br>또는 이미 업로드된 이미지 URL을 직접 입력하세요.</div>
+    <div class="url-imgbb-row">
+      <label class="url-btn-imgbb" for="imgbbFileInput">📁 파일 선택하여 업로드</label>
+      <input type="file" id="imgbbFileInput" accept="image/*" style="display:none" onchange="uploadFileToImgBB(this)">
+      <span id="imgbbStatus" style="font-size:.74rem;color:#aaa;"></span>
     </div>
-    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://drive.google.com/file/d/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
+    <div class="url-imgbb-sep">— 또는 URL 직접 입력 —</div>
+    <input class="url-modal-input" id="urlModalInput" type="url" placeholder="https://i.ibb.co/..." oninput="previewUrlInput()" onkeydown="if(event.key==='Enter')confirmUrlInput()">
     <div class="url-preview-wrap">
       <img class="url-preview-img" id="urlPreviewImg" src="" alt="" style="display:none">
       <div class="url-preview-err" id="urlPreviewErr"></div>

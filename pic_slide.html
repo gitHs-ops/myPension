@@ -248,6 +248,7 @@ body { font-family:var(--sans); color:var(--text); background:#0a0a0a; display:f
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
 const AUTH_TOKEN = '1dl34';
+const IMGBB_API_KEY = 'b5a6e9481bb9cb4791108cf50761a459';
 const HOST_KEY = 'pension_host';
 const HOST_PWD = '1dl34';
 const CAT_LABELS = { exterior:'외관 · 전경', interior:'실내 공간', view:'전망 · 자연', facility:'편의시설' };
@@ -273,7 +274,39 @@ let currentFilter = 'all';
 
 // ── 브라우저 캐시 헬퍼 (세션 단위 — 탭 닫으면 초기화, pic_view와 공유 키) ──
 const LC_KEY = 'pension_cache_pic_view';
-function lcGet() { try { return JSON.parse(sessionStorage.getItem(LC_KEY)||'null'); } catch(e){return null;} }
+function lcGet()   { try { return JSON.parse(sessionStorage.getItem(LC_KEY)||'null'); } catch(e){return null;} }
+function lcClear() { try { sessionStorage.removeItem(LC_KEY); } catch(e){} }
+
+// ── ImgBB 업로드 ──
+async function uploadToImgBB(base64) {
+  const form = new FormData();
+  form.append('key', IMGBB_API_KEY);
+  form.append('image', base64);
+  const res  = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:form });
+  const json = await res.json();
+  if (json.success) return json.data.display_url;
+  throw new Error(json.error?.message || '업로드 실패');
+}
+async function uploadFileToImgBBSlide(input) {
+  const file = input.files[0]; if (!file) return;
+  const status = document.getElementById('slideImgbbStatus');
+  status.textContent = '업로드 중...'; status.style.color = '#aaa';
+  try {
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload  = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+    const url = await uploadToImgBB(base64);
+    document.getElementById('slideUploadUrl').value = url;
+    status.textContent = '✅ 업로드 완료'; status.style.color = '#4caf50';
+    previewUrl();
+  } catch(e) {
+    status.textContent = '⚠️ ' + e.message; status.style.color = '#f44';
+  }
+  input.value = '';
+}
 
 async function loadFromSheet() {
   const cached = lcGet();
@@ -473,8 +506,14 @@ function showSlideToast(msg) {
     <div style="font-size:1.05rem;font-weight:900;margin-bottom:18px;color:#222;">📷 사진 추가</div>
     <div id="slideUploadPlaceholder" style="height:100px;border:2px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:#aaa;margin-bottom:10px;">미리보기</div>
     <img id="slideUploadPreview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px;" alt="">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <label for="slideImgbbFile" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1.5px solid #e8760a;background:#fff8f2;color:#e8760a;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">📁 파일 선택하여 업로드</label>
+      <input type="file" id="slideImgbbFile" accept="image/*" style="display:none" onchange="uploadFileToImgBBSlide(this)">
+      <span id="slideImgbbStatus" style="font-size:.74rem;color:#aaa;"></span>
+    </div>
+    <div style="text-align:center;font-size:.78rem;color:#ccc;margin-bottom:8px;">— 또는 URL 직접 입력 —</div>
     <div style="display:flex;gap:6px;margin-bottom:10px;">
-      <input id="slideUploadUrl" type="url" placeholder="이미지 URL (GitHub raw / Google Drive)" style="flex:1;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.82rem;outline:none;">
+      <input id="slideUploadUrl" type="url" placeholder="https://i.ibb.co/..." style="flex:1;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.82rem;outline:none;">
       <button onclick="previewUrl()" style="padding:10px 14px;border-radius:8px;background:#eee;color:#444;border:none;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;">미리보기</button>
     </div>
     <select id="slideUploadCat" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;margin-bottom:10px;outline:none;">
