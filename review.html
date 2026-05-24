@@ -576,11 +576,12 @@ footer {
   <div class="auth-box">
     <div class="auth-title">🔐 호스트 인증</div>
     <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <input class="auth-input" id="authInput" type="password" placeholder="암호 입력"
-           onkeydown="if(event.key==='Enter')confirmAuth()">
-    <div class="auth-err" id="authErr">암호가 올바르지 않습니다.</div>
-    <button class="auth-ok" onclick="confirmAuth()">확인</button>
-    <button class="auth-cancel" onclick="closeAuthModal()">취소</button>
+    <form onsubmit="confirmAuth(); return false;" style="margin:0">
+      <input class="auth-input" id="authInput" type="password" placeholder="암호 입력">
+      <div class="auth-err" id="authErr">암호가 올바르지 않습니다.</div>
+      <button class="auth-ok" type="submit">확인</button>
+      <button class="auth-cancel" type="button" onclick="closeAuthModal()">취소</button>
+    </form>
   </div>
 </div>
 
