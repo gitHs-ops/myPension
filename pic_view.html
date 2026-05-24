@@ -773,12 +773,14 @@ init();
   <div class="auth-box">
     <div class="auth-box-title">🔐 호스트 인증</div>
     <div class="auth-box-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력" onkeydown="if(event.key==='Enter')confirmAuth()">
-    <div class="auth-err" id="authErr"></div>
-    <div class="auth-btns">
-      <button class="btn-auth-cancel" onclick="closeAuth()">취소</button>
-      <button class="btn-auth-ok" onclick="confirmAuth()">확인</button>
-    </div>
+    <form onsubmit="confirmAuth(); return false;" style="margin:0">
+      <input class="auth-field" id="authField" type="password" placeholder="인증 암호 입력">
+      <div class="auth-err" id="authErr"></div>
+      <div class="auth-btns">
+        <button class="btn-auth-cancel" type="button" onclick="closeAuth()">취소</button>
+        <button class="btn-auth-ok" type="submit">확인</button>
+      </div>
+    </form>
   </div>
 </div>
 

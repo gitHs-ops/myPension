@@ -1729,10 +1729,12 @@ async function loadFromSheet() {
   <div class="auth-box">
     <div class="auth-title">🔐 호스트 인증</div>
     <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <input class="auth-input" id="authField" type="password" placeholder="암호 입력" onkeydown="if(event.key==='Enter')confirmAuth()">
-    <div class="auth-err" id="authErr"></div>
-    <button class="auth-ok" onclick="confirmAuth()">확인</button>
-    <button class="auth-cancel" onclick="closeAuth()">취소</button>
+    <form onsubmit="confirmAuth(); return false;" style="margin:0">
+      <input class="auth-input" id="authField" type="password" placeholder="암호 입력">
+      <div class="auth-err" id="authErr"></div>
+      <button class="auth-ok" type="submit">확인</button>
+      <button class="auth-cancel" type="button" onclick="closeAuth()">취소</button>
+    </form>
   </div>
 </div>
 
