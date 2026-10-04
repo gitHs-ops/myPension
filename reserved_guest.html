@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>예약 현황 — 영덕감성산장</title>
+<title>예약 신청 — 영덕감성산장</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -137,7 +137,16 @@ body.host-mode .rsv-actions { display:flex; }
 /* ── MODAL ── */
 .modal-bg { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.55); justify-content:center; align-items:center; }
 .modal-bg.open { display:flex; }
-.modal { background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.modal { position:relative; background:#fff; border-radius:16px; padding:26px 28px; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; box-shadow:0 12px 48px rgba(0,0,0,.22); }
+.modal-x { position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%; border:none; background:#f3efe9; color:var(--muted); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.modal-x:hover { background:#e7e0d6; color:var(--primary); }
+.cal-cell:not(.avail) { cursor:default; }
+.cal-cell.past .cal-num { color:#ccc; }
+.guest-info { background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:14px; }
+.guest-info h3 { font-size:1.05rem; font-weight:900; color:var(--primary); margin:0; }
+.guest-info ol { margin:0; padding-left:20px; color:var(--muted); font-size:.88rem; line-height:1.8; }
+.btn-apply { padding:13px; border:none; border-radius:999px; background:var(--primary); color:#fff; font-family:var(--sans); font-size:.95rem; font-weight:700; cursor:pointer; }
+.btn-apply:hover { filter:brightness(1.1); }
 .modal-title { font-size:1.05rem; font-weight:900; color:var(--primary); margin-bottom:20px; }
 .form-row { margin-bottom:14px; }
 .form-lbl { display:block; font-size:.78rem; color:var(--muted); margin-bottom:5px; font-weight:600; }
@@ -273,35 +282,11 @@ body.host-mode .host-badge { display:flex; }
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="hero-left" style="flex-direction:row;align-items:center;gap:16px;">
-    <h1 style="margin-bottom:0;">예약 현황</h1>
-    <p style="opacity:.75;font-size:.92rem;">영덕감성산장 예약 일정을 확인하세요</p>
+    <h1 style="margin-bottom:0;">예약 신청</h1>
+    <p style="opacity:.75;font-size:.92rem;">원하시는 날짜를 선택해 예약을 신청하세요</p>
   </div>
-  <button class="btn-add-rsv" onclick="checkHostAuth()">🔐 호스트 모드</button>
+  <button class="btn-add-rsv" onclick="openRsvModal()">＋ 예약 신청하기</button>
 </section>
-
-<!-- ── STATS ── -->
-<div class="stats-wrap">
-  <div class="stat-card">
-    <div class="stat-label">전체 예약</div>
-    <div class="stat-val" id="statTotal">0</div>
-    <div class="stat-sub">확정 기준</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">이번 달</div>
-    <div class="stat-val" id="statMonth">0</div>
-    <div class="stat-sub" id="statMonthLabel">건</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">총 박수</div>
-    <div class="stat-val" id="statNights">0</div>
-    <div class="stat-sub">확정 기준</div>
-  </div>
-  <div class="stat-card stat-revenue">
-    <div class="stat-label">예상 매출</div>
-    <div class="stat-val" id="statRevenue">₩0</div>
-    <div class="stat-sub">확정 기준</div>
-  </div>
-</div>
 
 <!-- ── MAIN ── -->
 <div class="main-wrap">
@@ -328,21 +313,16 @@ body.host-mode .host-badge { display:flex; }
     </div>
   </div>
 
-  <!-- 예약 목록 -->
+  <!-- 신청 안내 -->
   <div class="list-section">
-    <div class="list-header">
-      <span class="list-title">예약 목록</span>
-      <div class="filter-tabs">
-        <button class="ftab active" data-filter="all"    onclick="setFilter('all')">전체</button>
-        <button class="ftab"        data-filter="confirmed" onclick="setFilter('confirmed')">확정</button>
-        <button class="ftab"        data-filter="pending"   onclick="setFilter('pending')">대기</button>
-        <button class="ftab"        data-filter="cancelled" onclick="setFilter('cancelled')">취소</button>
-      </div>
-    </div>
-
-    <!-- 호스트 전용 목록 -->
-    <div class="list-section-inner">
-      <div id="rsvList"></div>
+    <div class="guest-info">
+      <h3>📝 예약 신청 방법</h3>
+      <ol>
+        <li>달력에서 비어 있는 날짜를 누르면 체크인 날짜로 선택됩니다.</li>
+        <li>체크아웃 날짜, 인원, 연락처를 입력하고 신청합니다.</li>
+        <li>호스트가 확인 후 문자 또는 이메일로 확정 안내를 드립니다.</li>
+      </ol>
+      <button class="btn-apply" onclick="openRsvModal()">＋ 예약 신청하기</button>
     </div>
   </div>
 
@@ -367,14 +347,15 @@ body.host-mode .host-badge { display:flex; }
 <!-- 예약 추가/수정 -->
 <div class="modal-bg" id="rsvModal">
   <div class="modal">
-    <div class="modal-title" id="rsvModalTitle">＋ 예약 하기</div>
+    <button class="modal-x" onclick="closeRsvModal()" title="닫기">✕</button>
+    <div class="modal-title" id="rsvModalTitle">＋ 예약 신청</div>
     <div class="form-row-2">
       <div>
         <label class="form-lbl">투숙객 이름 *</label>
         <input class="form-input" id="inGuestName" type="text" placeholder="홍길동" maxlength="20">
       </div>
       <div>
-        <label class="form-lbl">연락처</label>
+        <label class="form-lbl">연락처 *</label>
         <input class="form-input" id="inPhone" type="tel" placeholder="010-0000-0000">
       </div>
     </div>
@@ -399,61 +380,19 @@ body.host-mode .host-badge { display:flex; }
         <input class="form-input" id="inGuests" type="number" min="1" max="10" value="2">
       </div>
       <div>
-        <label class="form-lbl">총 요금 (원)</label>
-        <input class="form-input" id="inPrice" type="number" min="0" step="1000" placeholder="자동 계산">
+        <label class="form-lbl">예상 요금 (원)</label>
+        <input class="form-input" id="inPrice" type="number" readonly placeholder="날짜 선택 시 계산" style="background:#f0ece6">
       </div>
     </div>
     <div class="form-row">
-      <label class="form-lbl">상태</label>
-      <select class="form-input status-select" id="inStatus">
-        <option value="confirmed">확정</option>
-        <option value="pending">대기중</option>
-        <option value="cancelled">취소</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label class="form-lbl">메모</label>
+      <label class="form-lbl">요청사항</label>
       <textarea class="form-input" id="inMemo" placeholder="늦은 체크인, 특이사항 등"></textarea>
     </div>
     <div class="form-err" id="rsvErr"></div>
     <div class="modal-btns">
       <button class="btn-cl" onclick="closeRsvModal()">취소</button>
-      <button class="btn-ok" onclick="saveRsv()">저장</button>
+      <button class="btn-ok" id="rsvSubmitBtn" onclick="saveRsv()">신청하기</button>
     </div>
-  </div>
-</div>
-
-
-<!-- SMS 발송 모달 -->
-<div class="sms-bg" id="smsBg" onclick="closeSmsModal(event)">
-  <div class="sms-box">
-    <button class="sms-close-btn" onclick="closeSmsModal()" title="닫기">✕</button>
-    <div class="sms-header">
-      <div class="sms-icon" id="smsIcon"></div>
-      <div>
-        <div class="sms-title" id="smsTitle"></div>
-        <div class="sms-sub" id="smsSub"></div>
-      </div>
-    </div>
-    <div class="sms-to">
-      <span class="sms-to-label">연락처</span>
-      <input class="sms-phone-input" id="smsPhone" type="tel" placeholder="010-0000-0000">
-    </div>
-    <div class="sms-to" style="margin-bottom:10px;">
-      <span class="sms-to-label">이메일</span>
-      <input class="sms-phone-input" id="smsEmail" type="email" placeholder="example@email.com">
-    </div>
-    <div class="sms-msg-wrap">
-      <textarea class="sms-msg" id="smsMsg" oninput="updateSmsChar()"></textarea>
-    </div>
-    <div class="sms-char"><span id="smsCharCount">0</span>자</div>
-    <div class="sms-actions">
-      <button class="sms-btn-copy" onclick="copySmsMsg()">📋 복사</button>
-      <button class="sms-btn-send" id="smsSendBtn" onclick="sendSmsApp()">📱 문자 발송</button>
-      <button class="sms-btn-skip" onclick="closeSmsModal()">건너뛰기</button>
-    </div>
-    <div class="sms-divider">또는 이메일로 발송</div>
-    <button class="sms-btn-email" id="smsEmailBtn" onclick="sendEmailGET()">📧 이메일 발송 (GAS MailApp)</button>
   </div>
 </div>
 
@@ -470,22 +409,14 @@ body.host-mode .host-badge { display:flex; }
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbypuUXyamGgNWKxG7NEal6iT7Y6WjJRT9kbXCCoCuWKq1NZ-X1lf0lv_oM5PrIxJQrX/exec';
 
 // ── STATE ──
-let RESERVATIONS = [];
-let FILTER = 'all';
-let EDIT_ID = null;
-let SMS_CURRENT_STATUS = 'confirmed';
-let SMS_CURRENT_RSV    = null;
-const SMS_PROXY_URL = GAS_URL;
+let BOOKED = [];   // {checkin, checkout, status} — 개인정보는 보관하지 않음
 let CAL_MONTH = new Date();
 
 // ── INIT ──
 async function init() {
   CAL_MONTH = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  if (sessionStorage.getItem(HOST_KEY) === '1') document.body.classList.add('host-mode');
   await loadFromGAS();
-  renderStats();
   renderCalendar();
-  renderList();
 }
 
 // ── 로딩 표시 ──
@@ -497,75 +428,53 @@ function hideLoading() {
   document.getElementById('loadingOverlay').classList.remove('show');
 }
 
-// ── GAS 연동 헬퍼 ──
+// ── GAS 연동 ──
 async function loadFromGAS() {
-  showLoading('예약 현황을 불러오는 중...');
+  showLoading('예약 가능 날짜를 불러오는 중...');
   try {
     const res  = await fetch(`${GAS_URL}?action=rsv_load`, { redirect: 'follow' });
     const data = await res.json();
-    if (data.success) {
-      RESERVATIONS = data.reservations || [];
-      try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
-    } else throw new Error(data.message);
+    if (!data.success) throw new Error(data.message);
+    BOOKED = (data.reservations || [])
+      .filter(r => r.status !== 'cancelled' && r.checkin && r.checkout)
+      .map(r => ({ checkin: r.checkin, checkout: r.checkout, status: r.status }));
   } catch(e) {
-    // GAS 실패 시 로컬 캐시 사용
-    try { RESERVATIONS = JSON.parse(localStorage.getItem('pension_reservations') || '[]'); } catch(e2) { RESERVATIONS = []; }
-    showToast('⚠️ 서버 연결 실패 — 로컬 캐시로 표시합니다');
-    console.warn('GAS 로드 실패 — 로컬 캐시 사용:', e.message);
+    BOOKED = [];
+    showToast('⚠️ 서버 연결 실패 — 잠시 후 다시 시도해주세요', 4000);
+    console.warn('GAS 로드 실패:', e.message);
   } finally {
     hideLoading();
   }
 }
 
 async function upsertToGAS(rsv) {
-  showLoading('예약을 저장하는 중...');
+  showLoading('예약을 신청하는 중...');
   try {
     const qs = new URLSearchParams({
       action:     'rsv_upsert',
-      id:         rsv.id         || '',
-      guestName:  rsv.guestName  || '',
-      phone:      rsv.phone      || '',
-      email:      rsv.email      || '',
-      checkin:    rsv.checkin    || '',
-      checkout:   rsv.checkout   || '',
-      nights:     rsv.nights     || 0,
-      guests:     rsv.guests     || 1,
-      totalPrice: rsv.totalPrice || 0,
-      status:     rsv.status     || '',
-      memo:       rsv.memo       || '',
-      createdAt:  rsv.createdAt  || ''
+      id:         rsv.id,
+      guestName:  rsv.guestName,
+      phone:      rsv.phone,
+      email:      rsv.email,
+      checkin:    rsv.checkin,
+      checkout:   rsv.checkout,
+      nights:     rsv.nights,
+      guests:     rsv.guests,
+      totalPrice: rsv.totalPrice,
+      status:     rsv.status,
+      memo:       rsv.memo,
+      createdAt:  rsv.createdAt
     });
     const res  = await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
     const data = await res.json();
-    if (!data.success) showToast('⚠️ 시트 저장 실패: ' + data.message);
+    if (!data.success) throw new Error(data.message);
+    return true;
   } catch(e) {
-    showToast('⚠️ 시트 저장 실패: ' + e.message);
+    showToast('⚠️ 신청 실패: ' + e.message, 4000);
+    return false;
   } finally {
     hideLoading();
   }
-}
-
-async function deleteFromGAS(id) {
-  showLoading('예약을 삭제하는 중...');
-  try {
-    const qs = new URLSearchParams({ action: 'rsv_delete', id });
-    await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
-  } catch(e) { showToast('⚠️ 시트 삭제 실패: ' + e.message); }
-  finally { hideLoading(); }
-}
-
-async function updateStatusGAS(id, status) {
-  showLoading('상태를 변경하는 중...');
-  try {
-    const qs = new URLSearchParams({ action: 'rsv_status', id, status });
-    await fetch(`${GAS_URL}?${qs}`, { redirect: 'follow' });
-  } catch(e) { showToast('⚠️ 상태 변경 실패: ' + e.message); }
-  finally { hideLoading(); }
-}
-
-// ── PERSIST (로컬 캐시) ──
-function saveRsvData() {
-  try { localStorage.setItem('pension_reservations', JSON.stringify(RESERVATIONS)); } catch(e) {}
 }
 
 // ── DATES ──
@@ -576,33 +485,11 @@ function fmtDate(s) {
   const d = parseDate(s);
   return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
 }
-function fmtShort(s) {
-  if (!s) return '';
-  const d = parseDate(s);
-  return `${d.getMonth()+1}/${d.getDate()}`;
-}
 function nightsBetween(cin, cout) {
   if (!cin || !cout) return 0;
   return Math.max(0, Math.round((parseDate(cout) - parseDate(cin)) / (1000*60*60*24)));
 }
 function todayStr() { return dateStr(new Date()); }
-
-// ── STATS ──
-function renderStats() {
-  const confirmed = RESERVATIONS.filter(r => r.status === 'confirmed');
-  const now = new Date();
-  const thisMonth = confirmed.filter(r => {
-    const d = parseDate(r.checkin);
-    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
-  const totalNights = confirmed.reduce((s,r) => s + (r.nights||0), 0);
-  const revenue = confirmed.reduce((s,r) => s + (r.totalPrice||0), 0);
-  document.getElementById('statTotal').textContent  = confirmed.length;
-  document.getElementById('statMonth').textContent  = thisMonth.length;
-  document.getElementById('statMonthLabel').textContent = `${now.getMonth()+1}월 기준`;
-  document.getElementById('statNights').textContent = totalNights;
-  document.getElementById('statRevenue').textContent = `₩${revenue.toLocaleString()}`;
-}
 
 // ── CALENDAR ──
 function navMonth(dir) {
@@ -617,26 +504,18 @@ function renderCalendar() {
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const todayS = todayStr();
 
-  // 필터에 맞는 예약만 캘린더에 표시
-  let rsvForCal;
-  if      (FILTER === 'confirmed') rsvForCal = RESERVATIONS.filter(r => r.status === 'confirmed');
-  else if (FILTER === 'pending')   rsvForCal = RESERVATIONS.filter(r => r.status === 'pending');
-  else if (FILTER === 'cancelled') rsvForCal = [];
-  else                             rsvForCal = RESERVATIONS.filter(r => r.status !== 'cancelled');
-
-  // Build a map of date → reservation info (체크아웃일은 제외 — 다음 예약 체크인 가능)
+  // 날짜 → 예약 정보 (체크아웃일은 제외 — 다음 체크인 가능)
   const dateMap = {};
-  rsvForCal.forEach(r => {
-    if (!r.checkin || !r.checkout) return;
+  BOOKED.forEach(r => {
     const cin  = parseDate(r.checkin);
     const cout = parseDate(r.checkout);
     const lastNight = new Date(cout); lastNight.setDate(lastNight.getDate() - 1);
     const lastNightStr = dateStr(lastNight);
-    const cur  = new Date(cin);
+    const cur = new Date(cin);
     while (cur < cout) {
       const ds = dateStr(cur);
       if (!dateMap[ds] || r.status === 'confirmed')
-        dateMap[ds] = { id:r.id, status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
+        dateMap[ds] = { status:r.status, isStart: ds===r.checkin, isEnd: ds===lastNightStr };
       cur.setDate(cur.getDate()+1);
     }
   });
@@ -647,264 +526,43 @@ function renderCalendar() {
   for (let d=1; d<=daysInMonth; d++) {
     const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const info = dateMap[ds];
-    const isToday = ds === todayS;
     let cls = 'cal-cell';
-    if (isToday) cls += ' today';
+    if (ds === todayS) cls += ' today';
     if (info) {
       const p = info.status === 'pending' ? 'rsv-pend' : 'rsv';
       if (info.isStart && info.isEnd)   cls += ` ${p}-single`;
       else if (info.isStart)            cls += ` ${p}-start`;
       else if (info.isEnd)              cls += ` ${p}-end`;
       else                              cls += ` ${p}-mid`;
+    } else if (ds < todayS) {
+      cls += ' past';
+    } else {
+      cls += ' avail';
     }
-    const clickAttr = info ? `onclick="scrollToRsv('${info.id}')"` : '';
+    const clickAttr = cls.includes('avail') ? `onclick="openRsvModal('${ds}')"` : '';
     html += `<div class="${cls}" ${clickAttr}><div class="cal-num">${d}</div></div>`;
   }
 
   document.getElementById('calGrid').innerHTML = html;
 }
 
-function scrollToRsv(id) {
-  const el = document.getElementById('rc_' + id);
-  if (el) { el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.outline='2px solid var(--primary)'; setTimeout(()=>el.style.outline='',1500); }
-}
-
-// ── LIST ──
-function setFilter(f) {
-  FILTER = f;
-  document.querySelectorAll('.ftab').forEach(el => el.classList.toggle('active', el.dataset.filter === f));
-  renderList();
-  renderCalendar();
-}
-
-function renderList() {
-  const el = document.getElementById('rsvList');
-  let list = [...RESERVATIONS].sort((a,b) => (a.checkin||'').localeCompare(b.checkin||''));
-  if (FILTER !== 'all') list = list.filter(r => r.status === FILTER);
-  if (!list.length) {
-    el.innerHTML = `<div class="empty-list"><div class="ei">📋</div>${FILTER==='all'?'등록된 예약이 없습니다.':'해당 상태의 예약이 없습니다.'}</div>`;
-    return;
-  }
-  el.innerHTML = list.map(r => {
-    const initial = (r.guestName||'?')[0];
-    const nights = r.nights || nightsBetween(r.checkin, r.checkout);
-    const statusLabel = {confirmed:'확정', pending:'대기중', cancelled:'취소'}[r.status] || r.status;
-    return `
-    <div class="rsv-card ${r.status}" id="rc_${r.id}">
-      <div class="rsv-row1">
-        <div class="rsv-guest">
-          <div class="rsv-avatar">${initial}</div>
-          <div>
-            <div class="rsv-name">${esc(r.guestName)}</div>
-            <div class="rsv-guests-count">${r.guests||1}명</div>
-          </div>
-        </div>
-        <span class="status-badge ${r.status}">${statusLabel}</span>
-      </div>
-      <div class="rsv-dates">
-        <b>${fmtShort(r.checkin)}</b> 체크인 → <b>${fmtShort(r.checkout)}</b> 체크아웃 &nbsp;·&nbsp; ${nights}박
-      </div>
-      ${r.totalPrice ? `<div class="rsv-price">총 요금: <b>₩${r.totalPrice.toLocaleString()}</b></div>` : ''}
-      ${r.phone ? `<div class="rsv-price" style="margin-top:2px">연락처: ${esc(r.phone)}</div>` : ''}
-      ${r.email ? `<div class="rsv-price" style="margin-top:2px">이메일: ${esc(r.email)}</div>` : ''}
-      ${r.memo ? `<div class="rsv-memo">"${esc(r.memo)}"</div>` : ''}
-      <div class="rsv-actions">
-        <select class="btn-rsv" style="font-family:var(--sans);font-size:.75rem" onchange="changeStatus('${r.id}',this.value)">
-          <option value="confirmed" ${r.status==='confirmed'?'selected':''}>확정</option>
-          <option value="pending"   ${r.status==='pending'  ?'selected':''}>대기중</option>
-          <option value="cancelled" ${r.status==='cancelled'?'selected':''}>취소</option>
-        </select>
-        <button class="btn-rsv" onclick="openRsvModal('${r.id}')">✏️ 수정</button>
-        <button class="btn-rsv del" onclick="deleteRsv('${r.id}')">🗑 삭제</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ── STATUS CHANGE ──
-async function changeStatus(id, status) {
-  if (sessionStorage.getItem(HOST_KEY) !== '1') { renderList(); return; }
-  const r = RESERVATIONS.find(r => r.id === id);
-  if (!r) return;
-  const prev = r.status;
-  r.status = status;
-  saveRsvData();
-  renderStats();
-  renderCalendar();
-  renderList();
-  await updateStatusGAS(id, status);
-  if ((status === 'confirmed' || status === 'cancelled') && prev !== status) {
-    openSmsModal(r, status);
-  }
-}
-
-
-// ── SMS 모달 ──
-function openSmsModal(r, status) {
-  const nights = r.nights || nightsBetween(r.checkin, r.checkout);
-  const icon  = document.getElementById('smsIcon');
-  const title = document.getElementById('smsTitle');
-  const sub   = document.getElementById('smsSub');
-
-  icon.className = `sms-icon ${status}`;
-  if (status === 'confirmed') {
-    icon.textContent = '✅';
-    title.textContent = '예약 확정 알림 발송';
-    sub.textContent   = `${r.guestName}님께 확정 안내를 발송하세요`;
-  } else {
-    icon.textContent = '❌';
-    title.textContent = '예약 취소 알림 발송';
-    sub.textContent   = `${r.guestName}님께 취소 안내를 발송하세요`;
-  }
-
-  SMS_CURRENT_STATUS = status;
-  SMS_CURRENT_RSV    = r;
-  document.getElementById('smsPhone').value = r.phone || '';
-  document.getElementById('smsEmail').value = r.email || '';
-
-  const msg = status === 'confirmed'
-    ? buildConfirmMsg(r, nights)
-    : buildCancelMsg(r);
-  document.getElementById('smsMsg').value = msg;
-  updateSmsChar();
-  document.getElementById('smsBg').classList.add('open');
-}
-
-function buildConfirmMsg(r, nights) {
-  return `[영덕감성산장] ${r.guestName}님 예약확정
-체크인: ${fmtShort(r.checkin)} / 체크아웃: ${fmtShort(r.checkout)}
-${nights}박 ${r.guests || 1}명 문의: 010-2698-9056`;
-}
-
-function buildCancelMsg(r) {
-  return `[영덕감성산장] ${r.guestName}님, 안타깝게도 예약이 취소되었습니다.
-
-다른 일정으로 다시 연락 주시면 최선을 다하겠습니다.
-문의: 010-2698-9056
-감사합니다.`;
-}
-
-function updateSmsChar() {
-  const len = document.getElementById('smsMsg').value.length;
-  document.getElementById('smsCharCount').textContent = len;
-}
-
-function closeSmsModal(e) {
-  if (!e || e.target === document.getElementById('smsBg')) {
-    document.getElementById('smsBg').classList.remove('open');
-  }
-}
-
-function copySmsMsg() {
-  const msg = document.getElementById('smsMsg').value;
-  navigator.clipboard.writeText(msg).then(() => {
-    showToast('메시지가 복사되었습니다.');
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = msg; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('메시지가 복사되었습니다.');
-  });
-}
-
-async function sendSmsApp() {
-  const phone = document.getElementById('smsPhone').value.replace(/[^0-9]/g, '');
-  const msg   = document.getElementById('smsMsg').value.trim();
-  if (!phone) { showToast('연락처를 입력해주세요.'); return; }
-  if (phone.length < 10) { showToast('올바른 전화번호를 입력해주세요.'); return; }
-  if (!msg)   { showToast('메시지를 입력해주세요.'); return; }
-
-  const btn = document.getElementById('smsSendBtn');
-  btn.disabled = true;
-  btn.textContent = '발송 중...';
-
-  try {
-    const qs  = new URLSearchParams({ action: 'sms', receiver: phone, msg: msg });
-    const res = await fetch(`${SMS_PROXY_URL}?${qs.toString()}`, { redirect: 'follow' });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || '발송 실패');
-    document.getElementById('smsBg').classList.remove('open');
-    showToast(`문자가 성공적으로 발송되었습니다. (${data.msg_type || 'SMS'})`);
-  } catch (e) {
-    showToast('발송 실패: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📱 문자 발송';
-  }
-}
-
-async function sendEmailGET() {
-  const toEmail = document.getElementById('smsEmail').value.trim();
-  let   msg     = document.getElementById('smsMsg').value.trim();
-  if (!toEmail) { showToast('이메일 주소를 입력해주세요.'); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) { showToast('올바른 이메일 형식이 아닙니다.'); return; }
-
-  const guestName = SMS_CURRENT_RSV ? SMS_CURRENT_RSV.guestName : '';
-  const subject = SMS_CURRENT_STATUS === 'confirmed'
-    ? '[영덕감성산장] 예약이 확정되었습니다'
-    : '[영덕감성산장] 예약 취소 안내';
-
-  if (SMS_CURRENT_STATUS === 'confirmed' && SMS_CURRENT_RSV) {
-    msg += `\n\n예약번호: ${SMS_CURRENT_RSV.id}`;
-  }
-
-  const btn = document.getElementById('smsEmailBtn');
-  btn.disabled = true;
-  btn.textContent = '발송 중...';
-
-  try {
-    const qs  = new URLSearchParams({ action: 'email', to_email: toEmail, to_name: guestName, subject, message: msg });
-    const res = await fetch(`${GAS_URL}?${qs.toString()}`, { redirect: 'follow' });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || '발송 실패');
-    document.getElementById('smsBg').classList.remove('open');
-    showToast('이메일이 발송되었습니다. (GAS MailApp)');
-  } catch (e) {
-    showToast('발송 실패: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📧 이메일 발송 (GAS MailApp)';
-  }
-}
-
-function showToast(msg) {
+// ── TOAST ──
+function showToast(msg, ms) {
   const el = document.getElementById('smsToast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-// ── DELETE ──
-async function deleteRsv(id) {
-  if (sessionStorage.getItem(HOST_KEY) !== '1') { showToast('호스트 모드에서만 가능합니다.'); return; }
-  if (!confirm('이 예약을 삭제하시겠어요?')) return;
-  RESERVATIONS = RESERVATIONS.filter(r => r.id !== id);
-  saveRsvData();
-  renderStats();
-  renderCalendar();
-  renderList();
-  await deleteFromGAS(id);
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove('show'), ms || 2200);
 }
 
 // ── MODAL ──
-function openRsvModal(id) {
-  if (sessionStorage.getItem(HOST_KEY) !== '1') return;
-  EDIT_ID = id || null;
-  const r = id ? RESERVATIONS.find(r => r.id === id) : null;
-  document.getElementById('rsvModalTitle').textContent = r ? '✏️ 예약 수정' : '＋ 예약 하기';
-  document.getElementById('inGuestName').value = r?.guestName || '';
-  document.getElementById('inPhone').value     = r?.phone || '';
-  document.getElementById('inEmail').value     = r?.email || '';
-  document.getElementById('inCheckin').value   = r?.checkin || '';
-  document.getElementById('inCheckout').value  = r?.checkout || '';
-  document.getElementById('inGuests').value    = r?.guests || 2;
-  document.getElementById('inPrice').value     = r?.totalPrice || '';
-  document.getElementById('inStatus').value    = r?.status || 'confirmed';
-  document.getElementById('inMemo').value      = r?.memo || '';
+function openRsvModal(checkin) {
+  ['inGuestName','inPhone','inEmail','inCheckout','inPrice','inMemo'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inCheckin').value = checkin || '';
+  document.getElementById('inGuests').value  = 2;
+  const minD = todayStr();
+  document.getElementById('inCheckin').min  = minD;
+  document.getElementById('inCheckout').min = minD;
   document.getElementById('rsvErr').classList.remove('show');
   previewNights();
   document.getElementById('rsvModal').classList.add('open');
@@ -917,111 +575,69 @@ function previewNights() {
   const cout = document.getElementById('inCheckout').value;
   const n = nightsBetween(cin, cout);
   const el = document.getElementById('nightsPreview');
+  const priceEl = document.getElementById('inPrice');
   if (cin && cout && n > 0) {
-    if (!document.getElementById('inPrice').value) {
-      const prices = JSON.parse(localStorage.getItem('pension_prices') || '{}');
-      const nr = prices.nightRate || 120000;
-      const cf = prices.cleanFee !== undefined ? prices.cleanFee : 30000;
-      const sr = prices.svcRate !== undefined ? prices.svcRate : 0.12;
-      const sub = nr * n;
-      const total = sub + cf + Math.round(sub * sr);
-      document.getElementById('inPrice').value = total;
-    }
+    let prices = {};
+    try { prices = JSON.parse(localStorage.getItem('pension_prices') || '{}'); } catch(e) {}
+    const nr = prices.nightRate || 120000;
+    const cf = prices.cleanFee !== undefined ? prices.cleanFee : 30000;
+    const sr = prices.svcRate !== undefined ? prices.svcRate : 0.12;
+    const sub = nr * n;
+    priceEl.value = sub + cf + Math.round(sub * sr);
     el.textContent = `${n}박 (${fmtDate(cin)} ~ ${fmtDate(cout)})`;
   } else {
+    priceEl.value = '';
     el.textContent = cin && cout && n <= 0 ? '체크아웃은 체크인 이후 날짜로 선택해주세요.' : '';
   }
 }
 
-function saveRsv() {
+async function saveRsv() {
   const errEl = document.getElementById('rsvErr');
   errEl.classList.remove('show');
   const name   = document.getElementById('inGuestName').value.trim();
+  const phone  = document.getElementById('inPhone').value.trim();
+  const email  = document.getElementById('inEmail').value.trim();
   const cin    = document.getElementById('inCheckin').value;
   const cout   = document.getElementById('inCheckout').value;
   const guests = parseInt(document.getElementById('inGuests').value) || 1;
   const price  = parseInt(document.getElementById('inPrice').value) || 0;
-  const status = document.getElementById('inStatus').value;
   const memo   = document.getElementById('inMemo').value.trim();
-  const phone  = document.getElementById('inPhone').value.trim();
-  const email  = document.getElementById('inEmail').value.trim();
 
-  if (!name) { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
-  if (!cin)  { showErr(errEl, '체크인 날짜를 선택해주세요.'); return; }
-  if (!cout) { showErr(errEl, '체크아웃 날짜를 선택해주세요.'); return; }
+  if (!name)  { showErr(errEl, '투숙객 이름을 입력해주세요.'); return; }
+  if (!phone) { showErr(errEl, '연락처를 입력해주세요.'); return; }
+  if (!cin)   { showErr(errEl, '체크인 날짜를 선택해주세요.'); return; }
+  if (!cout)  { showErr(errEl, '체크아웃 날짜를 선택해주세요.'); return; }
+  if (cin < todayStr()) { showErr(errEl, '지난 날짜는 선택할 수 없습니다.'); return; }
   if (nightsBetween(cin, cout) <= 0) { showErr(errEl, '체크아웃은 체크인 이후여야 합니다.'); return; }
 
-  // ── 예약 중복 체크 ──
-  const conflict = RESERVATIONS.find(r =>
-    r.id !== EDIT_ID &&          // 현재 수정 중인 예약 제외
-    r.status !== 'cancelled' &&  // 취소된 예약 제외
-    cin  < r.checkout &&         // 새 체크인이 기존 체크아웃 이전
-    cout > r.checkin             // 새 체크아웃이 기존 체크인 이후
-  );
+  const conflict = BOOKED.find(r => cin < r.checkout && cout > r.checkin);
   if (conflict) {
-    showErr(errEl,
-      `⚠️ 예약 불가 — ${fmtDate(conflict.checkin)} ~ ${fmtDate(conflict.checkout)} 기간에 ` +
-      `"${conflict.guestName}"님의 예약이 있습니다.`
-    );
+    showErr(errEl, `⚠️ ${fmtDate(conflict.checkin)} ~ ${fmtDate(conflict.checkout)} 기간은 이미 예약되어 있습니다.`);
     return;
   }
 
-  const nights = nightsBetween(cin, cout);
+  const rsv = {
+    id:'rsv_'+Date.now(), guestName:name, phone, email, checkin:cin, checkout:cout,
+    nights:nightsBetween(cin, cout), guests, totalPrice:price, status:'pending', memo, createdAt:todayStr()
+  };
 
-  let rsv;
-  if (EDIT_ID) {
-    rsv = RESERVATIONS.find(r => r.id === EDIT_ID);
-    if (rsv) Object.assign(rsv, {guestName:name, phone, email, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo});
-  } else {
-    rsv = { id:'rsv_'+Date.now(), guestName:name, phone, email, checkin:cin, checkout:cout, nights, guests, totalPrice:price, status, memo, createdAt:todayStr() };
-    RESERVATIONS.push(rsv);
-  }
+  const btn = document.getElementById('rsvSubmitBtn');
+  btn.disabled = true;
+  const ok = await upsertToGAS(rsv);
+  btn.disabled = false;
+  if (!ok) return;
 
-  saveRsvData();
+  BOOKED.push({ checkin:cin, checkout:cout, status:'pending' });
   closeRsvModal();
-  renderStats();
   renderCalendar();
-  renderList();
-  if (rsv) upsertToGAS(rsv);
+  showToast('✅ 예약 신청이 접수되었습니다. 호스트 확인 후 확정 안내를 드립니다.', 5000);
 }
 
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
 
-// ── HOST AUTH ──
-const HOST_KEY = 'pension_host';
-const HOST_PWD = '1dl34';
-
-function checkHostAuth() {
-  document.getElementById('authField').value = '';
-  document.getElementById('authErr').textContent = '';
-  document.getElementById('authBg').classList.add('open');
-  setTimeout(() => document.getElementById('authField').focus(), 80);
-}
-function closeAuth() { document.getElementById('authBg').classList.remove('open'); }
-function confirmAuth() {
-  if (document.getElementById('authField').value === HOST_PWD) {
-    sessionStorage.setItem(HOST_KEY, '1');
-    closeAuth();
-    document.body.classList.add('host-mode');
-    renderList();
-  } else {
-    document.getElementById('authErr').textContent = '암호가 올바르지 않습니다.';
-    document.getElementById('authField').value = '';
-    document.getElementById('authField').focus();
-  }
-}
-function exitHostMode() {
-  sessionStorage.removeItem(HOST_KEY);
-  document.body.classList.remove('host-mode');
-  renderList();
-}
-
 // ── KEYBOARD ──
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.getElementById('rsvModal').classList.remove('open');
-    closeAuth();
-  }
+  if (e.key === 'Escape') closeRsvModal();
 });
 document.getElementById('rsvModal').addEventListener('click', e => {
   if (e.target === document.getElementById('rsvModal')) closeRsvModal();
@@ -1029,28 +645,6 @@ document.getElementById('rsvModal').addEventListener('click', e => {
 
 init();
 </script>
-<!-- Auth Modal -->
-<div class="auth-bg" id="authBg">
-  <div class="auth-box">
-    <div class="auth-title">🔐 호스트 인증</div>
-    <div class="auth-sub">호스트 모드로 전환하려면 인증 암호를 입력하세요.</div>
-    <form onsubmit="confirmAuth(); return false;" style="margin:0">
-      <input class="auth-input" id="authField" type="password" placeholder="암호 입력">
-      <div class="auth-err" id="authErr"></div>
-      <div class="auth-btns-row">
-        <button class="btn-auth-cancel" type="button" onclick="closeAuth()">취소</button>
-        <button class="btn-auth-ok" type="submit">확인</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Host Badge -->
-<div class="host-badge">
-  ✏️ 호스트 모드
-  <span class="badge-sep">|</span>
-  <span class="badge-btn" onclick="exitHostMode()">종료</span>
-</div>
 
 <style>
 /* ── 모바일 헤더: 1행=로고+버튼, 2행=아이콘 네비 ── */
